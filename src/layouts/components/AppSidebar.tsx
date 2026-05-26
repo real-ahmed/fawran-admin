@@ -125,15 +125,23 @@ export const AppSidebar = ({ appName, logoUrl, user, onClose, onLogout }: AppSid
     <>
       <div className="flex h-[72px] items-center justify-between border-b border-border/40 bg-card px-5">
         <div className="flex min-w-0 items-center gap-3">
-          <BrandLogo
-            appName={appName}
-            logoUrl={logoUrl}
-            className="h-8 max-w-36 shrink-0 object-contain drop-shadow-sm"
-            fallbackClassName="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground shadow-sm shadow-primary/20"
-          />
-          <h1 className="min-w-0 truncate text-lg font-bold tracking-tight text-foreground">
-            {appName}
-          </h1>
+          {logoUrl ? (
+            <BrandLogo
+              appName={appName}
+              logoUrl={logoUrl}
+              className="h-10 max-w-44 shrink-0 object-contain drop-shadow-sm"
+            />
+          ) : (
+            <>
+              <BrandLogo
+                appName={appName}
+                fallbackClassName="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground shadow-sm shadow-primary/20"
+              />
+              <h1 className="min-w-0 truncate text-lg font-bold tracking-tight text-foreground">
+                {appName}
+              </h1>
+            </>
+          )}
         </div>
         <Button
           variant="ghost"

@@ -117,5 +117,7 @@
   "settings_auto_cancel_mins": "إلغاء تلقائي للطلبات غير المقبولة (دقيقة)",
   "settings_courier_search_radius": "نطاق بحث المندوبين (كم)",
   "yes": "نعم",
-  "no": "لا"
+  "no": "لا",
+  "change_image": "تغيير الصورة",
+  "upload_image": "انقر لرفع صورة"
 }

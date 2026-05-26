@@ -26,12 +26,14 @@ export const AuthLayout = () => {
             <BrandLogo
               appName={appName}
               logoUrl={authLogoUrl}
-              className="h-10 object-contain drop-shadow-md"
+              className="h-12 max-w-56 object-contain drop-shadow-md"
             />
           ) : (
-            <ShieldCheck className="h-10 w-10" />
+            <>
+              <ShieldCheck className="h-10 w-10" />
+              <span className="text-xl font-bold tracking-tight">{appName}</span>
+            </>
           )}
-          <span className="text-xl font-bold tracking-tight">{appName}</span>
         </div>
 
         <div className="relative z-10 max-w-md">

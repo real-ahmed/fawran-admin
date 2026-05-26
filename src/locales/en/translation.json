@@ -117,5 +117,7 @@
   "settings_auto_cancel_mins": "Auto Cancel Unaccepted (minutes)",
   "settings_courier_search_radius": "Courier Search Radius (km)",
   "yes": "Yes",
-  "no": "No"
+  "no": "No",
+  "change_image": "Change Image",
+  "upload_image": "Click to upload image"
 }

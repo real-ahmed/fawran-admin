@@ -19,6 +19,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { parseLocalizedText } from '@/utils/localizedText';
 import { resolveStorageAssetUrl } from '@/utils/assets';
+import { ImageUploader } from '@/components/ImageUploader';
 
 // ─── Schema ──────────────────────────────────────────────────────────────────
 const settingsSchema = z.object({
@@ -78,25 +79,34 @@ interface FieldProps {
 }
 
 const SettingField = ({ id, label, hint, placeholder, type = 'text', disabled, previewUrl, registration }: FieldProps) => (
-  <div className="grid gap-2">
+  <div className="grid gap-2 w-full">
     <Label htmlFor={id} className="text-sm font-medium">{label}</Label>
-    {previewUrl && (
-      <div className="mb-2">
-        <img src={previewUrl} alt={label} className="h-16 w-auto rounded-lg border border-border bg-muted/30 object-contain p-1.5 shadow-sm" />
-      </div>
+    
+    {type === 'file' ? (
+      <ImageUploader 
+        id={id} 
+        previewUrl={previewUrl} 
+        registration={registration(id as keyof SettingsForm)} 
+        className="h-36 w-full"
+      />
+    ) : (
+      <>
+        {previewUrl && (
+          <div className="mb-2">
+            <img src={previewUrl} alt={label} className="h-16 w-auto rounded-lg border border-border bg-muted/30 object-contain p-1.5 shadow-sm" />
+          </div>
+        )}
+        <Input
+          id={id}
+          type={type}
+          placeholder={placeholder}
+          disabled={disabled}
+          dir="ltr"
+          className="w-full h-11 bg-muted/40 focus:bg-background transition-colors rounded-xl border-border/60 hover:border-border"
+          {...registration(id as keyof SettingsForm)}
+        />
+      </>
     )}
-    <Input
-      id={id}
-      type={type}
-      placeholder={placeholder}
-      disabled={disabled}
-      dir="ltr"
-      accept={type === 'file' ? 'image/*' : undefined}
-      className={type === 'file' 
-        ? 'w-full max-w-md cursor-pointer pt-2 file:mr-4 file:rounded-md file:border-0 file:bg-primary/10 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-primary hover:file:bg-primary/20 transition-all rounded-xl border-border/60' 
-        : 'w-full max-w-md h-11 bg-muted/40 focus:bg-background transition-colors rounded-xl border-border/60 hover:border-border'}
-      {...registration(id as keyof SettingsForm)}
-    />
     {hint && <p className="text-xs font-medium text-muted-foreground">{hint}</p>}
   </div>
 );
@@ -111,12 +121,12 @@ interface SelectProps {
 }
 
 const SettingSelect = ({ id, label, hint, disabled, options, registration }: SelectProps) => (
-  <div className="grid gap-2">
+  <div className="grid gap-2 w-full">
     <Label htmlFor={id} className="text-sm font-medium">{label}</Label>
     <select
       id={id}
       disabled={disabled}
-      className="flex h-11 w-full max-w-md rounded-xl border border-border/60 bg-muted/40 px-3 py-2 text-sm shadow-sm transition-colors hover:border-border focus-visible:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+      className="flex h-11 w-full rounded-xl border border-border/60 bg-muted/40 px-3 py-2 text-sm shadow-sm transition-colors hover:border-border focus-visible:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
       {...registration(id as keyof SettingsForm)}
     >
       {options.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
@@ -298,6 +308,12 @@ export const SystemSettings = () => {
                 registration={register}
               />
               <SettingField
+                id="support_phone"
+                label={t('settings_support_phone')}
+                placeholder="+201000000000"
+                registration={register}
+              />
+              <SettingField
                 id="app_logo"
                 label={t('settings_app_logo')}
                 type="file"
@@ -323,12 +339,6 @@ export const SystemSettings = () => {
                 label={t('settings_favicon')}
                 type="file"
                 previewUrl={resolveStorageAssetUrl(settings?.favicon)}
-                registration={register}
-              />
-              <SettingField
-                id="support_phone"
-                label={t('settings_support_phone')}
-                placeholder="+201000000000"
                 registration={register}
               />
             </div>
