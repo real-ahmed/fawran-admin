@@ -123,8 +123,8 @@ export const AppSidebar = ({ appName, logoUrl, user, onClose, onLogout }: AppSid
 
   return (
     <>
-      <div className="flex h-[72px] items-center justify-between border-b border-border/40 bg-card px-5">
-        <div className="flex min-w-0 items-center gap-3">
+      <div className="relative flex h-[72px] items-center justify-center border-b border-border/40 bg-card px-5">
+        <div className="flex min-w-0 items-center justify-center gap-3">
           {logoUrl ? (
             <BrandLogo
               appName={appName}
@@ -146,7 +146,7 @@ export const AppSidebar = ({ appName, logoUrl, user, onClose, onLogout }: AppSid
         <Button
           variant="ghost"
           size="icon"
-          className="text-muted-foreground hover:bg-secondary lg:hidden"
+          className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:bg-secondary lg:hidden"
           onClick={onClose}
           aria-label={t('close_navigation')}
         >
