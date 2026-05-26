@@ -7,6 +7,7 @@ import { StatCard } from '@/features/dashboard/components/StatCard';
 import { PendingApprovalsCard } from '@/features/dashboard/components/PendingApprovalsCard';
 import { DashboardError, DashboardLoading } from '@/features/dashboard/components/DashboardStates';
 import { OrderStatusSummary } from '@/features/dashboard/components/OrderStatusSummary';
+import { PageHeader } from '@/components/PageHeader';
 import {
   Chart as ChartJS,
   ArcElement,
@@ -111,16 +112,15 @@ export const Dashboard = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{t('dashboard')}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">{t('dashboard_subtitle', 'Overview of your platform')}</p>
-        </div>
+      <PageHeader
+        title={t('dashboard')}
+        description={t('dashboard_subtitle', 'Overview of your platform')}
+      >
         <div className="flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground shadow-sm">
           <span className="h-2 w-2 rounded-full bg-primary" />
           {metricsFetching ? t('refreshing') : t('live')}
         </div>
-      </div>
+      </PageHeader>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <StatCard

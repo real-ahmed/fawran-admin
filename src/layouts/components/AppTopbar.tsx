@@ -4,11 +4,10 @@ import { Button } from '@/components/ui/button';
 import { useLanguagePreference } from '@/hooks/useLanguagePreference';
 
 interface AppTopbarProps {
-  labelKey?: string;
   onOpenSidebar: () => void;
 }
 
-export const AppTopbar = ({ labelKey = 'overview', onOpenSidebar }: AppTopbarProps) => {
+export const AppTopbar = ({ onOpenSidebar }: AppTopbarProps) => {
   const { t } = useTranslation();
   const { languageLabel, toggleLanguage } = useLanguagePreference();
 
@@ -24,17 +23,12 @@ export const AppTopbar = ({ labelKey = 'overview', onOpenSidebar }: AppTopbarPro
         >
           <Menu className="h-5 w-5 text-foreground" />
         </Button>
-        <div className="hidden min-w-0 sm:block">
-          <h2 className="truncate text-xl font-bold tracking-tight text-foreground">
-            {t(labelKey)}
-          </h2>
-        </div>
       </div>
 
       <Button
         variant="outline"
         onClick={toggleLanguage}
-        className="gap-2 rounded-full border-border/60 text-sm font-semibold shadow-sm"
+        className="gap-2 rounded-full border-border/60 text-sm font-semibold shadow-sm ms-auto"
       >
         <Languages className="h-4 w-4" />
         {languageLabel}

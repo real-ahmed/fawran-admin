@@ -10,6 +10,7 @@ import {
   type SystemSettingValue,
 } from '@/services/settingsService';
 import { Can } from '@/components/Can';
+import { PageHeader } from '@/components/PageHeader';
 import { PERMISSIONS } from '@/config/permissions';
 import { Loader2, Settings, Save, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -256,32 +257,25 @@ export const SystemSettings = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="sticky top-0 z-10 -mx-4 flex flex-wrap items-center justify-between gap-3 border-b border-border bg-muted/95 px-4 py-4 backdrop-blur sm:-mx-6 sm:px-6">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <Settings className="h-6 w-6 text-primary" />
-            {t('system_settings')}
-          </h1>
-          <p className="text-muted-foreground text-sm mt-1">{t('system_settings_desc')}</p>
-        </div>
-
+      <PageHeader
+        title={t('system_settings')}
+        description={t('system_settings_desc')}
+      >
         <Can permission={PERMISSIONS.MANAGE_SYSTEM_SETTINGS}>
-          <div className="flex items-center gap-2">
-            <Button
-              onClick={handleSubmit(onSubmit)}
-              disabled={mutation.isPending || isLoading}
-              className="gap-2"
-            >
-              {mutation.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Save className="h-4 w-4" />
-              )}
-              {mutation.isPending ? t('saving') : t('save_settings')}
-            </Button>
-          </div>
+          <Button
+            onClick={handleSubmit(onSubmit)}
+            disabled={mutation.isPending || isLoading}
+            className="gap-2"
+          >
+            {mutation.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Save className="h-4 w-4" />
+            )}
+            {mutation.isPending ? t('saving') : t('save_settings')}
+          </Button>
         </Can>
-      </div>
+      </PageHeader>
 
       {isLoading ? (
         <div className="flex items-center justify-center h-48">
