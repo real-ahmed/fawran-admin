@@ -10,6 +10,14 @@ export interface SystemSettingsResponse {
   [key: string]: string;
 }
 
+export type SystemSettingValue =
+  | string
+  | number
+  | boolean
+  | FileList
+  | null
+  | undefined;
+
 export const fetchSystemSettings = async (): Promise<SystemSettingsResponse> => {
   const res = await apiClient.get('/admin/system-settings');
   const data = res.data.data;
@@ -25,7 +33,7 @@ export const fetchSystemSettings = async (): Promise<SystemSettingsResponse> => 
 };
 
 export const updateSystemSettings = async (
-  settings: Record<string, any>
+  settings: Record<string, SystemSettingValue>
 ): Promise<void> => {
   const formData = new FormData();
   
@@ -41,7 +49,11 @@ export const updateSystemSettings = async (
         index++;
       }
       // skip empty FileLists entirely
-    } else if (typeof value === 'string' || typeof value === 'number') {
+    } else if (
+      typeof value === 'string' ||
+      typeof value === 'number' ||
+      typeof value === 'boolean'
+    ) {
       formData.append(`settings[${index}][key]`, key);
       formData.append(`settings[${index}][value]`, String(value));
       index++;

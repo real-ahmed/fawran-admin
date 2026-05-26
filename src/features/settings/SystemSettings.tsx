@@ -4,7 +4,11 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState, useEffect } from 'react';
-import { fetchSystemSettings, updateSystemSettings } from '@/services/settingsService';
+import {
+  fetchSystemSettings,
+  updateSystemSettings,
+  type SystemSettingValue,
+} from '@/services/settingsService';
 import { Can } from '@/components/Can';
 import { PERMISSIONS } from '@/config/permissions';
 import { Loader2, Settings, Save, Lock } from 'lucide-react';
@@ -12,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import { parseLocalizedText } from '@/utils/localizedText';
 
 // ─── Schema ──────────────────────────────────────────────────────────────────
 const settingsSchema = z.object({
@@ -165,21 +170,11 @@ export const SystemSettings = () => {
   // Populate form when settings load
   useEffect(() => {
     if (settings) {
-      let appNameAr = '';
-      let appNameEn = '';
-      if (settings.app_name) {
-        try {
-          const parsed = JSON.parse(settings.app_name);
-          appNameAr = parsed.ar || '';
-          appNameEn = parsed.en || '';
-        } catch (e) {
-          appNameEn = settings.app_name;
-        }
-      }
+      const appName = parseLocalizedText(settings.app_name);
 
       reset({
-        app_name_ar: appNameAr,
-        app_name_en: appNameEn,
+        app_name_ar: appName.ar || '',
+        app_name_en: appName.en || '',
         currency: settings.currency ?? '',
         support_phone: settings.support_phone ?? '',
         timezone: settings.timezone ?? '',
@@ -215,7 +210,7 @@ export const SystemSettings = () => {
     mutationFn: (data: SettingsForm) => {
       const { app_name_ar, app_name_en, ...rest } = data;
       
-      const payload: Record<string, any> = { ...rest };
+      const payload: Record<string, SystemSettingValue> = { ...rest };
       
       if (app_name_ar || app_name_en) {
         payload.app_name = JSON.stringify({
@@ -227,7 +222,7 @@ export const SystemSettings = () => {
       return updateSystemSettings(
         Object.fromEntries(
           Object.entries(payload).filter(([, v]) => v !== undefined && v !== '')
-        ) as Record<string, any>
+        ) as Record<string, SystemSettingValue>
       );
     },
     onSuccess: () => {

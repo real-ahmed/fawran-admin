@@ -1,8 +1,9 @@
 import { ReactNode } from 'react';
 import { useAuthStore } from '@/store/authStore';
+import { hasPermission, type PermissionRequirement } from '@/utils/access';
 
 interface CanProps {
-  permission: string | string[];
+  permission: PermissionRequirement;
   children: ReactNode;
   fallback?: ReactNode;
 }
@@ -10,16 +11,7 @@ interface CanProps {
 export const Can = ({ permission, children, fallback = null }: CanProps) => {
   const permissions = useAuthStore((state) => state.permissions) || [];
 
-  const hasPermission = Array.isArray(permission)
-    ? permission.some((p) => permissions.includes(p))
-    : permissions.includes(permission);
-
-  // If user is Super Admin (assuming ID 1 or a wildcard permission like '*'), we might want to bypass.
-  // For now, strict check based on the array.
-  // If your backend returns '*' for super admin, uncomment below:
-  const isSuperAdmin = permissions.includes('*');
-
-  if (hasPermission || isSuperAdmin) {
+  if (hasPermission(permissions, permission)) {
     return <>{children}</>;
   }
 

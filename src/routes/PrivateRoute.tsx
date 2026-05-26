@@ -1,8 +1,9 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
+import { hasPermission, type PermissionRequirement } from '@/utils/access';
 
 interface PrivateRouteProps {
-  requiredPermission?: string | string[];
+  requiredPermission?: PermissionRequirement;
 }
 
 export const PrivateRoute = ({ requiredPermission }: PrivateRouteProps) => {
@@ -13,16 +14,8 @@ export const PrivateRoute = ({ requiredPermission }: PrivateRouteProps) => {
     return <Navigate to="/login" replace />;
   }
 
-  if (requiredPermission) {
-    const hasPermission = Array.isArray(requiredPermission)
-      ? requiredPermission.some((p) => permissions.includes(p))
-      : permissions.includes(requiredPermission);
-      
-    const isSuperAdmin = permissions.includes('*');
-
-    if (!hasPermission && !isSuperAdmin) {
-      return <Navigate to="/dashboard" replace />; // or to a 403 page
-    }
+  if (!hasPermission(permissions, requiredPermission)) {
+    return <Navigate to="/dashboard" replace />;
   }
 
   return <Outlet />;
