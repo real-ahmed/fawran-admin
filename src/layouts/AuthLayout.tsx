@@ -2,34 +2,20 @@ import { Outlet } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { useAppConfig } from '@/hooks/useAppConfig';
-import { useAuthStore } from '@/store/authStore';
-import apiClient from '@/config/axios';
 import { Languages, ShieldCheck } from 'lucide-react';
+import { BrandLogo } from '@/components/brand/BrandLogo';
+import { useLanguagePreference } from '@/hooks/useLanguagePreference';
 
 export const AuthLayout = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { appName, appLogoWhiteUrl, appLogoUrl, appIconUrl } = useAppConfig();
-  const token = useAuthStore((state) => state.token);
+  const { languageLabel, toggleLanguage } = useLanguagePreference();
   
-  // Prefer white logo for the dark primary left panel
   const authLogoUrl = appLogoWhiteUrl || appLogoUrl || appIconUrl;
-
-  const toggleLanguage = () => {
-    const nextLang = i18n.language.startsWith('en') ? 'ar' : 'en';
-    i18n.changeLanguage(nextLang);
-    
-    if (token) {
-      apiClient.put('/admin/profile/settings', {
-        settings: [{ key: 'language', value: nextLang }]
-      }).catch(err => console.error('Failed to update language on backend', err));
-    }
-  };
 
   return (
     <div className="flex min-h-screen bg-background text-foreground">
-      {/* Left panel - Branding (Hidden on mobile, 50% on lg) */}
       <div className="hidden lg:flex w-1/2 flex-col justify-between bg-primary relative overflow-hidden p-12 text-primary-foreground shadow-2xl z-20">
-        {/* Decorative background shapes */}
         <div className="absolute inset-0 z-0 opacity-20 pointer-events-none">
            <div className="absolute -start-10 -top-10 h-64 w-64 rounded-full bg-white blur-[80px]"></div>
            <div className="absolute -bottom-20 -end-20 h-96 w-96 rounded-full bg-white blur-[100px]"></div>
@@ -37,7 +23,11 @@ export const AuthLayout = () => {
 
         <div className="relative z-10 flex items-center gap-3">
           {authLogoUrl ? (
-            <img src={authLogoUrl} alt={appName} className="h-10 object-contain drop-shadow-md" />
+            <BrandLogo
+              appName={appName}
+              logoUrl={authLogoUrl}
+              className="h-10 object-contain drop-shadow-md"
+            />
           ) : (
             <ShieldCheck className="h-10 w-10" />
           )}
@@ -54,14 +44,11 @@ export const AuthLayout = () => {
         </div>
 
         <div className="relative z-10 text-sm opacity-60 font-medium tracking-wide">
-          &copy; {new Date().getFullYear()} {appName}. All rights reserved.
+          &copy; {new Date().getFullYear()} {appName}. {t('copyright_rights')}
         </div>
       </div>
 
-      {/* Right panel - Form (100% on mobile, 50% on lg) */}
       <div className="flex w-full lg:w-1/2 flex-col items-center justify-center p-8 relative bg-card z-10">
-        
-        {/* Language switcher top right */}
         <div className="absolute top-6 end-6">
           <Button
             variant="ghost"
@@ -69,15 +56,18 @@ export const AuthLayout = () => {
             className="gap-2 text-muted-foreground hover:text-foreground font-medium rounded-full"
           >
             <Languages className="h-4 w-4" />
-            {i18n.language.startsWith('en') ? 'العربية' : 'English'}
+            {languageLabel}
           </Button>
         </div>
 
         <div className="w-full max-w-sm animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out">
-          {/* Mobile branding */}
           <div className="lg:hidden flex items-center gap-3 justify-center mb-10">
             {appLogoUrl || authLogoUrl ? (
-              <img src={appLogoUrl || authLogoUrl || ''} alt={appName} className="h-14 object-contain drop-shadow-sm" />
+              <BrandLogo
+                appName={appName}
+                logoUrl={appLogoUrl || authLogoUrl}
+                className="h-14 object-contain drop-shadow-sm"
+              />
             ) : (
               <ShieldCheck className="h-12 w-12 text-primary" />
             )}

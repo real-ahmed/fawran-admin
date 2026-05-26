@@ -3,6 +3,10 @@ import { fetchDashboardMetrics, fetchPendingApprovals } from '@/services/dashboa
 import { useTranslation } from 'react-i18next';
 import { useFormatters } from '@/hooks/useFormatters';
 import { Money } from '@/components/Money';
+import { StatCard } from '@/features/dashboard/components/StatCard';
+import { PendingApprovalsCard } from '@/features/dashboard/components/PendingApprovalsCard';
+import { DashboardError, DashboardLoading } from '@/features/dashboard/components/DashboardStates';
+import { OrderStatusSummary } from '@/features/dashboard/components/OrderStatusSummary';
 import {
   Chart as ChartJS,
   ArcElement,
@@ -16,63 +20,9 @@ import {
 import { Doughnut, Bar } from 'react-chartjs-2';
 import {
   ShoppingCart, Store, Truck, DollarSign, Clock, CheckCircle, XCircle, Loader2, AlertTriangle,
-  RefreshCw,
 } from 'lucide-react';
 
 ChartJS.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend, Title);
-
-// ─── Stat Card ──────────────────────────────────────────────────────────────
-interface StatCardProps {
-  title: string;
-  value: React.ReactNode;
-  sub?: React.ReactNode;
-  icon: React.ReactNode;
-  tone: string;
-}
-
-const StatCard = ({ title, value, sub, icon, tone }: StatCardProps) => (
-  <div className="group flex min-h-[124px] items-start gap-4 rounded-lg border border-border bg-card p-5 shadow-sm transition-shadow hover:shadow-md">
-    <div className={`rounded-md p-3 ${tone}`}>
-      {icon}
-    </div>
-    <div className="flex-1 min-w-0">
-      <p className="text-sm text-muted-foreground truncate">{title}</p>
-      <p className="mt-1 text-2xl font-bold text-foreground">{value}</p>
-      {sub && <p className="text-xs text-muted-foreground mt-1">{sub}</p>}
-    </div>
-  </div>
-);
-
-// ─── Pending Approvals ───────────────────────────────────────────────────────
-const PendingList = ({ title, items, icon }: { title: string; items: { id: number; name: string }[]; icon: React.ReactNode }) => {
-  const { t } = useTranslation();
-  return (
-  <div className="rounded-lg border border-border bg-card p-5 shadow-sm">
-    <div className="flex items-center gap-2 mb-4">
-      {icon}
-      <h3 className="font-semibold text-foreground">{title}</h3>
-      <span className="ms-auto rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-        {items.length}
-      </span>
-    </div>
-    {items.length === 0 ? (
-      <div className="rounded-md border border-dashed border-border bg-muted/40 py-5 text-center">
-        <CheckCircle className="mx-auto mb-2 h-5 w-5 text-primary" />
-        <p className="text-sm text-muted-foreground">{t('no_pending_items')}</p>
-      </div>
-    ) : (
-      <ul className="space-y-2">
-        {items.map((item) => (
-          <li key={item.id} className="flex items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground">
-            <AlertTriangle className="h-3.5 w-3.5 text-amber-500 shrink-0" />
-            <span className="truncate">{item.name}</span>
-          </li>
-        ))}
-      </ul>
-    )}
-  </div>
-  );
-};
 
 // ─── Dashboard Page ──────────────────────────────────────────────────────────
 export const Dashboard = () => {
@@ -152,40 +102,11 @@ export const Dashboard = () => {
   };
 
   if (metricsLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="h-16 rounded-lg bg-muted" />
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {[0, 1, 2, 3].map((item) => (
-            <div key={item} className="h-[124px] animate-pulse rounded-lg border border-border bg-card" />
-          ))}
-        </div>
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-          <div className="h-80 animate-pulse rounded-lg border border-border bg-card" />
-          <div className="h-80 animate-pulse rounded-lg border border-border bg-card" />
-        </div>
-      </div>
-    );
+    return <DashboardLoading />;
   }
 
   if (metricsError) {
-    return (
-      <div className="flex min-h-[360px] items-center justify-center">
-        <div className="max-w-md rounded-lg border border-border bg-card p-6 text-center shadow-sm">
-          <AlertTriangle className="mx-auto mb-3 h-8 w-8 text-amber-500" />
-          <h1 className="text-lg font-semibold text-foreground">{t('dashboard')}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">{t('save_failed')}</p>
-          <button
-            type="button"
-            className="mt-4 inline-flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-            onClick={() => refetchMetrics()}
-          >
-            <RefreshCw className="h-4 w-4" />
-            {t('retry')}
-          </button>
-        </div>
-      </div>
-    );
+    return <DashboardError onRetry={() => refetchMetrics()} />;
   }
 
   return (
@@ -254,22 +175,14 @@ export const Dashboard = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {[
+      <OrderStatusSummary
+        items={[
           { label: t('pending'), value: formatNumber(metrics?.orders.pending), icon: <Clock className="h-4 w-4" />, color: 'text-amber-600 bg-amber-50' },
           { label: t('processing'), value: formatNumber(metrics?.orders.processing), icon: <Loader2 className="h-4 w-4" />, color: 'text-blue-600 bg-blue-50' },
           { label: t('delivered'), value: formatNumber(metrics?.orders.delivered), icon: <CheckCircle className="h-4 w-4" />, color: 'text-emerald-600 bg-emerald-50' },
           { label: t('cancelled'), value: formatNumber(metrics?.orders.cancelled), icon: <XCircle className="h-4 w-4" />, color: 'text-red-500 bg-red-50' },
-        ].map(({ label, value, icon, color }) => (
-          <div key={label} className="rounded-lg border border-border bg-card p-4 text-center shadow-sm">
-            <div className={`inline-flex items-center justify-center p-2 rounded-full mb-2 ${color}`}>
-              {icon}
-            </div>
-            <p className="text-xl font-bold text-foreground">{value ?? 0}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
-          </div>
-        ))}
-      </div>
+        ]}
+      />
 
       <div>
         <h2 className="font-semibold text-foreground mb-3 flex items-center gap-2">
@@ -278,17 +191,17 @@ export const Dashboard = () => {
           {pendingLoading && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground ms-1" />}
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <PendingList
+          <PendingApprovalsCard
             title={t('brands')}
             items={pending?.brands ?? []}
             icon={<Store className="h-4 w-4 text-primary" />}
           />
-          <PendingList
+          <PendingApprovalsCard
             title={t('categories')}
             items={pending?.categories ?? []}
             icon={<ShoppingCart className="h-4 w-4 text-primary" />}
           />
-          <PendingList
+          <PendingApprovalsCard
             title={t('couriers')}
             items={pending?.couriers ?? []}
             icon={<Truck className="h-4 w-4 text-primary" />}

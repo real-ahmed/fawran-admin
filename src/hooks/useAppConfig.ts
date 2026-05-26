@@ -1,9 +1,9 @@
-import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import apiClient from "@/config/axios";
 import { useTranslation } from "react-i18next";
 import { getLocalizedText } from "@/utils/localizedText";
 import { resolveStorageAssetUrl } from "@/utils/assets";
+import { useApplyAppBranding } from "@/hooks/useApplyAppBranding";
 
 interface AppConfig {
   app_name: string;
@@ -36,21 +36,7 @@ export const useAppConfig = () => {
   const appIconUrl = resolveStorageAssetUrl(query.data?.app_icon);
   const faviconUrl = resolveStorageAssetUrl(query.data?.favicon);
 
-  useEffect(() => {
-    document.title = appName;
-
-    if (!faviconUrl) return;
-
-    const existingFavicon = document.querySelector<HTMLLinkElement>("link[rel='icon']");
-    const favicon = existingFavicon || document.createElement("link");
-
-    favicon.rel = "icon";
-    favicon.href = faviconUrl;
-
-    if (!existingFavicon) {
-      document.head.appendChild(favicon);
-    }
-  }, [appName, faviconUrl]);
+  useApplyAppBranding(appName, faviconUrl);
 
   return {
     ...query,
