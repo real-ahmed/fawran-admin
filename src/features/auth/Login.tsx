@@ -7,6 +7,7 @@ import apiClient from '@/config/axios';
 import { useAuthStore } from '@/store/authStore';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { AlertCircle, Loader2, Lock, Mail } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -77,7 +78,7 @@ export const Login = () => {
   };
 
   return (
-    <Card className="w-full">
+    <Card className="w-full border-border/80 shadow-xl shadow-foreground/5">
       <CardHeader className="space-y-1 text-center">
         <CardTitle className="text-2xl">{t('signin')}</CardTitle>
         <CardDescription>
@@ -87,31 +88,42 @@ export const Login = () => {
       <form onSubmit={handleSubmit(onSubmit)}>
         <CardContent className="grid gap-4">
           {error && (
-            <div className="bg-destructive/15 text-destructive p-3 rounded-md text-sm text-center">
+            <div className="flex items-start gap-2 rounded-md border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive">
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
               {error}
             </div>
           )}
           <div className="grid gap-2">
             <Label htmlFor="email">{t('email')}</Label>
-            <Input
-              id="email"
-              type="email"
-              dir="ltr" // emails are always LTR
-              placeholder="admin@fawran.test"
-              {...register('email')}
-            />
+            <div className="relative">
+              <Mail className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                id="email"
+                type="email"
+                dir="ltr"
+                placeholder="admin@fawran.test"
+                className="ps-9"
+                autoComplete="email"
+                {...register('email')}
+              />
+            </div>
             {errors.email && (
               <p className="text-sm text-destructive">{errors.email.message}</p>
             )}
           </div>
           <div className="grid gap-2">
             <Label htmlFor="password">{t('password')}</Label>
-            <Input
-              id="password"
-              type="password"
-              dir="ltr" // passwords are LTR
-              {...register('password')}
-            />
+            <div className="relative">
+              <Lock className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                id="password"
+                type="password"
+                dir="ltr"
+                className="ps-9"
+                autoComplete="current-password"
+                {...register('password')}
+              />
+            </div>
             {errors.password && (
               <p className="text-sm text-destructive">{errors.password.message}</p>
             )}
@@ -119,6 +131,7 @@ export const Login = () => {
         </CardContent>
         <CardFooter>
           <Button className="w-full" type="submit" disabled={loading}>
+            {loading && <Loader2 className="h-4 w-4 animate-spin" />}
             {loading ? t('signing_in') : t('signin')}
           </Button>
         </CardFooter>

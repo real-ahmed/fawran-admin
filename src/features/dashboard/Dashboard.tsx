@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { fetchDashboardMetrics, fetchPendingApprovals } from '@/services/dashboardService';
 import { useTranslation } from 'react-i18next';
-import { useAppConfig } from '@/hooks/useAppConfig';
 import { useFormatters } from '@/hooks/useFormatters';
 import { Money } from '@/components/Money';
 import {
@@ -17,6 +16,7 @@ import {
 import { Doughnut, Bar } from 'react-chartjs-2';
 import {
   ShoppingCart, Store, Truck, DollarSign, Clock, CheckCircle, XCircle, Loader2, AlertTriangle,
+  RefreshCw,
 } from 'lucide-react';
 
 ChartJS.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend, Title);
@@ -24,20 +24,20 @@ ChartJS.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Le
 // ─── Stat Card ──────────────────────────────────────────────────────────────
 interface StatCardProps {
   title: string;
-  value: string | number;
-  sub?: string;
+  value: React.ReactNode;
+  sub?: React.ReactNode;
   icon: React.ReactNode;
-  color: string;
+  tone: string;
 }
 
-const StatCard = ({ title, value, sub, icon, color }: StatCardProps) => (
-  <div className="bg-card border border-border rounded-xl p-5 flex items-start gap-4 hover:shadow-md transition-shadow">
-    <div className={`p-3 rounded-lg ${color}`}>
+const StatCard = ({ title, value, sub, icon, tone }: StatCardProps) => (
+  <div className="group flex min-h-[124px] items-start gap-4 rounded-lg border border-border bg-card p-5 shadow-sm transition-shadow hover:shadow-md">
+    <div className={`rounded-md p-3 ${tone}`}>
       {icon}
     </div>
     <div className="flex-1 min-w-0">
       <p className="text-sm text-muted-foreground truncate">{title}</p>
-      <p className="text-2xl font-bold text-foreground mt-0.5">{value}</p>
+      <p className="mt-1 text-2xl font-bold text-foreground">{value}</p>
       {sub && <p className="text-xs text-muted-foreground mt-1">{sub}</p>}
     </div>
   </div>
@@ -47,22 +47,25 @@ const StatCard = ({ title, value, sub, icon, color }: StatCardProps) => (
 const PendingList = ({ title, items, icon }: { title: string; items: { id: number; name: string }[]; icon: React.ReactNode }) => {
   const { t } = useTranslation();
   return (
-  <div className="bg-card border border-border rounded-xl p-5">
+  <div className="rounded-lg border border-border bg-card p-5 shadow-sm">
     <div className="flex items-center gap-2 mb-4">
       {icon}
       <h3 className="font-semibold text-foreground">{title}</h3>
-      <span className="ms-auto bg-primary/10 text-primary text-xs font-medium px-2 py-0.5 rounded-full">
+      <span className="ms-auto rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
         {items.length}
       </span>
     </div>
     {items.length === 0 ? (
-      <p className="text-sm text-muted-foreground text-center py-4">{t('no_pending_items')}</p>
+      <div className="rounded-md border border-dashed border-border bg-muted/40 py-5 text-center">
+        <CheckCircle className="mx-auto mb-2 h-5 w-5 text-primary" />
+        <p className="text-sm text-muted-foreground">{t('no_pending_items')}</p>
+      </div>
     ) : (
       <ul className="space-y-2">
         {items.map((item) => (
-          <li key={item.id} className="flex items-center gap-2 text-sm text-foreground border-b border-border pb-2 last:border-0 last:pb-0">
+          <li key={item.id} className="flex items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground">
             <AlertTriangle className="h-3.5 w-3.5 text-amber-500 shrink-0" />
-            {item.name}
+            <span className="truncate">{item.name}</span>
           </li>
         ))}
       </ul>
@@ -76,7 +79,13 @@ export const Dashboard = () => {
   const { t } = useTranslation();
   const { formatNumber } = useFormatters();
 
-  const { data: metrics, isLoading: metricsLoading } = useQuery({
+  const {
+    data: metrics,
+    isLoading: metricsLoading,
+    isError: metricsError,
+    refetch: refetchMetrics,
+    isFetching: metricsFetching,
+  } = useQuery({
     queryKey: ['dashboard-metrics'],
     queryFn: fetchDashboardMetrics,
     refetchInterval: 60_000, // auto-refresh every minute
@@ -144,56 +153,87 @@ export const Dashboard = () => {
 
   if (metricsLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="space-y-6">
+        <div className="h-16 rounded-lg bg-muted" />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {[0, 1, 2, 3].map((item) => (
+            <div key={item} className="h-[124px] animate-pulse rounded-lg border border-border bg-card" />
+          ))}
+        </div>
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <div className="h-80 animate-pulse rounded-lg border border-border bg-card" />
+          <div className="h-80 animate-pulse rounded-lg border border-border bg-card" />
+        </div>
+      </div>
+    );
+  }
+
+  if (metricsError) {
+    return (
+      <div className="flex min-h-[360px] items-center justify-center">
+        <div className="max-w-md rounded-lg border border-border bg-card p-6 text-center shadow-sm">
+          <AlertTriangle className="mx-auto mb-3 h-8 w-8 text-amber-500" />
+          <h1 className="text-lg font-semibold text-foreground">{t('dashboard')}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{t('save_failed')}</p>
+          <button
+            type="button"
+            className="mt-4 inline-flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+            onClick={() => refetchMetrics()}
+          >
+            <RefreshCw className="h-4 w-4" />
+            {t('retry')}
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">{t('dashboard')}</h1>
-        <p className="text-muted-foreground text-sm mt-1">{t('dashboard_subtitle', 'Overview of your platform')}</p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">{t('dashboard')}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{t('dashboard_subtitle', 'Overview of your platform')}</p>
+        </div>
+        <div className="flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground shadow-sm">
+          <span className="h-2 w-2 rounded-full bg-primary" />
+          {metricsFetching ? t('refreshing') : t('live')}
+        </div>
       </div>
 
-      {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <StatCard
           title={t('total_orders')}
           value={formatNumber(metrics?.orders.total ?? 0)}
           sub={`${formatNumber(metrics?.orders.pending ?? 0)} ${t('pending')}`}
           icon={<ShoppingCart className="h-5 w-5 text-blue-600" />}
-          color="bg-blue-50"
+          tone="bg-blue-50"
         />
         <StatCard
           title={t('total_revenue')}
           value={<Money amount={metrics?.revenue.total_revenue ?? 0} />}
           sub={<><span>{t('balance')}: </span><Money amount={metrics?.revenue.current_balance ?? 0} /></>}
           icon={<DollarSign className="h-5 w-5 text-emerald-600" />}
-          color="bg-emerald-50"
+          tone="bg-emerald-50"
         />
         <StatCard
           title={t('vendors')}
           value={formatNumber(metrics?.vendors.total ?? 0)}
           sub={`${formatNumber(metrics?.vendors.active ?? 0)} ${t('active')}`}
           icon={<Store className="h-5 w-5 text-primary" />}
-          color="bg-primary/10"
+          tone="bg-primary/10"
         />
         <StatCard
           title={t('couriers')}
           value={formatNumber(metrics?.couriers.total ?? 0)}
           sub={`${formatNumber(metrics?.couriers.online ?? 0)} ${t('online')}`}
           icon={<Truck className="h-5 w-5 text-amber-600" />}
-          color="bg-amber-50"
+          tone="bg-amber-50"
         />
       </div>
 
-      {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Orders Donut */}
-        <div className="bg-card border border-border rounded-xl p-5">
+        <div className="rounded-lg border border-border bg-card p-5 shadow-sm">
           <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">
             <ShoppingCart className="h-4 w-4 text-primary" />
             {t('order_status_breakdown')}
@@ -203,8 +243,7 @@ export const Dashboard = () => {
           </div>
         </div>
 
-        {/* Couriers Bar */}
-        <div className="bg-card border border-border rounded-xl p-5">
+        <div className="rounded-lg border border-border bg-card p-5 shadow-sm">
           <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">
             <Truck className="h-4 w-4 text-primary" />
             {t('couriers_overview')}
@@ -215,7 +254,6 @@ export const Dashboard = () => {
         </div>
       </div>
 
-      {/* Order Status Detail Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
           { label: t('pending'), value: formatNumber(metrics?.orders.pending), icon: <Clock className="h-4 w-4" />, color: 'text-amber-600 bg-amber-50' },
@@ -223,7 +261,7 @@ export const Dashboard = () => {
           { label: t('delivered'), value: formatNumber(metrics?.orders.delivered), icon: <CheckCircle className="h-4 w-4" />, color: 'text-emerald-600 bg-emerald-50' },
           { label: t('cancelled'), value: formatNumber(metrics?.orders.cancelled), icon: <XCircle className="h-4 w-4" />, color: 'text-red-500 bg-red-50' },
         ].map(({ label, value, icon, color }) => (
-          <div key={label} className="bg-card border border-border rounded-xl p-4 text-center">
+          <div key={label} className="rounded-lg border border-border bg-card p-4 text-center shadow-sm">
             <div className={`inline-flex items-center justify-center p-2 rounded-full mb-2 ${color}`}>
               {icon}
             </div>
@@ -233,7 +271,6 @@ export const Dashboard = () => {
         ))}
       </div>
 
-      {/* Pending Approvals */}
       <div>
         <h2 className="font-semibold text-foreground mb-3 flex items-center gap-2">
           <AlertTriangle className="h-4 w-4 text-amber-500" />

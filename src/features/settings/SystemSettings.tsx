@@ -17,6 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { parseLocalizedText } from '@/utils/localizedText';
+import { resolveStorageAssetUrl } from '@/utils/assets';
 
 // ─── Schema ──────────────────────────────────────────────────────────────────
 const settingsSchema = z.object({
@@ -80,7 +81,7 @@ const SettingField = ({ id, label, hint, placeholder, type = 'text', disabled, p
     <Label htmlFor={id} className="text-sm font-medium">{label}</Label>
     {previewUrl && (
       <div className="mb-1.5">
-        <img src={previewUrl} alt={label} className="h-14 w-auto object-contain rounded border border-border bg-muted/20 p-1" />
+        <img src={previewUrl} alt={label} className="h-14 w-auto rounded-md border border-border bg-muted/20 object-contain p-1" />
       </div>
     )}
     <Input
@@ -90,7 +91,7 @@ const SettingField = ({ id, label, hint, placeholder, type = 'text', disabled, p
       disabled={disabled}
       dir="ltr"
       accept={type === 'file' ? 'image/*' : undefined}
-      className={type === 'file' ? 'max-w-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer pt-1.5' : 'max-w-sm'}
+      className={type === 'file' ? 'max-w-md cursor-pointer pt-1.5 file:mr-4 file:rounded-md file:border-0 file:bg-primary/10 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-primary hover:file:bg-primary/20' : 'max-w-md'}
       {...registration(id as keyof SettingsForm)}
     />
     {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
@@ -112,7 +113,7 @@ const SettingSelect = ({ id, label, hint, disabled, options, registration }: Sel
     <select
       id={id}
       disabled={disabled}
-      className="flex h-9 w-full max-w-sm rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+      className="flex h-10 w-full max-w-md rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
       {...registration(id as keyof SettingsForm)}
     >
       {options.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
@@ -129,7 +130,7 @@ interface SectionProps {
 }
 
 const SettingsSection = ({ title, description, children }: SectionProps) => (
-  <div className="bg-card border border-border rounded-xl p-6 space-y-5">
+  <div className="space-y-5 rounded-lg border border-border bg-card p-5 shadow-sm sm:p-6">
     <div className="border-b border-border pb-4">
       <h2 className="text-base font-semibold text-foreground">{title}</h2>
       {description && <p className="text-sm text-muted-foreground mt-0.5">{description}</p>}
@@ -237,15 +238,6 @@ export const SystemSettings = () => {
 
   const onSubmit = (data: SettingsForm) => mutation.mutate(data);
 
-  const getImageUrl = (path?: string) => {
-    if (!path) return undefined;
-    if (path.startsWith('http') || path.startsWith('data:')) return path;
-    const baseUrl = import.meta.env.VITE_API_BASE_URL?.replace(/\/api\/v1\/?$/, '') || 'http://localhost:8000';
-    // Handle paths that might be inside a storage directory depending on backend config
-    const prefix = path.startsWith('/storage') || path.startsWith('storage') ? '' : '/storage';
-    return `${baseUrl}${prefix}${path.startsWith('/') ? path : `/${path}`}`;
-  };
-
   // Show unauthorized state if 403
   if (isError) {
     return (
@@ -264,7 +256,7 @@ export const SystemSettings = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
+      <div className="sticky top-0 z-10 -mx-4 flex flex-wrap items-center justify-between gap-3 border-b border-border bg-muted/95 px-4 py-4 backdrop-blur sm:-mx-6 sm:px-6">
         <div>
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
             <Settings className="h-6 w-6 text-primary" />
@@ -326,28 +318,28 @@ export const SystemSettings = () => {
                 id="app_logo"
                 label={t('settings_app_logo')}
                 type="file"
-                previewUrl={getImageUrl(settings?.app_logo)}
+                previewUrl={resolveStorageAssetUrl(settings?.app_logo)}
                 registration={register}
               />
               <SettingField
                 id="app_logo_white"
                 label={t('settings_app_logo_white')}
                 type="file"
-                previewUrl={getImageUrl(settings?.app_logo_white)}
+                previewUrl={resolveStorageAssetUrl(settings?.app_logo_white)}
                 registration={register}
               />
               <SettingField
                 id="app_icon"
                 label={t('settings_app_icon')}
                 type="file"
-                previewUrl={getImageUrl(settings?.app_icon)}
+                previewUrl={resolveStorageAssetUrl(settings?.app_icon)}
                 registration={register}
               />
               <SettingField
                 id="favicon"
                 label={t('settings_favicon')}
                 type="file"
-                previewUrl={getImageUrl(settings?.favicon)}
+                previewUrl={resolveStorageAssetUrl(settings?.favicon)}
                 registration={register}
               />
               <SettingField

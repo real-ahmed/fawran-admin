@@ -1,10 +1,14 @@
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import apiClient from "@/config/axios";
 import { useTranslation } from "react-i18next";
 import { getLocalizedText } from "@/utils/localizedText";
+import { resolveStorageAssetUrl } from "@/utils/assets";
 
 interface AppConfig {
   app_name: string;
+  app_logo?: string;
+  app_logo_white?: string;
   app_icon: string;
   favicon: string;
   currency: string;
@@ -26,9 +30,35 @@ export const useAppConfig = () => {
     return getLocalizedText(query.data?.app_name, i18n.language, fallback);
   };
 
+  const appName = getLocalizedAppName();
+  const appLogoUrl = resolveStorageAssetUrl(query.data?.app_logo);
+  const appLogoWhiteUrl = resolveStorageAssetUrl(query.data?.app_logo_white);
+  const appIconUrl = resolveStorageAssetUrl(query.data?.app_icon);
+  const faviconUrl = resolveStorageAssetUrl(query.data?.favicon);
+
+  useEffect(() => {
+    document.title = appName;
+
+    if (!faviconUrl) return;
+
+    const existingFavicon = document.querySelector<HTMLLinkElement>("link[rel='icon']");
+    const favicon = existingFavicon || document.createElement("link");
+
+    favicon.rel = "icon";
+    favicon.href = faviconUrl;
+
+    if (!existingFavicon) {
+      document.head.appendChild(favicon);
+    }
+  }, [appName, faviconUrl]);
+
   return {
     ...query,
-    appName: getLocalizedAppName(),
+    appName,
+    appLogoUrl,
+    appLogoWhiteUrl,
+    appIconUrl,
+    faviconUrl,
     currency: query.data?.currency ?? "EGP",
   };
 };
