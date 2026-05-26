@@ -11,7 +11,6 @@ import { AlertCircle, Loader2, Lock, Mail } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 
 export const Login = () => {
@@ -78,64 +77,68 @@ export const Login = () => {
   };
 
   return (
-    <Card className="w-full border-border/80 shadow-xl shadow-foreground/5">
-      <CardHeader className="space-y-1 text-center">
-        <CardTitle className="text-2xl">{t('signin')}</CardTitle>
-        <CardDescription>
+    <div className="w-full">
+      <div className="mb-10 lg:text-start text-center">
+        <h2 className="text-3xl font-bold tracking-tight text-foreground">{t('signin')}</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
           {t('signin_desc')}
-        </CardDescription>
-      </CardHeader>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <CardContent className="grid gap-4">
-          {error && (
-            <div className="flex items-start gap-2 rounded-md border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive">
-              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-              {error}
-            </div>
+        </p>
+      </div>
+
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        {error && (
+          <div className="flex items-center gap-3 rounded-xl border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive shadow-sm animate-in fade-in zoom-in-95">
+            <AlertCircle className="h-5 w-5 shrink-0" />
+            <p className="font-medium">{error}</p>
+          </div>
+        )}
+
+        <div className="space-y-2">
+          <Label htmlFor="email" className="text-sm font-medium">{t('email')}</Label>
+          <div className="relative group">
+            <Mail className="pointer-events-none absolute start-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
+            <Input
+              id="email"
+              type="email"
+              dir="ltr"
+              placeholder="admin@fawran.test"
+              className="ps-11 h-12 bg-muted/40 focus:bg-background transition-colors rounded-xl border-border/60 hover:border-border"
+              autoComplete="email"
+              {...register('email')}
+            />
+          </div>
+          {errors.email && (
+            <p className="text-sm font-medium text-destructive mt-1.5">{errors.email.message}</p>
           )}
-          <div className="grid gap-2">
-            <Label htmlFor="email">{t('email')}</Label>
-            <div className="relative">
-              <Mail className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                id="email"
-                type="email"
-                dir="ltr"
-                placeholder="admin@fawran.test"
-                className="ps-9"
-                autoComplete="email"
-                {...register('email')}
-              />
-            </div>
-            {errors.email && (
-              <p className="text-sm text-destructive">{errors.email.message}</p>
-            )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="password" className="text-sm font-medium">{t('password')}</Label>
+          <div className="relative group">
+            <Lock className="pointer-events-none absolute start-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
+            <Input
+              id="password"
+              type="password"
+              dir="ltr"
+              className="ps-11 h-12 bg-muted/40 focus:bg-background transition-colors rounded-xl border-border/60 hover:border-border"
+              autoComplete="current-password"
+              {...register('password')}
+            />
           </div>
-          <div className="grid gap-2">
-            <Label htmlFor="password">{t('password')}</Label>
-            <div className="relative">
-              <Lock className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                id="password"
-                type="password"
-                dir="ltr"
-                className="ps-9"
-                autoComplete="current-password"
-                {...register('password')}
-              />
-            </div>
-            {errors.password && (
-              <p className="text-sm text-destructive">{errors.password.message}</p>
-            )}
-          </div>
-        </CardContent>
-        <CardFooter>
-          <Button className="w-full" type="submit" disabled={loading}>
-            {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-            {loading ? t('signing_in') : t('signin')}
-          </Button>
-        </CardFooter>
+          {errors.password && (
+            <p className="text-sm font-medium text-destructive mt-1.5">{errors.password.message}</p>
+          )}
+        </div>
+
+        <Button 
+          type="submit" 
+          disabled={loading} 
+          className="w-full h-12 mt-2 text-base font-semibold rounded-xl shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all hover:-translate-y-0.5 active:translate-y-0"
+        >
+          {loading && <Loader2 className="me-2 h-5 w-5 animate-spin" />}
+          {loading ? t('signing_in') : t('signin')}
+        </Button>
       </form>
-    </Card>
+    </div>
   );
 };

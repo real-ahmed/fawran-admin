@@ -4,12 +4,14 @@ import { Button } from '@/components/ui/button';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useAuthStore } from '@/store/authStore';
 import apiClient from '@/config/axios';
-import { Languages } from 'lucide-react';
+import { Languages, ShieldCheck } from 'lucide-react';
 
 export const AuthLayout = () => {
   const { t, i18n } = useTranslation();
   const { appName, appLogoWhiteUrl, appLogoUrl, appIconUrl } = useAppConfig();
   const token = useAuthStore((state) => state.token);
+  
+  // Prefer white logo for the dark primary left panel
   const authLogoUrl = appLogoWhiteUrl || appLogoUrl || appIconUrl;
 
   const toggleLanguage = () => {
@@ -24,35 +26,65 @@ export const AuthLayout = () => {
   };
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-muted px-4 py-10">
-      <div className="absolute inset-x-0 top-0 h-56 bg-primary" />
-      <div className="absolute start-4 top-4 z-10">
-        <Button
-          variant="secondary"
-          onClick={toggleLanguage}
-          className="gap-2 bg-primary-foreground/95 text-sm font-medium text-primary hover:bg-primary-foreground"
-        >
-          <Languages className="h-4 w-4" />
-          {i18n.language.startsWith('en') ? 'العربية' : 'English'}
-        </Button>
-      </div>
-      <div className="relative z-10 w-full max-w-md">
-        <div className="mb-6 text-center text-primary-foreground">
-          {authLogoUrl ? (
-            <img
-              src={authLogoUrl}
-              alt={appName}
-              className="mx-auto mb-4 h-16 max-w-52 object-contain"
-            />
-          ) : (
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-lg bg-primary-foreground/15 text-xl font-bold ring-1 ring-primary-foreground/25">
-              {appName.slice(0, 1).toUpperCase()}
-            </div>
-          )}
-          <h1 className="text-3xl font-bold">{appName}</h1>
-          <p className="mt-2 text-sm text-primary-foreground/75">{t('signin_desc')}</p>
+    <div className="flex min-h-screen bg-background text-foreground">
+      {/* Left panel - Branding (Hidden on mobile, 50% on lg) */}
+      <div className="hidden lg:flex w-1/2 flex-col justify-between bg-primary relative overflow-hidden p-12 text-primary-foreground shadow-2xl z-20">
+        {/* Decorative background shapes */}
+        <div className="absolute inset-0 z-0 opacity-20 pointer-events-none">
+           <div className="absolute -start-10 -top-10 h-64 w-64 rounded-full bg-white blur-[80px]"></div>
+           <div className="absolute -bottom-20 -end-20 h-96 w-96 rounded-full bg-white blur-[100px]"></div>
         </div>
-        <Outlet />
+
+        <div className="relative z-10 flex items-center gap-3">
+          {authLogoUrl ? (
+            <img src={authLogoUrl} alt={appName} className="h-10 object-contain drop-shadow-md" />
+          ) : (
+            <ShieldCheck className="h-10 w-10" />
+          )}
+          <span className="text-xl font-bold tracking-tight">{appName}</span>
+        </div>
+
+        <div className="relative z-10 max-w-md">
+          <h1 className="text-4xl font-bold leading-tight mb-6">
+            {t('welcome_desc', { appName: appName })}
+          </h1>
+          <p className="text-lg opacity-85 leading-relaxed">
+            {t('dashboard_subtitle')}
+          </p>
+        </div>
+
+        <div className="relative z-10 text-sm opacity-60 font-medium tracking-wide">
+          &copy; {new Date().getFullYear()} {appName}. All rights reserved.
+        </div>
+      </div>
+
+      {/* Right panel - Form (100% on mobile, 50% on lg) */}
+      <div className="flex w-full lg:w-1/2 flex-col items-center justify-center p-8 relative bg-card z-10">
+        
+        {/* Language switcher top right */}
+        <div className="absolute top-6 end-6">
+          <Button
+            variant="ghost"
+            onClick={toggleLanguage}
+            className="gap-2 text-muted-foreground hover:text-foreground font-medium rounded-full"
+          >
+            <Languages className="h-4 w-4" />
+            {i18n.language.startsWith('en') ? 'العربية' : 'English'}
+          </Button>
+        </div>
+
+        <div className="w-full max-w-sm animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out">
+          {/* Mobile branding */}
+          <div className="lg:hidden flex items-center gap-3 justify-center mb-10">
+            {appLogoUrl || authLogoUrl ? (
+              <img src={appLogoUrl || authLogoUrl || ''} alt={appName} className="h-14 object-contain drop-shadow-sm" />
+            ) : (
+              <ShieldCheck className="h-12 w-12 text-primary" />
+            )}
+          </div>
+          
+          <Outlet />
+        </div>
       </div>
     </div>
   );
