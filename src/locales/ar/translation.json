@@ -1,6 +1,7 @@
 {
   "welcome": "مرحباً بك في لوحة التحكم",
   "dashboard": "لوحة التحكم",
+  "dashboard_subtitle": "نظرة عامة على المنصة",
   "admins": "المشرفين",
   "vendors": "المتاجر",
   "couriers": "المندوبين",
@@ -17,5 +18,21 @@
   "login_failed": "فشل تسجيل الدخول. يرجى التحقق من بيانات الاعتماد الخاصة بك.",
   "invalid_email": "عنوان بريد إلكتروني غير صالح",
   "invalid_password": "يجب أن تتكون كلمة المرور من 6 أحرف على الأقل",
-  "welcome_desc": "مرحباً بك في لوحة تحكم {{appName}}."
+  "welcome_desc": "مرحباً بك في لوحة تحكم {{appName}}.",
+  "total_orders": "إجمالي الطلبات",
+  "total_revenue": "إجمالي الإيرادات",
+  "balance": "الرصيد",
+  "active": "نشط",
+  "online": "متصل",
+  "pending": "قيد الانتظار",
+  "processing": "قيد المعالجة",
+  "delivered": "تم التسليم",
+  "cancelled": "ملغي",
+  "order_status_breakdown": "تفاصيل حالة الطلبات",
+  "couriers_overview": "نظرة عامة على المندوبين",
+  "pending_approvals": "الموافقات المعلقة",
+  "brands": "العلامات التجارية",
+  "categories": "الفئات",
+  "pending_approval": "بانتظار الموافقة",
+  "orders": "الطلبات"
 }

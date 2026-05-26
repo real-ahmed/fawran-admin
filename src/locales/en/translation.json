@@ -1,6 +1,7 @@
 {
   "welcome": "Welcome to Admin Dashboard",
   "dashboard": "Dashboard",
+  "dashboard_subtitle": "Overview of your platform",
   "admins": "Admins",
   "vendors": "Vendors",
   "couriers": "Couriers",
@@ -17,5 +18,21 @@
   "login_failed": "Login failed. Please check your credentials.",
   "invalid_email": "Invalid email address",
   "invalid_password": "Password must be at least 6 characters",
-  "welcome_desc": "Welcome to {{appName}} Dashboard."
+  "welcome_desc": "Welcome to {{appName}} Dashboard.",
+  "total_orders": "Total Orders",
+  "total_revenue": "Total Revenue",
+  "balance": "Balance",
+  "active": "Active",
+  "online": "Online",
+  "pending": "Pending",
+  "processing": "Processing",
+  "delivered": "Delivered",
+  "cancelled": "Cancelled",
+  "order_status_breakdown": "Order Status Breakdown",
+  "couriers_overview": "Couriers Overview",
+  "pending_approvals": "Pending Approvals",
+  "brands": "Brands",
+  "categories": "Categories",
+  "pending_approval": "Pending Approval",
+  "orders": "Orders"
 }
