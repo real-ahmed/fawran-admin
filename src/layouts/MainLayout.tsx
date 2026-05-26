@@ -56,10 +56,10 @@ const navigationItems: NavigationItem[] = [
 
 const getNavLinkClassName = ({ isActive }: { isActive: boolean }) =>
   [
-    'flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors',
+    'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all duration-200 group',
     isActive
-      ? 'bg-primary text-primary-foreground shadow-sm'
-      : 'text-muted-foreground hover:bg-secondary/70 hover:text-foreground',
+      ? 'bg-primary/10 text-primary shadow-sm'
+      : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
   ].join(' ');
 
 export const MainLayout = () => {
@@ -68,9 +68,11 @@ export const MainLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t, i18n } = useTranslation();
-  const { appName, appLogoWhiteUrl, appLogoUrl, appIconUrl } = useAppConfig();
+  const { appName, appLogoUrl, appLogoWhiteUrl, appIconUrl } = useAppConfig();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const sidebarLogoUrl = appLogoWhiteUrl || appLogoUrl || appIconUrl;
+  
+  // Prefer normal logo on light sidebar background
+  const sidebarLogoUrl = appLogoUrl || appLogoWhiteUrl || appIconUrl;
 
   const currentPage = navigationItems
     .filter((item) => location.pathname === item.to || location.pathname.startsWith(`${item.to}/`))
@@ -95,28 +97,27 @@ export const MainLayout = () => {
 
   const sidebarContent = (
     <>
-      <div className="flex h-16 items-center justify-between border-b border-border bg-primary px-4 text-primary-foreground">
+      <div className="flex h-[72px] items-center justify-between border-b border-border/40 bg-card px-5">
         <div className="flex min-w-0 items-center gap-3">
           {sidebarLogoUrl ? (
             <img
               src={sidebarLogoUrl}
               alt={appName}
-              className="h-10 max-w-36 shrink-0 object-contain"
+              className="h-8 max-w-36 shrink-0 object-contain drop-shadow-sm"
             />
           ) : (
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary-foreground/15 text-sm font-bold ring-1 ring-primary-foreground/20">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground shadow-sm shadow-primary/20">
               {appName.slice(0, 1).toUpperCase()}
             </div>
           )}
           <div className="min-w-0">
-            <h1 className="truncate text-lg font-bold">{appName}</h1>
-            <p className="text-xs text-primary-foreground/75">{t('overview')}</p>
+            <h1 className="truncate text-lg font-bold tracking-tight text-foreground">{appName}</h1>
           </div>
         </div>
         <Button
           variant="ghost"
           size="icon"
-          className="text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground lg:hidden"
+          className="text-muted-foreground hover:bg-secondary lg:hidden"
           onClick={closeSidebar}
           aria-label="Close navigation"
         >
@@ -124,14 +125,18 @@ export const MainLayout = () => {
         </Button>
       </div>
 
-      <nav className="flex-1 overflow-y-auto px-3 py-4">
-        <ul className="space-y-1">
+      <nav className="flex-1 overflow-y-auto px-4 py-6">
+        <ul className="space-y-1.5">
           {navigationItems.map(({ to, labelKey, icon: Icon, permission }) => {
             const item = (
               <li key={to}>
                 <NavLink to={to} className={getNavLinkClassName} onClick={closeSidebar}>
-                  <Icon className="h-4 w-4" />
-                  <span className="truncate">{t(labelKey)}</span>
+                  {({ isActive }) => (
+                    <>
+                      <Icon className={['h-[18px] w-[18px] transition-colors', isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'].join(' ')} />
+                      <span className="truncate">{t(labelKey)}</span>
+                    </>
+                  )}
                 </NavLink>
               </li>
             );
@@ -147,18 +152,22 @@ export const MainLayout = () => {
         </ul>
       </nav>
 
-      <div className="border-t border-border p-4">
-        <div className="mb-3 flex items-center gap-3 rounded-lg bg-muted/70 p-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary/10 text-sm font-semibold text-primary">
+      <div className="border-t border-border/40 p-5 bg-card/50">
+        <div className="mb-4 flex items-center gap-3 rounded-2xl border border-border/50 bg-secondary/40 p-3 shadow-sm">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-sm font-bold text-primary ring-1 ring-primary/20">
             {(user?.name || user?.email || 'A').slice(0, 1).toUpperCase()}
           </div>
-          <div className="min-w-0">
-            <p className="truncate text-sm font-medium text-foreground">{user?.name || t('admins')}</p>
-            <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-semibold text-foreground">{user?.name || t('admins')}</p>
+            <p className="truncate text-xs font-medium text-muted-foreground">{user?.email}</p>
           </div>
         </div>
-        <Button variant="outline" className="w-full justify-start gap-2" onClick={handleLogout}>
-          <LogOut className="h-4 w-4" />
+        <Button 
+          variant="outline" 
+          className="w-full justify-start gap-2.5 rounded-xl border-border/60 text-muted-foreground hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 transition-all duration-200 shadow-sm" 
+          onClick={handleLogout}
+        >
+          <LogOut className="h-[18px] w-[18px]" />
           {t('logout')}
         </Button>
       </div>
@@ -166,60 +175,70 @@ export const MainLayout = () => {
   );
 
   return (
-    <div className="flex h-screen overflow-hidden bg-muted/40">
+    <div className="flex h-screen overflow-hidden bg-slate-50/50 dark:bg-background">
       {isSidebarOpen && (
         <button
-          className="fixed inset-0 z-30 bg-foreground/30 lg:hidden"
+          className="fixed inset-0 z-30 bg-foreground/30 backdrop-blur-sm lg:hidden transition-all"
           onClick={closeSidebar}
           aria-label="Close navigation overlay"
         />
       )}
 
-      <aside className="hidden w-64 shrink-0 flex-col border-r border-border bg-card lg:flex">
+      <aside className="hidden w-[280px] shrink-0 flex-col border-e border-border/60 bg-card shadow-sm lg:flex z-20">
         {sidebarContent}
       </aside>
 
       <aside
         className={[
-          'fixed inset-y-0 start-0 z-40 flex w-72 max-w-[82vw] flex-col border-e border-border bg-card shadow-xl transition-transform duration-200 lg:hidden',
+          'fixed inset-y-0 start-0 z-40 flex w-[280px] max-w-[85vw] flex-col border-e border-border/60 bg-card shadow-2xl transition-transform duration-300 ease-in-out lg:hidden',
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full rtl:translate-x-full',
         ].join(' ')}
       >
         {sidebarContent}
       </aside>
 
-      <main className="flex-1 flex flex-col overflow-hidden">
-        <header className="flex h-16 items-center justify-between gap-3 border-b border-border bg-card px-4 lg:px-6">
+      <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+        <header className="flex h-[72px] shrink-0 items-center justify-between gap-3 border-b border-border/40 bg-background/80 px-5 lg:px-8 backdrop-blur-md sticky top-0 z-10">
           <div className="flex min-w-0 items-center gap-3">
             <Button
-              variant="ghost"
+              variant="outline"
               size="icon"
-              className="lg:hidden"
+              className="lg:hidden rounded-lg border-border/60"
               onClick={() => setIsSidebarOpen(true)}
               aria-label="Open navigation"
             >
-              <Menu className="h-5 w-5" />
+              <Menu className="h-5 w-5 text-foreground" />
             </Button>
-            <div className="min-w-0">
-              <h2 className="truncate text-base font-semibold text-foreground sm:text-lg">
+            <div className="min-w-0 hidden sm:block">
+              <h2 className="truncate text-xl font-bold tracking-tight text-foreground">
                 {t(currentPage?.labelKey || 'overview')}
               </h2>
-              <p className="hidden text-xs text-muted-foreground sm:block">
-                {location.pathname}
-              </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={toggleLanguage} className="gap-2 text-sm font-medium">
+          <div className="flex items-center gap-3">
+            <Button 
+              variant="outline" 
+              onClick={toggleLanguage} 
+              className="gap-2 text-sm font-semibold rounded-full border-border/60 shadow-sm"
+            >
               <Languages className="h-4 w-4" />
               {i18n.language.startsWith('en') ? 'العربية' : 'English'}
             </Button>
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6">
-          <Outlet />
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+          <div className="mx-auto max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out">
+            {/* For mobile screens, show the title here since we hide it in header */}
+            <div className="sm:hidden mb-6">
+              <h2 className="text-2xl font-bold tracking-tight text-foreground">
+                {t(currentPage?.labelKey || 'overview')}
+              </h2>
+            </div>
+            
+            <Outlet />
+          </div>
         </div>
       </main>
     </div>
