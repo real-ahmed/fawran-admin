@@ -4,6 +4,7 @@ import { MainLayout } from '../layouts/MainLayout';
 import { PrivateRoute } from './PrivateRoute';
 import { Login } from '../features/auth/Login';
 import { Dashboard } from '../features/dashboard/Dashboard';
+import { SystemSettings } from '../features/settings/SystemSettings';
 
 export const AppRoutes = () => {
   return (
@@ -18,6 +19,7 @@ export const AppRoutes = () => {
         <Route element={<MainLayout />}>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/settings" element={<SystemSettings />} />
           {/* We will add more routes here (Admins, Vendors, etc.) */}
         </Route>
       </Route>
