@@ -1,9 +1,9 @@
-import i18n from 'i18next';
-import { initReactI18next } from 'react-i18next';
-import LanguageDetector from 'i18next-browser-languagedetector';
+import i18n from "i18next";
+import { initReactI18next } from "react-i18next";
+import LanguageDetector from "i18next-browser-languagedetector";
 
-import enTranslations from '../locales/en/translation.json';
-import arTranslations from '../locales/ar/translation.json';
+import enTranslations from "../locales/en/translation.json";
+import arTranslations from "../locales/ar/translation.json";
 
 const resources = {
   en: {
@@ -19,7 +19,7 @@ i18n
   .use(initReactI18next)
   .init({
     resources,
-    fallbackLng: 'en',
+    fallbackLng: "ar",
     interpolation: {
       escapeValue: false, // react already safes from xss
     },
@@ -30,7 +30,7 @@ document.documentElement.dir = i18n.dir(i18n.language);
 document.documentElement.lang = i18n.language;
 
 // Handle RTL/LTR direction based on language
-i18n.on('languageChanged', (lng) => {
+i18n.on("languageChanged", (lng) => {
   document.documentElement.dir = i18n.dir(lng);
   document.documentElement.lang = lng;
 });
