@@ -4,14 +4,17 @@ import { AuthLayout } from '../layouts/AuthLayout';
 import { MainLayout } from '../layouts/MainLayout';
 import { PrivateRoute } from './PrivateRoute';
 import { Login } from '../features/auth/Login';
+import { useAppConfig } from '@/hooks/useAppConfig';
 
 // Placeholder for Dashboard
 const Dashboard = () => {
   const { t } = useTranslation();
+  const { appName } = useAppConfig();
+  
   return (
     <div className="p-4">
       <h1 className="text-2xl font-bold">{t('dashboard')}</h1>
-      <p>{t('welcome_desc')}</p>
+      <p>{t('welcome_desc', { appName })}</p>
     </div>
   );
 };

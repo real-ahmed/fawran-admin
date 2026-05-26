@@ -2,14 +2,23 @@ import { Outlet } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { useAppConfig } from '@/hooks/useAppConfig';
+import { useAuthStore } from '@/store/authStore';
+import apiClient from '@/config/axios';
 
 export const AuthLayout = () => {
   const { i18n } = useTranslation();
   const { appName } = useAppConfig();
+  const token = useAuthStore((state) => state.token);
 
   const toggleLanguage = () => {
     const nextLang = i18n.language.startsWith('en') ? 'ar' : 'en';
     i18n.changeLanguage(nextLang);
+    
+    if (token) {
+      apiClient.put('/admin/profile/settings', {
+        settings: [{ key: 'language', value: nextLang }]
+      }).catch(err => console.error('Failed to update language on backend', err));
+    }
   };
 
   return (

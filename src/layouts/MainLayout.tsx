@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { LogOut, LayoutDashboard, Users, Store, Truck, Package, Settings, CreditCard } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAppConfig } from '@/hooks/useAppConfig';
+import apiClient from '@/config/axios';
 
 export const MainLayout = () => {
   const logout = useAuthStore((state) => state.logout);
@@ -19,6 +20,11 @@ export const MainLayout = () => {
   const toggleLanguage = () => {
     const nextLang = i18n.language.startsWith('en') ? 'ar' : 'en';
     i18n.changeLanguage(nextLang);
+    
+    // Save to backend settings
+    apiClient.put('/admin/profile/settings', {
+      settings: [{ key: 'language', value: nextLang }]
+    }).catch(err => console.error('Failed to update language on backend', err));
   };
 
   return (
