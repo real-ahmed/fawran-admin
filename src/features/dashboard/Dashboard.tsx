@@ -2,6 +2,8 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchDashboardMetrics, fetchPendingApprovals } from '@/services/dashboardService';
 import { useTranslation } from 'react-i18next';
 import { useAppConfig } from '@/hooks/useAppConfig';
+import { useFormatters } from '@/hooks/useFormatters';
+import { Money } from '@/components/Money';
 import {
   Chart as ChartJS,
   ArcElement,
@@ -69,7 +71,7 @@ const PendingList = ({ title, items, icon }: { title: string; items: { id: numbe
 // ─── Dashboard Page ──────────────────────────────────────────────────────────
 export const Dashboard = () => {
   const { t } = useTranslation();
-  const { currency } = useAppConfig();
+  const { formatNumber } = useFormatters();
 
   const { data: metrics, isLoading: metricsLoading } = useQuery({
     queryKey: ['dashboard-metrics'],
@@ -157,29 +159,29 @@ export const Dashboard = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <StatCard
           title={t('total_orders')}
-          value={metrics?.orders.total ?? 0}
-          sub={`${metrics?.orders.pending ?? 0} ${t('pending')}`}
+          value={formatNumber(metrics?.orders.total ?? 0)}
+          sub={`${formatNumber(metrics?.orders.pending ?? 0)} ${t('pending')}`}
           icon={<ShoppingCart className="h-5 w-5 text-blue-600" />}
           color="bg-blue-50"
         />
         <StatCard
           title={t('total_revenue')}
-          value={`${Number(metrics?.revenue.total_revenue ?? 0).toLocaleString()} ${currency}`}
-          sub={`${t('balance')}: ${Number(metrics?.revenue.current_balance ?? 0).toLocaleString()} ${currency}`}
+          value={<Money amount={metrics?.revenue.total_revenue ?? 0} />}
+          sub={<><span>{t('balance')}: </span><Money amount={metrics?.revenue.current_balance ?? 0} /></>}
           icon={<DollarSign className="h-5 w-5 text-emerald-600" />}
           color="bg-emerald-50"
         />
         <StatCard
           title={t('vendors')}
-          value={metrics?.vendors.total ?? 0}
-          sub={`${metrics?.vendors.active ?? 0} ${t('active')}`}
+          value={formatNumber(metrics?.vendors.total ?? 0)}
+          sub={`${formatNumber(metrics?.vendors.active ?? 0)} ${t('active')}`}
           icon={<Store className="h-5 w-5 text-primary" />}
           color="bg-primary/10"
         />
         <StatCard
           title={t('couriers')}
-          value={metrics?.couriers.total ?? 0}
-          sub={`${metrics?.couriers.online ?? 0} ${t('online')}`}
+          value={formatNumber(metrics?.couriers.total ?? 0)}
+          sub={`${formatNumber(metrics?.couriers.online ?? 0)} ${t('online')}`}
           icon={<Truck className="h-5 w-5 text-amber-600" />}
           color="bg-amber-50"
         />
@@ -213,10 +215,10 @@ export const Dashboard = () => {
       {/* Order Status Detail Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: t('pending'), value: metrics?.orders.pending, icon: <Clock className="h-4 w-4" />, color: 'text-amber-600 bg-amber-50' },
-          { label: t('processing'), value: metrics?.orders.processing, icon: <Loader2 className="h-4 w-4" />, color: 'text-blue-600 bg-blue-50' },
-          { label: t('delivered'), value: metrics?.orders.delivered, icon: <CheckCircle className="h-4 w-4" />, color: 'text-emerald-600 bg-emerald-50' },
-          { label: t('cancelled'), value: metrics?.orders.cancelled, icon: <XCircle className="h-4 w-4" />, color: 'text-red-500 bg-red-50' },
+          { label: t('pending'), value: formatNumber(metrics?.orders.pending), icon: <Clock className="h-4 w-4" />, color: 'text-amber-600 bg-amber-50' },
+          { label: t('processing'), value: formatNumber(metrics?.orders.processing), icon: <Loader2 className="h-4 w-4" />, color: 'text-blue-600 bg-blue-50' },
+          { label: t('delivered'), value: formatNumber(metrics?.orders.delivered), icon: <CheckCircle className="h-4 w-4" />, color: 'text-emerald-600 bg-emerald-50' },
+          { label: t('cancelled'), value: formatNumber(metrics?.orders.cancelled), icon: <XCircle className="h-4 w-4" />, color: 'text-red-500 bg-red-50' },
         ].map(({ label, value, icon, color }) => (
           <div key={label} className="bg-card border border-border rounded-xl p-4 text-center">
             <div className={`inline-flex items-center justify-center p-2 rounded-full mb-2 ${color}`}>
