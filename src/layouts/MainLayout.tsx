@@ -5,6 +5,8 @@ import { LogOut, LayoutDashboard, Users, Store, Truck, Package, Settings, Credit
 import { useTranslation } from 'react-i18next';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import apiClient from '@/config/axios';
+import { Can } from '@/components/Can';
+import { PERMISSIONS } from '@/config/permissions';
 
 export const MainLayout = () => {
   const logout = useAuthStore((state) => state.logout);
@@ -42,42 +44,54 @@ export const MainLayout = () => {
                 {t('dashboard')}
               </Link>
             </li>
-            <li>
-              <Link to="/admins" className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md hover:bg-secondary text-muted-foreground">
-                <Users className="h-4 w-4" />
-                {t('admins')}
-              </Link>
-            </li>
-            <li>
-              <Link to="/vendors" className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md hover:bg-secondary text-muted-foreground">
-                <Store className="h-4 w-4" />
-                {t('vendors')}
-              </Link>
-            </li>
-            <li>
-              <Link to="/couriers" className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md hover:bg-secondary text-muted-foreground">
-                <Truck className="h-4 w-4" />
-                {t('couriers')}
-              </Link>
-            </li>
-            <li>
-              <Link to="/catalog" className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md hover:bg-secondary text-muted-foreground">
-                <Package className="h-4 w-4" />
-                {t('catalog')}
-              </Link>
-            </li>
-            <li>
-              <Link to="/finances" className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md hover:bg-secondary text-muted-foreground">
-                <CreditCard className="h-4 w-4" />
-                {t('finances')}
-              </Link>
-            </li>
-            <li>
-              <Link to="/settings" className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md hover:bg-secondary text-muted-foreground">
-                <Settings className="h-4 w-4" />
-                {t('settings')}
-              </Link>
-            </li>
+            <Can permission={PERMISSIONS.VIEW_ADMINS}>
+              <li>
+                <Link to="/admins" className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md hover:bg-secondary text-muted-foreground">
+                  <Users className="h-4 w-4" />
+                  {t('admins')}
+                </Link>
+              </li>
+            </Can>
+            <Can permission={PERMISSIONS.VIEW_VENDORS}>
+              <li>
+                <Link to="/vendors" className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md hover:bg-secondary text-muted-foreground">
+                  <Store className="h-4 w-4" />
+                  {t('vendors')}
+                </Link>
+              </li>
+            </Can>
+            <Can permission={PERMISSIONS.VIEW_COURIERS}>
+              <li>
+                <Link to="/couriers" className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md hover:bg-secondary text-muted-foreground">
+                  <Truck className="h-4 w-4" />
+                  {t('couriers')}
+                </Link>
+              </li>
+            </Can>
+            <Can permission={[PERMISSIONS.VIEW_CATEGORIES, PERMISSIONS.VIEW_BRANDS, PERMISSIONS.VIEW_MASTER_PRODUCTS]}>
+              <li>
+                <Link to="/catalog" className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md hover:bg-secondary text-muted-foreground">
+                  <Package className="h-4 w-4" />
+                  {t('catalog')}
+                </Link>
+              </li>
+            </Can>
+            <Can permission={PERMISSIONS.VIEW_FINANCES}>
+              <li>
+                <Link to="/finances" className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md hover:bg-secondary text-muted-foreground">
+                  <CreditCard className="h-4 w-4" />
+                  {t('finances')}
+                </Link>
+              </li>
+            </Can>
+            <Can permission={PERMISSIONS.MANAGE_SYSTEM_SETTINGS}>
+              <li>
+                <Link to="/settings" className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md hover:bg-secondary text-muted-foreground">
+                  <Settings className="h-4 w-4" />
+                  {t('settings')}
+                </Link>
+              </li>
+            </Can>
           </ul>
         </nav>
         <div className="p-4 border-t border-border">

@@ -29,8 +29,9 @@ Hello AI Agent! Your task is to build a modern, highly responsive, and premium A
 
 All endpoints are prefixed with the base URL: `YOUR_BASE_URL/api/v1`
 
-### 0. Public App Configuration
+### 0. Public App Configuration & Permissions
 - **`GET /public/app-config`** - Retrieve essential public UI/Branding settings (e.g., `app_name`, `app_icon`, `favicon`). Hit this on launch to dynamically style the app before login!
+- **`GET /public/admin-permissions`** - Retrieve all available system admin permissions grouped by module, including a frontend-friendly `key` (e.g., `view_delivery_zones`). Use this to generate a master permissions constant or type definition for your RBAC system.
 
 ### 1. Authentication & Profile
 - **`POST /admin/login`** - Authenticate admin and receive JWT.

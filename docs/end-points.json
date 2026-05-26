@@ -10,7 +10,7 @@
     ],
     "info": {
         "name": "Laravel API Documentation",
-        "_postman_id": "acdba13a-6dc3-4897-be3a-89b6808eda64",
+        "_postman_id": "67becfc0-df55-451a-9aaa-e7e026103025",
         "description": "",
         "schema": "https:\/\/schema.getpostman.com\/json\/collection\/v2.1.0\/collection.json"
     },
@@ -524,7 +524,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"search\":\"b\",\"approval_status\":\"pending\"}"
+                            "raw": "{\"search\":\"b\",\"approval_status\":\"approved\"}"
                         },
                         "description": "Get a paginated list of all categories with their hierarchy and icon details."
                     },
@@ -572,7 +572,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"name\":[\"b\"],\"is_active\":false,\"parent_category_id\":16,\"icon_class\":\"n\"}"
+                            "raw": "{\"name\":[\"b\"],\"is_active\":true,\"parent_category_id\":16,\"icon_class\":\"n\"}"
                         },
                         "description": "Store a newly created category, including its parent relation and icon."
                     },
@@ -1291,7 +1291,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"search\":\"b\",\"is_active\":false,\"per_page\":22}"
+                            "raw": "{\"search\":\"b\",\"is_active\":true,\"per_page\":22}"
                         },
                         "description": ""
                     },
@@ -1428,7 +1428,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"name\":{\"en\":\"b\",\"ar\":\"n\"},\"is_active\":true,\"coordinates\":[{\"lat\":-90,\"lng\":-179}]}"
+                            "raw": "{\"name\":{\"en\":\"b\",\"ar\":\"n\"},\"is_active\":false,\"coordinates\":[{\"lat\":-90,\"lng\":-179}]}"
                         },
                         "description": ""
                     },
@@ -1559,7 +1559,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"is_active\":true,\"intensity\":\"medium\"}"
+                            "raw": "{\"is_active\":false,\"intensity\":\"high\"}"
                         },
                         "description": "Get a paginated list of all hot zones with optional filters."
                     },
@@ -1607,7 +1607,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"center_latitude\":\"30.0444\",\"center_longitude\":\"31.2357\",\"radius_meters\":5000,\"intensity\":\"high\",\"is_active\":true,\"starts_at\":\"2026-05-26T13:22:54\",\"name\":{\"en\":\"Downtown Cairo\"}}"
+                            "raw": "{\"center_latitude\":\"30.0444\",\"center_longitude\":\"31.2357\",\"radius_meters\":5000,\"intensity\":\"high\",\"is_active\":false,\"starts_at\":\"2026-05-26T15:17:13\",\"name\":{\"en\":\"Downtown Cairo\"}}"
                         },
                         "description": "Create a new manual hot zone with optional name."
                     },
@@ -1696,7 +1696,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"center_latitude\":-89,\"center_longitude\":-179,\"radius_meters\":90,\"intensity\":\"medium\",\"is_active\":true,\"starts_at\":\"2026-05-26T13:22:54\"}"
+                            "raw": "{\"center_latitude\":-89,\"center_longitude\":-179,\"radius_meters\":90,\"intensity\":\"low\",\"is_active\":true,\"starts_at\":\"2026-05-26T15:17:13\"}"
                         },
                         "description": "Modify an existing hot zone and its extension tables."
                     },
@@ -2098,7 +2098,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"status\":\"cancelled\",\"order_type\":\"in_store\",\"date_from\":\"2026-05-26T13:22:54\",\"date_to\":\"2052-06-18\",\"customer_id\":16,\"vendor_id\":16}"
+                            "raw": "{\"status\":\"out_for_delivery\",\"order_type\":\"delivery\",\"date_from\":\"2026-05-26T15:17:13\",\"date_to\":\"2052-06-18\",\"customer_id\":16,\"vendor_id\":16}"
                         },
                         "description": "Get a paginated list of all platform orders with optional filters."
                     },
@@ -2245,7 +2245,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"status\":\"rejected\"}"
+                            "raw": "{\"status\":\"transferred\"}"
                         },
                         "description": "Get a paginated list of all payout requests with optional status filter."
                     },
@@ -2372,7 +2372,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"status\":\"rejected\"}"
+                            "raw": "{\"status\":\"processed\"}"
                         },
                         "description": "Get a paginated list of all refund requests with optional status filter."
                     },
@@ -2777,7 +2777,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"settlement_type\":\"store\",\"status\":\"disputed\"}"
+                            "raw": "{\"settlement_type\":\"store\",\"status\":\"completed\"}"
                         },
                         "description": "Get a paginated list of all settlements with optional filters."
                     },
@@ -2968,7 +2968,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"name\":\"b\",\"email\":\"zbailey@example.net\",\"is_active\":true,\"roles\":[\"architecto\"]}"
+                            "raw": "{\"name\":\"b\",\"email\":\"zbailey@example.net\",\"is_active\":false,\"roles\":[\"architecto\"]}"
                         },
                         "description": "Create a new system admin and assign roles."
                     },
@@ -3057,7 +3057,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"name\":\"b\",\"email\":\"zbailey@example.net\",\"password\":\"-0pBNvYgxw\",\"is_active\":false,\"roles\":[\"architecto\"]}"
+                            "raw": "{\"name\":\"b\",\"email\":\"zbailey@example.net\",\"password\":\"-0pBNvYgxw\",\"is_active\":true,\"roles\":[\"architecto\"]}"
                         },
                         "description": "Update an admin's info, active status, and sync roles."
                     },
@@ -3274,7 +3274,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"owner_id\":\"architecto\",\"name\":{\"en\":\"b\",\"ar\":\"n\"},\"email\":\"ashly64@example.com\",\"phone\":\"vdljnikhwaykcmyu\",\"formatted_address\":\"w\",\"type\":\"restaurant\",\"latitude\":-89,\"longitude\":-180,\"is_active\":true,\"status\":\"busy\"}"
+                            "raw": "{\"owner_id\":\"architecto\",\"name\":{\"en\":\"b\",\"ar\":\"n\"},\"email\":\"ashly64@example.com\",\"phone\":\"vdljnikhwaykcmyu\",\"formatted_address\":\"w\",\"type\":\"pharmacy\",\"latitude\":-89,\"longitude\":-180,\"is_active\":false,\"status\":\"offline\"}"
                         },
                         "description": "Create a new vendor in the system."
                     },
@@ -3363,7 +3363,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"name\":{\"en\":\"b\",\"ar\":\"n\"},\"email\":\"ashly64@example.com\",\"phone\":\"vdljnikhwaykcmyu\",\"formatted_address\":\"w\",\"type\":\"grocery\",\"latitude\":-89,\"longitude\":-180,\"is_active\":true,\"status\":\"online\"}"
+                            "raw": "{\"name\":{\"en\":\"b\",\"ar\":\"n\"},\"email\":\"ashly64@example.com\",\"phone\":\"vdljnikhwaykcmyu\",\"formatted_address\":\"w\",\"type\":\"pharmacy\",\"latitude\":-89,\"longitude\":-180,\"is_active\":false,\"status\":\"online\"}"
                         },
                         "description": "Update an existing vendor's details or status."
                     },
@@ -3449,6 +3449,51 @@
                             ],
                             "code": 200,
                             "body": "{\"success\":true,\"message\":null,\"data\":{\"app_icon\":\"\",\"app_name\":\"{\\\"ar\\\": \\\"\\u0641\\u0648\\u0631\\u0627\\\", \\\"en\\\": \\\"Fawran\\\"}\",\"favicon\":\"\"},\"errors\":null}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Get All Permissions",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/public\/admin-permissions",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/public\/admin-permissions"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Retrieves all system permissions mapped with a key for the frontend."
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "access-control-allow-origin",
+                                    "value": "*"
+                                }
+                            ],
+                            "code": 200,
+                            "body": "{\"success\":true,\"message\":null,\"data\":{\"delivery zones\":[{\"id\":1,\"name\":\"view delivery zones\",\"key\":\"VIEW_DELIVERY_ZONES\"},{\"id\":2,\"name\":\"create delivery zones\",\"key\":\"CREATE_DELIVERY_ZONES\"},{\"id\":3,\"name\":\"update delivery zones\",\"key\":\"UPDATE_DELIVERY_ZONES\"},{\"id\":4,\"name\":\"delete delivery zones\",\"key\":\"DELETE_DELIVERY_ZONES\"}],\"roles\":[{\"id\":5,\"name\":\"view roles\",\"key\":\"VIEW_ROLES\"},{\"id\":6,\"name\":\"create roles\",\"key\":\"CREATE_ROLES\"},{\"id\":7,\"name\":\"update roles\",\"key\":\"UPDATE_ROLES\"},{\"id\":8,\"name\":\"delete roles\",\"key\":\"DELETE_ROLES\"}],\"vendors\":[{\"id\":9,\"name\":\"view vendors\",\"key\":\"VIEW_VENDORS\"},{\"id\":10,\"name\":\"create vendors\",\"key\":\"CREATE_VENDORS\"},{\"id\":11,\"name\":\"update vendors\",\"key\":\"UPDATE_VENDORS\"},{\"id\":12,\"name\":\"delete vendors\",\"key\":\"DELETE_VENDORS\"}],\"admins\":[{\"id\":13,\"name\":\"view admins\",\"key\":\"VIEW_ADMINS\"},{\"id\":14,\"name\":\"create admins\",\"key\":\"CREATE_ADMINS\"},{\"id\":15,\"name\":\"update admins\",\"key\":\"UPDATE_ADMINS\"},{\"id\":16,\"name\":\"delete admins\",\"key\":\"DELETE_ADMINS\"}]},\"errors\":null}",
                             "name": ""
                         }
                     ]
