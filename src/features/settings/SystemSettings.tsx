@@ -78,11 +78,11 @@ interface FieldProps {
 }
 
 const SettingField = ({ id, label, hint, placeholder, type = 'text', disabled, previewUrl, registration }: FieldProps) => (
-  <div className="grid gap-1.5">
+  <div className="grid gap-2">
     <Label htmlFor={id} className="text-sm font-medium">{label}</Label>
     {previewUrl && (
-      <div className="mb-1.5">
-        <img src={previewUrl} alt={label} className="h-14 w-auto rounded-md border border-border bg-muted/20 object-contain p-1" />
+      <div className="mb-2">
+        <img src={previewUrl} alt={label} className="h-16 w-auto rounded-lg border border-border bg-muted/30 object-contain p-1.5 shadow-sm" />
       </div>
     )}
     <Input
@@ -92,10 +92,12 @@ const SettingField = ({ id, label, hint, placeholder, type = 'text', disabled, p
       disabled={disabled}
       dir="ltr"
       accept={type === 'file' ? 'image/*' : undefined}
-      className={type === 'file' ? 'max-w-md cursor-pointer pt-1.5 file:mr-4 file:rounded-md file:border-0 file:bg-primary/10 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-primary hover:file:bg-primary/20' : 'max-w-md'}
+      className={type === 'file' 
+        ? 'w-full max-w-md cursor-pointer pt-2 file:mr-4 file:rounded-md file:border-0 file:bg-primary/10 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-primary hover:file:bg-primary/20 transition-all rounded-xl border-border/60' 
+        : 'w-full max-w-md h-11 bg-muted/40 focus:bg-background transition-colors rounded-xl border-border/60 hover:border-border'}
       {...registration(id as keyof SettingsForm)}
     />
-    {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
+    {hint && <p className="text-xs font-medium text-muted-foreground">{hint}</p>}
   </div>
 );
 
@@ -109,17 +111,17 @@ interface SelectProps {
 }
 
 const SettingSelect = ({ id, label, hint, disabled, options, registration }: SelectProps) => (
-  <div className="grid gap-1.5">
+  <div className="grid gap-2">
     <Label htmlFor={id} className="text-sm font-medium">{label}</Label>
     <select
       id={id}
       disabled={disabled}
-      className="flex h-10 w-full max-w-md rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+      className="flex h-11 w-full max-w-md rounded-xl border border-border/60 bg-muted/40 px-3 py-2 text-sm shadow-sm transition-colors hover:border-border focus-visible:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
       {...registration(id as keyof SettingsForm)}
     >
       {options.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
     </select>
-    {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
+    {hint && <p className="text-xs font-medium text-muted-foreground">{hint}</p>}
   </div>
 );
 
@@ -131,12 +133,14 @@ interface SectionProps {
 }
 
 const SettingsSection = ({ title, description, children }: SectionProps) => (
-  <div className="space-y-5 rounded-lg border border-border bg-card p-5 shadow-sm sm:p-6">
-    <div className="border-b border-border pb-4">
-      <h2 className="text-base font-semibold text-foreground">{title}</h2>
-      {description && <p className="text-sm text-muted-foreground mt-0.5">{description}</p>}
+  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 py-8 border-b border-border/40 last:border-0 first:pt-0 last:pb-0">
+    <div className="lg:col-span-4 space-y-1.5">
+      <h2 className="text-base font-semibold text-foreground tracking-tight">{title}</h2>
+      {description && <p className="text-sm text-muted-foreground leading-relaxed pe-4">{description}</p>}
     </div>
-    <div className="space-y-4">{children}</div>
+    <div className="lg:col-span-8">
+      {children}
+    </div>
   </div>
 );
 
@@ -260,30 +264,15 @@ export const SystemSettings = () => {
       <PageHeader
         title={t('system_settings')}
         description={t('system_settings_desc')}
-      >
-        <Can permission={PERMISSIONS.MANAGE_SYSTEM_SETTINGS}>
-          <Button
-            onClick={handleSubmit(onSubmit)}
-            disabled={mutation.isPending || isLoading}
-            className="gap-2"
-          >
-            {mutation.isPending ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Save className="h-4 w-4" />
-            )}
-            {mutation.isPending ? t('saving') : t('save_settings')}
-          </Button>
-        </Can>
-      </PageHeader>
+      />
 
       {isLoading ? (
         <div className="flex items-center justify-center h-48">
           <Loader2 className="h-7 w-7 animate-spin text-primary" />
         </div>
       ) : (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-          
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 pb-10">
+          <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-sm sm:p-10 divide-y divide-border/40">
           {/* General Settings */}
           <SettingsSection
             title={t('settings_general')}
@@ -529,9 +518,26 @@ export const SystemSettings = () => {
                 placeholder="5"
                 registration={register}
               />
-            </div>
-          </SettingsSection>
+              </div>
+            </SettingsSection>
+          </div>
 
+          <div className="flex justify-end pt-4">
+            <Can permission={PERMISSIONS.MANAGE_SYSTEM_SETTINGS}>
+              <Button
+                type="submit"
+                disabled={mutation.isPending || isLoading}
+                className="gap-2 h-12 px-8 rounded-xl shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all hover:-translate-y-0.5 active:translate-y-0 text-base font-semibold w-full sm:w-auto"
+              >
+                {mutation.isPending ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <Save className="h-5 w-5" />
+                )}
+                {mutation.isPending ? t('saving') : t('save_settings')}
+              </Button>
+            </Can>
+          </div>
         </form>
       )}
     </div>
