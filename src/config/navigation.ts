@@ -3,6 +3,7 @@ import {
   LayoutDashboard,
   Package,
   Settings,
+  Shield,
   Store,
   Truck,
   Users,
@@ -21,7 +22,29 @@ export interface NavigationItem {
 
 export const NAVIGATION_ITEMS: NavigationItem[] = [
   { to: '/dashboard', labelKey: 'dashboard', icon: LayoutDashboard },
-  { to: '/admins', labelKey: 'admins', icon: Users, permission: PERMISSIONS.VIEW_ADMINS },
+  {
+    to: '/admins-group',
+    labelKey: 'admins',
+    icon: Users,
+    permission: [
+      PERMISSIONS.VIEW_ADMINS,
+      PERMISSIONS.VIEW_ROLES,
+    ],
+    children: [
+      {
+        to: '/admins',
+        labelKey: 'admins',
+        icon: Users,
+        permission: PERMISSIONS.VIEW_ADMINS,
+      },
+      {
+        to: '/roles',
+        labelKey: 'roles',
+        icon: Shield,
+        permission: PERMISSIONS.VIEW_ROLES,
+      },
+    ],
+  },
   { to: '/vendors', labelKey: 'vendors', icon: Store, permission: PERMISSIONS.VIEW_VENDORS },
   { to: '/couriers', labelKey: 'couriers', icon: Truck, permission: PERMISSIONS.VIEW_COURIERS },
   {

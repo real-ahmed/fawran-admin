@@ -50,11 +50,11 @@ export const ImageUploader = ({ id, registration, previewUrl, className = '' }: 
 
       {currentPreview ? (
         <div className="relative w-full h-full flex items-center justify-center p-3">
-           <img src={currentPreview} alt="Preview" className="max-h-full max-w-full object-contain rounded-md drop-shadow-sm" />
+           <img src={currentPreview} alt={t('image_preview')} className="max-h-full max-w-full object-contain rounded-md drop-shadow-sm" />
            <div className="absolute inset-0 bg-background/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
              <div className="bg-background text-foreground px-4 py-2 rounded-xl font-semibold flex items-center gap-2 shadow-lg border border-border/50">
                 <UploadCloud className="w-4 h-4 text-primary" />
-                {t('change_image', 'Change Image')}
+                {t('change_image')}
              </div>
            </div>
         </div>
@@ -63,8 +63,8 @@ export const ImageUploader = ({ id, registration, previewUrl, className = '' }: 
           <div className="w-12 h-12 mb-3 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 group-hover:bg-primary/20 transition-all">
             <ImagePlus className="w-6 h-6" />
           </div>
-          <p className="text-sm font-semibold text-foreground">{t('upload_image', 'Click to upload image')}</p>
-          <p className="text-xs font-medium text-muted-foreground mt-1">PNG, JPG, SVG</p>
+          <p className="text-sm font-semibold text-foreground">{t('upload_image')}</p>
+          <p className="text-xs font-medium text-muted-foreground mt-1">{t('image_formats')}</p>
         </div>
       )}
     </div>

@@ -16,8 +16,17 @@ const Dashboard = lazy(() =>
 const AdminsList = lazy(() =>
   import('../features/admins/AdminsList').then((module) => ({ default: module.AdminsList }))
 );
+const AdminFormPage = lazy(() =>
+  import('../features/admins/AdminFormPage').then((module) => ({ default: module.AdminFormPage }))
+);
 const VendorsList = lazy(() =>
   import('../features/vendors/VendorsList').then((module) => ({ default: module.VendorsList }))
+);
+const RolesList = lazy(() =>
+  import('../features/roles/RolesList').then((module) => ({ default: module.RolesList }))
+);
+const RoleFormPage = lazy(() =>
+  import('../features/roles/RoleFormPage').then((module) => ({ default: module.RoleFormPage }))
 );
 const SystemSettings = lazy(() =>
   import('../features/settings/SystemSettings').then((module) => ({ default: module.SystemSettings }))
@@ -45,6 +54,13 @@ export const AppRoutes = () => {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route element={<PrivateRoute requiredPermission={PERMISSIONS.VIEW_ADMINS} />}>
               <Route path="/admins" element={<AdminsList />} />
+              <Route path="/admins/create" element={<AdminFormPage />} />
+              <Route path="/admins/:id/edit" element={<AdminFormPage />} />
+            </Route>
+            <Route element={<PrivateRoute requiredPermission={PERMISSIONS.VIEW_ROLES} />}>
+              <Route path="/roles" element={<RolesList />} />
+              <Route path="/roles/create" element={<RoleFormPage />} />
+              <Route path="/roles/:id/edit" element={<RoleFormPage />} />
             </Route>
             <Route element={<PrivateRoute requiredPermission={PERMISSIONS.VIEW_VENDORS} />}>
               <Route path="/vendors" element={<VendorsList />} />

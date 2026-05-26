@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Plus, Users, Search, ShieldCheck } from 'lucide-react';
+import { Plus, Shield, Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useInView } from 'react-intersection-observer';
@@ -7,18 +7,25 @@ import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { PageHeader } from '@/components/PageHeader';
-import { fetchAdmins, deleteAdmin, Admin } from '@/services/adminService';
+import { fetchRoles, deleteRole, Role } from '@/services/roleService';
 import { Can } from '@/components/Can';
 import { PERMISSIONS } from '@/config/permissions';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { parseApiError } from '@/utils/api';
 
-export const AdminsList = () => {
-  const { t } = useTranslation();
+export const RolesList = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
   const [deletingId, setDeletingId] = useState<number | null>(null);
@@ -32,8 +39,8 @@ export const AdminsList = () => {
     hasNextPage,
     isFetchingNextPage
   } = useInfiniteQuery({
-    queryKey: ['admins', searchTerm],
-    queryFn: ({ pageParam = 1 }) => fetchAdmins({ search: searchTerm, page: pageParam }),
+    queryKey: ['roles', searchTerm],
+    queryFn: ({ pageParam = 1 }) => fetchRoles({ search: searchTerm, page: pageParam }),
     getNextPageParam: (lastPage) => {
       if (lastPage.meta.current_page < lastPage.meta.last_page) {
         return lastPage.meta.current_page + 1;
@@ -50,9 +57,9 @@ export const AdminsList = () => {
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const deleteMutation = useMutation({
-    mutationFn: deleteAdmin,
+    mutationFn: deleteRole,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admins'] });
+      queryClient.invalidateQueries({ queryKey: ['roles'] });
       toast.success(t('deleted'));
       setDeletingId(null);
     },
@@ -62,27 +69,27 @@ export const AdminsList = () => {
     },
   });
 
-  const handleEdit = (admin: Admin) => {
-    navigate(`/admins/${admin.id}/edit`);
+  const handleEdit = (role: Role) => {
+    navigate(`/roles/${role.id}/edit`);
   };
 
   const handleCreate = () => {
-    navigate('/admins/create');
+    navigate('/roles/create');
   };
 
   const handleDelete = (id: number) => {
     setDeletingId(id);
   };
 
-  const admins = data?.pages.flatMap((page) => page.data) || [];
+  const roles = data?.pages.flatMap((page) => page.data) || [];
 
   return (
     <div className="space-y-6">
-      <PageHeader title={t('admins')} description={t('admins_desc')}>
-        <Can permission={PERMISSIONS.CREATE_ADMINS}>
+      <PageHeader title={t('roles')} description={t('roles_desc')}>
+        <Can permission={PERMISSIONS.MANAGE_ROLES}>
           <Button onClick={handleCreate} className="gap-2">
             <Plus className="h-4 w-4" />
-            {t('add_admin')}
+            {t('add_role')}
           </Button>
         </Can>
       </PageHeader>
@@ -93,17 +100,11 @@ export const AdminsList = () => {
             <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               className="ps-9"
-              placeholder={t('search_admins')}
+              placeholder={t('search')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <Can permission={PERMISSIONS.VIEW_ROLES}>
-            <Button variant="outline" className="gap-2" onClick={() => navigate('/roles')}>
-              <ShieldCheck className="h-4 w-4" />
-              {t('roles')}
-            </Button>
-          </Can>
         </div>
       </div>
 
@@ -112,77 +113,70 @@ export const AdminsList = () => {
           <Table>
             <TableHeader className="bg-muted/50">
               <TableRow>
-                <TableHead>{t('admin_name')}</TableHead>
-                <TableHead>{t('admin_email')}</TableHead>
-                <TableHead>{t('admin_roles')}</TableHead>
-                <TableHead>{t('admin_status')}</TableHead>
+                <TableHead>{t('role_name')}</TableHead>
+                <TableHead>{t('permissions')}</TableHead>
                 <TableHead className="w-[100px] text-end">{t('actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
                     {t('loading')}
                   </TableCell>
                 </TableRow>
-              ) : admins.length === 0 ? (
+              ) : roles.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-32 text-center">
+                  <TableCell colSpan={3} className="h-32 text-center">
                     <div className="flex flex-col items-center justify-center text-muted-foreground">
-                      <Users className="h-8 w-8 mb-2 opacity-20" />
-                      <p>{t('admins_empty_title')}</p>
+                      <Shield className="h-8 w-8 mb-2 opacity-20" />
+                      <p>{t('roles_empty_title')}</p>
                     </div>
                   </TableCell>
                 </TableRow>
               ) : (
-                admins.map((admin) => (
-                  <TableRow key={admin.id}>
+                roles.map((role) => (
+                  <TableRow key={role.id}>
                     <TableCell className="font-medium text-foreground">
-                      {admin.name}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {admin.email}
+                      {role.name}
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
-                        {admin.roles?.map((roleName, index) => (
+                        {role.permissions?.slice(0, 3).map((p) => (
                           <span
-                            key={index}
+                            key={p.id}
                             className="inline-flex items-center rounded-md bg-secondary px-2 py-1 text-xs font-medium text-secondary-foreground"
                           >
-                            {roleName}
+                            {p.name}
                           </span>
                         ))}
+                        {(role.permissions?.length || 0) > 3 && (
+                          <span className="inline-flex items-center rounded-md bg-muted px-2 py-1 text-xs font-medium text-muted-foreground">
+                            +{(role.permissions?.length || 0) - 3}
+                          </span>
+                        )}
                       </div>
                     </TableCell>
-                    <TableCell>
-                      <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${admin.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
-                        {admin.is_active ? t('active') : t('inactive')}
-                      </span>
-                    </TableCell>
                     <TableCell className="text-end">
-                      <Can permission={PERMISSIONS.UPDATE_ADMINS}>
+                      <Can permission={PERMISSIONS.MANAGE_ROLES}>
                         <div className="flex items-center justify-end gap-2">
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleEdit(admin)}
+                            onClick={() => handleEdit(role)}
                           >
                             {t('edit')}
                           </Button>
-                          {admin.id !== 1 && !admin.roles?.includes('Super Admin') && (
-                            <Can permission={PERMISSIONS.DELETE_ADMINS}>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                                onClick={() => handleDelete(admin.id)}
-                                disabled={deleteMutation.isPending}
-                              >
-                                {t('delete')}
-                              </Button>
-                            </Can>
+                          {role.name !== 'Super Admin' && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                              onClick={() => handleDelete(role.id)}
+                              disabled={deleteMutation.isPending}
+                            >
+                              {t('delete')}
+                            </Button>
                           )}
                         </div>
                       </Can>
@@ -192,7 +186,7 @@ export const AdminsList = () => {
               )}
               {hasNextPage && (
                 <TableRow ref={ref}>
-                  <TableCell colSpan={5} className="text-center py-4 text-muted-foreground">
+                  <TableCell colSpan={3} className="text-center py-4 text-muted-foreground">
                     <Loader2 className="h-5 w-5 animate-spin mx-auto" />
                   </TableCell>
                 </TableRow>
@@ -207,8 +201,8 @@ export const AdminsList = () => {
         onClose={() => setDeletingId(null)}
         onConfirm={() => deletingId && deleteMutation.mutate(deletingId)}
         isLoading={deleteMutation.isPending}
-        title={t('delete_admin')}
-        description={t('delete_admin_desc')}
+        title={t('delete_role')}
+        description={t('delete_role_desc')}
       />
     </div>
   );
