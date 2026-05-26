@@ -1,10 +1,11 @@
 import { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Package, Store } from 'lucide-react';
 import { AuthLayout } from '../layouts/AuthLayout';
 import { MainLayout } from '../layouts/MainLayout';
 import { PrivateRoute } from './PrivateRoute';
 import { PERMISSIONS } from '@/config/permissions';
+import { PlaceholderPage } from '@/components/PlaceholderPage';
 
 const Login = lazy(() =>
   import('../features/auth/Login').then((module) => ({ default: module.Login }))
@@ -47,6 +48,55 @@ export const AppRoutes = () => {
             </Route>
             <Route element={<PrivateRoute requiredPermission={PERMISSIONS.VIEW_VENDORS} />}>
               <Route path="/vendors" element={<VendorsList />} />
+            </Route>
+            <Route
+              element={(
+                <PrivateRoute
+                  requiredPermission={[
+                    PERMISSIONS.VIEW_CATEGORIES,
+                    PERMISSIONS.VIEW_BRANDS,
+                    PERMISSIONS.VIEW_MASTER_PRODUCTS,
+                  ]}
+                />
+              )}
+            >
+              <Route path="/catalog" element={<Navigate to="/catalog/categories" replace />} />
+            </Route>
+            <Route element={<PrivateRoute requiredPermission={PERMISSIONS.VIEW_CATEGORIES} />}>
+              <Route
+                path="/catalog/categories"
+                element={(
+                  <PlaceholderPage
+                    titleKey="categories"
+                    descriptionKey="categories_placeholder_desc"
+                    icon={Package}
+                  />
+                )}
+              />
+            </Route>
+            <Route element={<PrivateRoute requiredPermission={PERMISSIONS.VIEW_BRANDS} />}>
+              <Route
+                path="/catalog/brands"
+                element={(
+                  <PlaceholderPage
+                    titleKey="brands"
+                    descriptionKey="brands_placeholder_desc"
+                    icon={Store}
+                  />
+                )}
+              />
+            </Route>
+            <Route element={<PrivateRoute requiredPermission={PERMISSIONS.VIEW_MASTER_PRODUCTS} />}>
+              <Route
+                path="/catalog/products"
+                element={(
+                  <PlaceholderPage
+                    titleKey="master_products"
+                    descriptionKey="master_products_placeholder_desc"
+                    icon={Package}
+                  />
+                )}
+              />
             </Route>
             <Route element={<PrivateRoute requiredPermission={PERMISSIONS.MANAGE_SYSTEM_SETTINGS} />}>
               <Route path="/settings" element={<SystemSettings />} />

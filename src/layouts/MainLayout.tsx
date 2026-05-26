@@ -65,8 +65,8 @@ export const MainLayout = () => {
           onOpenSidebar={() => setIsSidebarOpen(true)}
         />
 
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-          <div className="mx-auto max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out">
+        <div className="flex-1 overflow-y-auto p-4 md:p-6">
+          <div className="mx-auto w-full animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out">
             <div className="sm:hidden mb-6">
               <h2 className="text-2xl font-bold tracking-tight text-foreground">
                 {t(currentPage?.labelKey || 'overview')}

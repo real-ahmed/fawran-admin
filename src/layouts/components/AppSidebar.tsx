@@ -1,10 +1,11 @@
-import { NavLink } from 'react-router-dom';
-import { LogOut, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
+import { ChevronDown, LogOut, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Can } from '@/components/Can';
 import { BrandLogo } from '@/components/brand/BrandLogo';
-import { NAVIGATION_ITEMS } from '@/config/navigation';
+import { NAVIGATION_ITEMS, type NavigationItem } from '@/config/navigation';
 
 interface AppSidebarProps {
   appName: string;
@@ -25,8 +26,100 @@ const getNavLinkClassName = ({ isActive }: { isActive: boolean }) =>
       : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
   ].join(' ');
 
+const isNavigationItemActive = (pathname: string, item: NavigationItem) =>
+  pathname === item.to ||
+  pathname.startsWith(`${item.to}/`) ||
+  Boolean(item.children?.some((child) => isNavigationItemActive(pathname, child)));
+
 export const AppSidebar = ({ appName, logoUrl, user, onClose, onLogout }: AppSidebarProps) => {
   const { t } = useTranslation();
+  const { pathname } = useLocation();
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    const activeGroups = NAVIGATION_ITEMS.reduce<Record<string, boolean>>((acc, item) => {
+      if (item.children?.some((child) => isNavigationItemActive(pathname, child))) {
+        acc[item.to] = true;
+      }
+
+      return acc;
+    }, {});
+
+    setOpenGroups((current) => ({ ...current, ...activeGroups }));
+  }, [pathname]);
+
+  const toggleGroup = (to: string) => {
+    setOpenGroups((current) => ({ ...current, [to]: !current[to] }));
+  };
+
+  const renderNavigationItem = (item: NavigationItem) => {
+    const { to, labelKey, icon: Icon, permission, children } = item;
+    const isGroup = Boolean(children?.length);
+    const isActive = isNavigationItemActive(pathname, item);
+    const isOpen = openGroups[to] || isActive;
+
+    const content = isGroup ? (
+      <li key={to}>
+        <button
+          type="button"
+          className={[
+            'group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all duration-200',
+            isActive
+              ? 'bg-primary/10 text-primary shadow-sm'
+              : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
+          ].join(' ')}
+          onClick={() => toggleGroup(to)}
+          aria-expanded={isOpen}
+          aria-label={t('toggle_menu_group', { item: t(labelKey) })}
+        >
+          <Icon
+            className={[
+              'h-[18px] w-[18px] transition-colors',
+              isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground',
+            ].join(' ')}
+          />
+          <span className="min-w-0 flex-1 truncate text-start">{t(labelKey)}</span>
+          <ChevronDown
+            className={[
+              'h-4 w-4 shrink-0 transition-transform',
+              isOpen ? 'rotate-180' : 'rotate-0',
+            ].join(' ')}
+          />
+        </button>
+        {isOpen && (
+          <ul className="ms-5 mt-1.5 space-y-1 border-s border-border/60 ps-3">
+            {children?.map((child) => renderNavigationItem(child))}
+          </ul>
+        )}
+      </li>
+    ) : (
+      <li key={to}>
+        <NavLink to={to} className={getNavLinkClassName} onClick={onClose}>
+          {({ isActive: isLinkActive }) => (
+            <>
+              <Icon
+                className={[
+                  'h-[18px] w-[18px] transition-colors',
+                  isLinkActive
+                    ? 'text-primary'
+                    : 'text-muted-foreground group-hover:text-foreground',
+                ].join(' ')}
+              />
+              <span className="truncate">{t(labelKey)}</span>
+            </>
+          )}
+        </NavLink>
+      </li>
+    );
+
+    return permission ? (
+      <Can key={to} permission={permission}>
+        {content}
+      </Can>
+    ) : (
+      content
+    );
+  };
 
   return (
     <>
@@ -55,35 +148,7 @@ export const AppSidebar = ({ appName, logoUrl, user, onClose, onLogout }: AppSid
 
       <nav className="flex-1 overflow-y-auto px-4 py-6">
         <ul className="space-y-1.5">
-          {NAVIGATION_ITEMS.map(({ to, labelKey, icon: Icon, permission }) => {
-            const item = (
-              <li key={to}>
-                <NavLink to={to} className={getNavLinkClassName} onClick={onClose}>
-                  {({ isActive }) => (
-                    <>
-                      <Icon
-                        className={[
-                          'h-[18px] w-[18px] transition-colors',
-                          isActive
-                            ? 'text-primary'
-                            : 'text-muted-foreground group-hover:text-foreground',
-                        ].join(' ')}
-                      />
-                      <span className="truncate">{t(labelKey)}</span>
-                    </>
-                  )}
-                </NavLink>
-              </li>
-            );
-
-            return permission ? (
-              <Can key={to} permission={permission}>
-                {item}
-              </Can>
-            ) : (
-              item
-            );
-          })}
+          {NAVIGATION_ITEMS.map((item) => renderNavigationItem(item))}
         </ul>
       </nav>
 
