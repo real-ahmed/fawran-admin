@@ -34,5 +34,6 @@
   "brands": "العلامات التجارية",
   "categories": "الفئات",
   "pending_approval": "بانتظار الموافقة",
-  "orders": "الطلبات"
+  "orders": "الطلبات",
+  "no_pending_items": "لا توجد عناصر معلقة"
 }

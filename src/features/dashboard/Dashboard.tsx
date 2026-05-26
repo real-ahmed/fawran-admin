@@ -44,7 +44,9 @@ const StatCard = ({ title, value, sub, icon, color }: StatCardProps) => (
 );
 
 // ─── Pending Approvals ───────────────────────────────────────────────────────
-const PendingList = ({ title, items, icon }: { title: string; items: { id: number; name: string }[]; icon: React.ReactNode }) => (
+const PendingList = ({ title, items, icon }: { title: string; items: { id: number; name: string }[]; icon: React.ReactNode }) => {
+  const { t } = useTranslation();
+  return (
   <div className="bg-card border border-border rounded-xl p-5">
     <div className="flex items-center gap-2 mb-4">
       {icon}
@@ -54,7 +56,7 @@ const PendingList = ({ title, items, icon }: { title: string; items: { id: numbe
       </span>
     </div>
     {items.length === 0 ? (
-      <p className="text-sm text-muted-foreground text-center py-4">No pending items</p>
+      <p className="text-sm text-muted-foreground text-center py-4">{t('no_pending_items')}</p>
     ) : (
       <ul className="space-y-2">
         {items.map((item) => (
@@ -66,7 +68,8 @@ const PendingList = ({ title, items, icon }: { title: string; items: { id: numbe
       </ul>
     )}
   </div>
-);
+  );
+};
 
 // ─── Dashboard Page ──────────────────────────────────────────────────────────
 export const Dashboard = () => {

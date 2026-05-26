@@ -34,5 +34,6 @@
   "brands": "Brands",
   "categories": "Categories",
   "pending_approval": "Pending Approval",
-  "orders": "Orders"
+  "orders": "Orders",
+  "no_pending_items": "No pending items"
 }
