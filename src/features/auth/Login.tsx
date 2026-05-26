@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import apiClient from '@/config/axios';
 import { useAuthStore } from '@/store/authStore';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -60,12 +61,16 @@ export const Login = () => {
         const permissions = meResponse.data?.data?.permissions || meResponse.data?.permissions || [];
         setUser(userData, permissions);
         
+        toast.success(t('login_success') || 'Login successful');
         navigate('/dashboard');
       } else {
         setError(t('login_failed'));
+        toast.error(t('login_failed'));
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || t('login_failed'));
+      const errorMessage = err.response?.data?.message || t('login_failed');
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

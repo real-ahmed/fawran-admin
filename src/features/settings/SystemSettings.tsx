@@ -7,10 +7,11 @@ import { useState, useEffect } from 'react';
 import { fetchSystemSettings, updateSystemSettings } from '@/services/settingsService';
 import { Can } from '@/components/Can';
 import { PERMISSIONS } from '@/config/permissions';
-import { Loader2, Settings, Save, AlertTriangle, CheckCircle2, Lock } from 'lucide-react';
+import { Loader2, Settings, Save, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { toast } from 'sonner';
 
 // ─── Schema ──────────────────────────────────────────────────────────────────
 const settingsSchema = z.object({
@@ -150,7 +151,6 @@ const UnauthorizedSettings = () => {
 export const SystemSettings = () => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
   const { data: settings, isLoading, isError } = useQuery({
     queryKey: ['system-settings'],
@@ -233,12 +233,10 @@ export const SystemSettings = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['system-settings'] });
       queryClient.invalidateQueries({ queryKey: ['appConfig'] }); // refresh app config too
-      setSaveStatus('success');
-      setTimeout(() => setSaveStatus('idle'), 3000);
+      toast.success(t('saved'));
     },
     onError: () => {
-      setSaveStatus('error');
-      setTimeout(() => setSaveStatus('idle'), 3000);
+      toast.error(t('save_failed'));
     },
   });
 
@@ -282,18 +280,6 @@ export const SystemSettings = () => {
 
         <Can permission={PERMISSIONS.MANAGE_SYSTEM_SETTINGS}>
           <div className="flex items-center gap-2">
-            {saveStatus === 'success' && (
-              <span className="flex items-center gap-1.5 text-sm text-emerald-600">
-                <CheckCircle2 className="h-4 w-4" />
-                {t('saved')}
-              </span>
-            )}
-            {saveStatus === 'error' && (
-              <span className="flex items-center gap-1.5 text-sm text-destructive">
-                <AlertTriangle className="h-4 w-4" />
-                {t('save_failed')}
-              </span>
-            )}
             <Button
               onClick={handleSubmit(onSubmit)}
               disabled={mutation.isPending || isLoading}

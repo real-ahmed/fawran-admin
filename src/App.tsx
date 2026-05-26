@@ -14,11 +14,14 @@ const queryClient = new QueryClient({
   },
 });
 
+import { Toaster } from 'sonner';
+
 const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <AppRoutes />
+        <Toaster position="top-center" richColors />
       </BrowserRouter>
     </QueryClientProvider>
   );

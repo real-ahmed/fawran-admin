@@ -16,6 +16,7 @@
   "password": "Password",
   "signing_in": "Signing in...",
   "login_failed": "Login failed. Please check your credentials.",
+  "login_success": "Login successful",
   "invalid_email": "Invalid email address",
   "invalid_password": "Password must be at least 6 characters",
   "welcome_desc": "Welcome to {{appName}} Dashboard.",
