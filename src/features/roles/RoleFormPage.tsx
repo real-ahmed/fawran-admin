@@ -16,17 +16,19 @@ import { createRole, updateRole, fetchPermissions, fetchRoleById, RolePayload } 
 import { parseApiError } from '@/utils/api';
 
 interface RoleForm {
-  name: string;
+  display_name_en: string;
+  display_name_ar: string;
 }
 
 export const RoleFormPage = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { id } = useParams<{ id: string }>();
   const isEditing = !!id;
   const roleSchema = z.object({
-    name: z.string().min(2, t('validation_min_chars', { count: 2 })),
+    display_name_en: z.string().min(2, t('validation_min_chars', { count: 2 })),
+    display_name_ar: z.string().min(2, t('validation_min_chars', { count: 2 })),
   });
 
   const [isLoading, setIsLoading] = useState(isEditing);
@@ -51,7 +53,10 @@ export const RoleFormPage = () => {
       setIsLoading(true);
       fetchRoleById(Number(id))
         .then((role) => {
-          reset({ name: role.name });
+          reset({ 
+            display_name_en: role.display_name?.en || role.name,
+            display_name_ar: role.display_name?.ar || role.name,
+          });
           setSelectedPermissions(role.permissions?.map(p => p.name) || []);
         })
         .catch((err) => {
@@ -81,7 +86,10 @@ export const RoleFormPage = () => {
 
   const onSubmit = (data: RoleForm) => {
     mutation.mutate({
-      name: data.name,
+      display_name: {
+        en: data.display_name_en,
+        ar: data.display_name_ar,
+      },
       permissions: selectedPermissions,
     });
   };
@@ -98,10 +106,10 @@ export const RoleFormPage = () => {
     if (!allPermissions) return {};
     
     if (!Array.isArray(allPermissions) && typeof allPermissions === 'object') {
-      const grouped: Record<string, string[]> = {};
+      const grouped: Record<string, any[]> = {};
       Object.entries(allPermissions).forEach(([group, perms]: [string, any]) => {
         const groupKey = group.toUpperCase().replace(/\s+/g, '_');
-        grouped[groupKey] = perms.map((p: any) => typeof p === 'string' ? p : (p.key || p.name));
+        grouped[groupKey] = perms;
       });
       return grouped;
     }
@@ -115,19 +123,15 @@ export const RoleFormPage = () => {
         const entity = parts.length > 1 ? parts.slice(1).join('_') : 'GENERAL';
         
         if (!acc[entity]) acc[entity] = [];
-        acc[entity].push(permissionStr);
+        acc[entity].push(p);
         return acc;
-      }, {} as Record<string, string[]>);
+      }, {} as Record<string, any[]>);
     }
     
     return {};
   };
 
   const groupedPermissions = getGroupedPermissions();
-  const formatPermissionAction = (permission: string) => {
-    const action = permission.split('_')[0].toLowerCase();
-    return t(`permission_action_${action}`);
-  };
 
   if (isLoading || permissionsLoading) {
     return (
@@ -152,18 +156,36 @@ export const RoleFormPage = () => {
       <div className="rounded-xl border border-border bg-card p-6 sm:p-8 shadow-sm">
         <form id="role-form" onSubmit={handleSubmit(onSubmit)} className="space-y-8">
           
-          <div className="grid gap-2 max-w-md">
-            <Label htmlFor="name" className="text-sm font-medium">
-              {t('role_name')} <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="name"
-              {...register('name')}
-              className="w-full bg-muted/40"
-            />
-            {errors.name && (
-              <p className="text-xs text-destructive">{errors.name.message}</p>
-            )}
+          <div className="grid gap-6 sm:grid-cols-2 max-w-2xl">
+            <div className="grid gap-2">
+              <Label htmlFor="display_name_en" className="text-sm font-medium">
+                {t('role_name_en')} <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="display_name_en"
+                {...register('display_name_en')}
+                className="w-full bg-muted/40"
+                dir="ltr"
+              />
+              {errors.display_name_en && (
+                <p className="text-xs text-destructive">{errors.display_name_en.message}</p>
+              )}
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="display_name_ar" className="text-sm font-medium">
+                {t('role_name_ar')} <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="display_name_ar"
+                {...register('display_name_ar')}
+                className="w-full bg-muted/40"
+                dir="rtl"
+              />
+              {errors.display_name_ar && (
+                <p className="text-xs text-destructive">{errors.display_name_ar.message}</p>
+              )}
+            </div>
           </div>
 
           <div className="space-y-4">
@@ -176,19 +198,19 @@ export const RoleFormPage = () => {
                     {entity.replace(/_/g, ' ')}
                   </h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 px-2">
-                    {perms.map(permission => (
-                      <div key={permission} className="flex items-start space-x-2 space-x-reverse rtl:space-x-reverse">
+                    {perms.map((p: any) => (
+                      <div key={p.name} className="flex items-start space-x-2 space-x-reverse rtl:space-x-reverse">
                         <Checkbox
-                          id={permission}
-                          checked={selectedPermissions.includes(permission)}
-                          onCheckedChange={() => togglePermission(permission)}
+                          id={p.name}
+                          checked={selectedPermissions.includes(p.name)}
+                          onCheckedChange={() => togglePermission(p.name)}
                           className="mt-1"
                         />
                         <Label
-                          htmlFor={permission}
+                          htmlFor={p.name}
                           className="text-sm leading-tight cursor-pointer font-normal"
                         >
-                          {formatPermissionAction(permission)}
+                          {i18n.language === 'ar' ? p.display_name?.ar : p.display_name?.en || p.name}
                         </Label>
                       </div>
                     ))}

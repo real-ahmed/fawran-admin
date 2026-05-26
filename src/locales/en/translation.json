@@ -127,6 +127,8 @@
   "roles_empty_title": "No roles found",
   "roles_empty_desc": "Create a role to start managing access permissions.",
   "role_name": "Role Name",
+  "role_name_en": "Role Name (English)",
+  "role_name_ar": "Role Name (Arabic)",
   "permissions": "Permissions",
   "create_role": "Create Role",
   "edit_role": "Edit Role",

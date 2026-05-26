@@ -17,7 +17,7 @@ import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { parseApiError } from '@/utils/api';
 
 export const AdminsList = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
@@ -146,12 +146,12 @@ export const AdminsList = () => {
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
-                        {admin.roles?.map((roleName, index) => (
+                        {admin.roles?.map((role: Role) => (
                           <span
-                            key={index}
+                            key={role.id}
                             className="inline-flex items-center rounded-md bg-secondary px-2 py-1 text-xs font-medium text-secondary-foreground"
                           >
-                            {roleName}
+                            {i18n.language === 'ar' ? role.display_name?.ar : role.display_name?.en || role.name}
                           </span>
                         ))}
                       </div>
@@ -171,7 +171,7 @@ export const AdminsList = () => {
                           >
                             {t('edit')}
                           </Button>
-                          {admin.id !== 1 && !admin.roles?.includes('Super Admin') && (
+                          {admin.id !== 1 && !admin.roles?.some(r => r.name === 'Super Admin') && (
                             <Can permission={PERMISSIONS.DELETE_ADMINS}>
                               <Button
                                 variant="ghost"

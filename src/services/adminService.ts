@@ -9,7 +9,7 @@ export interface Admin {
   is_active: boolean;
   created_at: string;
   updated_at: string;
-  roles?: string[];
+  roles?: Role[];
 }
 
 export interface AdminPayload {

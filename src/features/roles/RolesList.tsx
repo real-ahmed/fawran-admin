@@ -25,7 +25,7 @@ import { parseApiError } from '@/utils/api';
 
 export const RolesList = () => {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
   const [deletingId, setDeletingId] = useState<number | null>(null);
@@ -138,16 +138,16 @@ export const RolesList = () => {
                 roles.map((role) => (
                   <TableRow key={role.id}>
                     <TableCell className="font-medium text-foreground">
-                      {role.name}
+                      {i18n.language === 'ar' ? role.display_name?.ar : role.display_name?.en || role.name}
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
-                        {role.permissions?.slice(0, 3).map((p) => (
+                        {role.permissions?.slice(0, 3).map((p: any, idx) => (
                           <span
-                            key={p.id}
+                            key={p.name || idx}
                             className="inline-flex items-center rounded-md bg-secondary px-2 py-1 text-xs font-medium text-secondary-foreground"
                           >
-                            {p.name}
+                            {i18n.language === 'ar' ? p.display_name?.ar : p.display_name?.en || p.name}
                           </span>
                         ))}
                         {(role.permissions?.length || 0) > 3 && (

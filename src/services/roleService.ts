@@ -4,14 +4,15 @@ import { PaginatedResponse } from '@/types/api';
 export interface Role {
   id: number;
   name: string;
+  display_name?: { en: string; ar: string };
   guard_name: string;
   created_at: string;
   updated_at: string;
-  permissions?: { id: number; name: string }[];
+  permissions?: string[];
 }
 
 export interface RolePayload {
-  name: string;
+  display_name: { en: string; ar: string };
   permissions: string[];
 }
 

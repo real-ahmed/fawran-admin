@@ -25,7 +25,7 @@ interface AdminForm {
 }
 
 export const AdminFormPage = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { id } = useParams<{ id: string }>();
@@ -71,7 +71,7 @@ export const AdminFormPage = () => {
             email: admin.email,
             password: '',
             is_active: admin.is_active,
-            roles: admin.roles || [],
+            roles: admin.roles?.map(r => r.name) || [],
           });
         })
         .catch((err) => {
@@ -201,7 +201,7 @@ export const AdminFormPage = () => {
                           htmlFor={`role-${role.id}`}
                           className="text-sm cursor-pointer font-medium"
                         >
-                          {role.name}
+                          {i18n.language === 'ar' ? role.display_name?.ar : role.display_name?.en || role.name}
                         </Label>
                       </div>
                     ))}
