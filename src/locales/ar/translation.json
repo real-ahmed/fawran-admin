@@ -6,6 +6,7 @@
   "admins_desc": "إدارة مستخدمي الإدارة والأدوار والصلاحيات.",
   "add_admin": "إضافة مشرف",
   "search_admins": "ابحث عن مشرفين...",
+  "search_roles": "ابحث عن أدوار...",
   "roles": "الأدوار",
   "admins_empty_title": "لا يوجد مشرفون",
   "admins_empty_desc": "سيظهر مستخدمو الإدارة هنا مع الحالة والدور ومستوى الصلاحيات.",
@@ -167,6 +168,7 @@
   "deleted": "تم الحذف بنجاح",
   "delete_failed": "فشل الحذف",
   "loading": "جاري التحميل...",
+  "load_more": "تحميل المزيد",
   "search": "بحث...",
   "image_preview": "معاينة الصورة",
   "image_formats": "PNG، JPG، SVG",
@@ -234,5 +236,7 @@
   "error_deleting": "حدث خطأ أثناء الحذف",
   "name": "الاسم",
   "status": "الحالة",
-  "no_results": "لم يتم العثور على نتائج"
+  "no_results": "لم يتم العثور على نتائج",
+  "search_location": "البحث عن موقع...",
+  "current_location": "موقعي الحالي"
 }

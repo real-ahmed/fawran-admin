@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
-import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Loader2, ArrowLeft } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -13,12 +13,15 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { PageHeader } from '@/components/PageHeader';
 import { toast } from 'sonner';
 import { createAdmin, updateAdmin, fetchAdminById, AdminPayload } from '@/services/adminService';
-import { fetchRoles } from '@/services/roleService';
-import { fetchDeliveryZones } from '@/services/deliveryZoneService';
+import type { Role } from '@/services/roleService';
+import type { DeliveryZone } from '@/types/delivery-zone';
 import { applyApiValidationErrors, parseApiError } from '@/utils/api';
 import { FormFieldError } from '@/components/FormFieldError';
 import { SUPER_ADMIN_ROLE, isProtectedAdminAccount, isSuperAdminRole } from '@/utils/access';
 import { FormPageSkeleton } from '@/components/FormPageSkeleton';
+import { useAdminFormOptions } from '@/features/admins/hooks/useAdminFormOptions';
+import { getLocalizedDisplayName } from '@/utils/displayName';
+import { AdminOptionsSection } from '@/features/admins/components/AdminOptionsSection';
 
 interface AdminForm {
   name: string;
@@ -28,6 +31,21 @@ interface AdminForm {
   roles: string[];
   delivery_zones: Array<number | string>;
 }
+
+const mergeByKey = <T,>(primary: T[], secondary: T[], getKey: (item: T) => string) => {
+  const options = [...primary];
+  const existingKeys = new Set(primary.map(getKey));
+
+  secondary.forEach((item) => {
+    const key = getKey(item);
+    if (!existingKeys.has(key)) {
+      options.push(item);
+      existingKeys.add(key);
+    }
+  });
+
+  return options;
+};
 
 export const AdminFormPage = () => {
   const { t, i18n } = useTranslation();
@@ -45,19 +63,35 @@ export const AdminFormPage = () => {
   });
 
   const [isLoading, setIsLoading] = useState(isEditing);
+  const [selectedRoleOptions, setSelectedRoleOptions] = useState<Role[]>([]);
+  const [selectedZoneOptions, setSelectedZoneOptions] = useState<DeliveryZone[]>([]);
+  const {
+    roles,
+    rolesSearchTerm,
+    setRolesSearchTerm,
+    rolesLoading,
+    rolesFetching,
+    rolesFetchingNextPage,
+    rolesHasNextPage,
+    loadMoreRoles,
+    zones,
+    zonesSearchTerm,
+    setZonesSearchTerm,
+    zonesLoading,
+    zonesFetching,
+    zonesFetchingNextPage,
+    zonesHasNextPage,
+    loadMoreZones,
+  } = useAdminFormOptions();
 
-  const { data: rolesData, isLoading: rolesLoading } = useQuery({
-    queryKey: ['roles'],
-    queryFn: () => fetchRoles({ per_page: 100 }),
-  });
-
-  const { data: zonesData, isLoading: zonesLoading } = useQuery({
-    queryKey: ['delivery_zones'],
-    queryFn: () => fetchDeliveryZones({ per_page: 100, is_active: 1 }),
-  });
-
-  const allRoles = rolesData?.data || [];
-  const allZones = zonesData?.data || [];
+  const allRoles = useMemo(
+    () => mergeByKey(roles, selectedRoleOptions, (role) => role.name),
+    [roles, selectedRoleOptions]
+  );
+  const allZones = useMemo(
+    () => mergeByKey(zones, selectedZoneOptions, (zone) => String(zone.id)),
+    [zones, selectedZoneOptions]
+  );
 
   const {
     register,
@@ -94,6 +128,8 @@ export const AdminFormPage = () => {
             roles: admin.roles?.map(r => r.name) || [],
             delivery_zones: admin.delivery_zones?.map((zone) => zone.id) || [],
           });
+          setSelectedRoleOptions(admin.roles || []);
+          setSelectedZoneOptions(admin.delivery_zones || []);
         })
         .catch((err) => {
           toast.error(parseApiError(err, t('error_loading_admin')));
@@ -218,82 +254,106 @@ export const AdminFormPage = () => {
             </div>
           )}
 
-          <div className="grid gap-4">
-            <Label className="text-sm font-medium">{t('admin_roles')} <span className="text-destructive">*</span></Label>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 p-5 border border-border/60 rounded-xl bg-muted/10">
-              <Controller
-                control={control}
-                name="roles"
-                render={({ field }) => (
-                  <>
-                    {allRoles.map(role => (
-                      <div key={role.id} className="flex items-center space-x-2 space-x-reverse rtl:space-x-reverse">
-                        <Checkbox
-                          id={`role-${role.id}`}
-                          checked={field.value.includes(role.name)}
-                          onCheckedChange={(checked) => {
-                            if (checked && !isSuperAdminRole(role) && field.value.includes(SUPER_ADMIN_ROLE)) {
-                              toast.info(t('super_admin_exclusive_role'));
-                            }
+          <AdminOptionsSection
+            label={<>{t('admin_roles')} <span className="text-destructive">*</span></>}
+            searchTerm={rolesSearchTerm}
+            searchPlaceholder={t('search_roles')}
+            onSearchChange={setRolesSearchTerm}
+            isEmpty={allRoles.length === 0}
+            isFetching={rolesFetching}
+            emptyMessage={t('roles_empty_title')}
+            loadingMessage={t('loading')}
+            hasNextPage={Boolean(rolesHasNextPage)}
+            isFetchingNextPage={rolesFetchingNextPage}
+            loadMoreLabel={t('load_more')}
+            onLoadMore={() => void loadMoreRoles()}
+            errorMessage={errors.roles?.message}
+          >
+            <Controller
+              control={control}
+              name="roles"
+              render={({ field }) => (
+                <>
+                  {allRoles.map(role => (
+                    <div key={role.id} className="flex items-center space-x-2 space-x-reverse rtl:space-x-reverse">
+                      <Checkbox
+                        id={`role-${role.id}`}
+                        checked={field.value.includes(role.name)}
+                        onCheckedChange={(checked) => {
+                          if (checked && !isSuperAdminRole(role) && field.value.includes(SUPER_ADMIN_ROLE)) {
+                            toast.info(t('super_admin_exclusive_role'));
+                          }
 
-                            field.onChange(getUpdatedRoleSelection(field.value, role.name, checked));
-                          }}
-                        />
-                        <Label
-                          htmlFor={`role-${role.id}`}
-                          className="text-sm cursor-pointer font-medium"
-                        >
-                          {i18n.language === 'ar' ? role.display_name?.ar : role.display_name?.en || role.name}
-                        </Label>
-                      </div>
-                    ))}
-                  </>
-                )}
-              />
-            </div>
-            <FormFieldError message={errors.roles?.message} />
-          </div>
+                          const updatedRoles = getUpdatedRoleSelection(field.value, role.name, checked);
+                          field.onChange(updatedRoles);
+                          setSelectedRoleOptions(
+                            allRoles.filter((currentRole) => updatedRoles.includes(currentRole.name))
+                          );
+                        }}
+                      />
+                      <Label
+                        htmlFor={`role-${role.id}`}
+                        className="text-sm cursor-pointer font-medium"
+                      >
+                        {getLocalizedDisplayName(role, i18n.language, role.name)}
+                      </Label>
+                    </div>
+                  ))}
+                </>
+              )}
+            />
+          </AdminOptionsSection>
 
-          <div className="grid gap-4">
-            <Label className="text-sm font-medium">{t('delivery_zones')} <span className="text-muted-foreground font-normal">({t('optional')})</span></Label>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 p-5 border border-border/60 rounded-xl bg-muted/10">
-              <Controller
-                control={control}
-                name="delivery_zones"
-                render={({ field }) => (
-                  <>
-                    {allZones.map(zone => (
-                      <div key={zone.id} className="flex items-center space-x-2 space-x-reverse rtl:space-x-reverse">
-                        <Checkbox
-                          id={`zone-${zone.id}`}
-                          checked={field.value?.includes(zone.id)}
-                          onCheckedChange={(checked) => {
-                            const current = field.value || [];
-                            const updated = checked
-                              ? [...current, zone.id]
-                              : current.filter(id => id !== zone.id);
-                            field.onChange(updated);
-                          }}
-                        />
-                        <Label
-                          htmlFor={`zone-${zone.id}`}
-                          className="text-sm cursor-pointer font-medium"
-                        >
-                          {i18n.language === 'ar' ? zone.name?.ar : zone.name?.en}
-                        </Label>
-                      </div>
-                    ))}
-                    {allZones.length === 0 && (
-                      <div className="col-span-full text-sm text-muted-foreground text-center py-2">
-                        {t('delivery_zones_empty_title')}
-                      </div>
-                    )}
-                  </>
-                )}
-              />
-            </div>
-            <FormFieldError message={errors.delivery_zones?.message} />
-          </div>
+          <AdminOptionsSection
+            label={<>{t('delivery_zones')} <span className="text-muted-foreground font-normal">({t('optional')})</span></>}
+            searchTerm={zonesSearchTerm}
+            searchPlaceholder={t('search_delivery_zones')}
+            onSearchChange={setZonesSearchTerm}
+            isEmpty={allZones.length === 0}
+            isFetching={zonesFetching}
+            emptyMessage={t('delivery_zones_empty_title')}
+            loadingMessage={t('loading')}
+            hasNextPage={Boolean(zonesHasNextPage)}
+            isFetchingNextPage={zonesFetchingNextPage}
+            loadMoreLabel={t('load_more')}
+            onLoadMore={() => void loadMoreZones()}
+            errorMessage={errors.delivery_zones?.message}
+          >
+            <Controller
+              control={control}
+              name="delivery_zones"
+              render={({ field }) => (
+                <>
+                  {allZones.map(zone => (
+                    <div key={zone.id} className="flex items-center space-x-2 space-x-reverse rtl:space-x-reverse">
+                      <Checkbox
+                        id={`zone-${zone.id}`}
+                        checked={field.value?.some((selectedId) => String(selectedId) === String(zone.id))}
+                        onCheckedChange={(checked) => {
+                          const current = field.value || [];
+                          const updated = checked
+                            ? [...current, zone.id]
+                            : current.filter(id => String(id) !== String(zone.id));
+                          field.onChange(updated);
+                          setSelectedZoneOptions(
+                            allZones.filter((currentZone) =>
+                              updated.some((selectedId) => String(selectedId) === String(currentZone.id))
+                            )
+                          );
+                        }}
+                      />
+                      <Label
+                        htmlFor={`zone-${zone.id}`}
+                        className="text-sm cursor-pointer font-medium"
+                      >
+                        {i18n.language === 'ar' ? zone.name?.ar : zone.name?.en}
+                      </Label>
+                    </div>
+                  ))}
+                </>
+              )}
+            />
+          </AdminOptionsSection>
 
           <div className="flex items-center space-x-2 space-x-reverse rtl:space-x-reverse pt-2">
             <Controller

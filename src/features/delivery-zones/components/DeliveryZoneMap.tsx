@@ -1,7 +1,10 @@
 import { useCallback, useRef, useState, useEffect } from 'react';
-import { GoogleMap, useJsApiLoader, DrawingManager, Polygon } from '@react-google-maps/api';
+import { GoogleMap, useJsApiLoader, DrawingManager, Polygon, StandaloneSearchBox } from '@react-google-maps/api';
 import { useTranslation } from 'react-i18next';
+import { Locate, Search } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import type { Coordinate } from '@/types/delivery-zone';
 
 const containerStyle = {
@@ -24,12 +27,13 @@ interface DeliveryZoneMapProps {
   error?: string;
 }
 
-const libraries: ('drawing' | 'places')[] = ['drawing'];
+const libraries: ('drawing' | 'places')[] = ['drawing', 'places'];
 
 export const DeliveryZoneMap = ({ coordinates, onChange, error }: DeliveryZoneMapProps) => {
   const { t } = useTranslation();
   const mapRef = useRef<google.maps.Map | null>(null);
   const polygonRef = useRef<google.maps.Polygon | null>(null);
+  const searchBoxRef = useRef<google.maps.places.SearchBox | null>(null);
   const hasCoordinates = Boolean(coordinates?.length);
   const [mapCenter, setMapCenter] = useState<Coordinate>(() => getInitialCenter(coordinates));
 
@@ -62,10 +66,7 @@ export const DeliveryZoneMap = ({ coordinates, onChange, error }: DeliveryZoneMa
       newCoordinates.push({ lat: latLng.lat(), lng: latLng.lng() });
     }
     
-    // Immediately remove the native polygon created by the DrawingManager
-    // We will rely purely on the React <Polygon /> component to render the shape
     drawnPolygon.setMap(null);
-    
     onChange(newCoordinates);
   };
 
@@ -84,32 +85,43 @@ export const DeliveryZoneMap = ({ coordinates, onChange, error }: DeliveryZoneMa
     onChange([]);
   };
 
-  useEffect(() => {
-    if (hasCoordinates) {
-      setMapCenter(getInitialCenter(coordinates));
-      return;
+  const onSearchBoxLoad = (ref: google.maps.places.SearchBox) => {
+    searchBoxRef.current = ref;
+  };
+
+  const onPlacesChanged = () => {
+    const places = searchBoxRef.current?.getPlaces();
+    if (places && places.length > 0 && places[0].geometry?.location) {
+      const location = places[0].geometry.location;
+      const newCenter = { lat: location.lat(), lng: location.lng() };
+      setMapCenter(newCenter);
+      mapRef.current?.panTo(newCenter);
+      mapRef.current?.setZoom(14);
     }
+  };
 
+  const locateMe = () => {
     if (!navigator.geolocation) return;
-
     navigator.geolocation.getCurrentPosition(
       ({ coords }) => {
         const currentLocation = {
           lat: coords.latitude,
           lng: coords.longitude,
         };
-
         setMapCenter(currentLocation);
-        mapRef.current?.setCenter(currentLocation);
-        mapRef.current?.setZoom(13);
+        mapRef.current?.panTo(currentLocation);
+        mapRef.current?.setZoom(14);
       },
       () => undefined,
-      {
-        enableHighAccuracy: true,
-        maximumAge: 60000,
-        timeout: 10000,
-      }
+      { enableHighAccuracy: true }
     );
+  };
+
+  useEffect(() => {
+    if (hasCoordinates) {
+      setMapCenter(getInitialCenter(coordinates));
+      return;
+    }
   }, [coordinates, hasCoordinates]);
 
   if (loadError) {
@@ -125,7 +137,34 @@ export const DeliveryZoneMap = ({ coordinates, onChange, error }: DeliveryZoneMa
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
+          <StandaloneSearchBox
+            onLoad={onSearchBoxLoad}
+            onPlacesChanged={onPlacesChanged}
+          >
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder={t('search_location', 'Search for a location...')}
+                className="pl-9 bg-background w-full shadow-sm"
+              />
+            </div>
+          </StandaloneSearchBox>
+        </div>
+        <Button 
+          type="button" 
+          variant="secondary" 
+          onClick={locateMe}
+          className="gap-2 shadow-sm whitespace-nowrap"
+        >
+          <Locate className="h-4 w-4" />
+          {t('current_location', 'Current Location')}
+        </Button>
+      </div>
+
       <div className={`relative overflow-hidden rounded-xl border ${error ? 'border-destructive' : 'border-border'}`}>
         <GoogleMap
           mapContainerStyle={containerStyle}

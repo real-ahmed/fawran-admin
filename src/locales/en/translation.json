@@ -6,6 +6,7 @@
   "admins_desc": "Manage administrative users, roles, and access.",
   "add_admin": "Add Admin",
   "search_admins": "Search admins...",
+  "search_roles": "Search roles...",
   "roles": "Roles",
   "admins_empty_title": "No admins found",
   "admins_empty_desc": "New administrative users will appear here with their status, role, and access level.",
@@ -167,6 +168,7 @@
   "deleted": "Deleted successfully",
   "delete_failed": "Failed to delete",
   "loading": "Loading...",
+  "load_more": "Load more",
   "search": "Search...",
   "image_preview": "Image preview",
   "image_formats": "PNG, JPG, SVG",
@@ -234,5 +236,7 @@
   "error_deleting": "Error deleting data",
   "name": "Name",
   "status": "Status",
-  "no_results": "No results found"
+  "no_results": "No results found",
+  "search_location": "Search for a location...",
+  "current_location": "Current Location"
 }
