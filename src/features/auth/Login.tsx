@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { AlertCircle, Loader2, Lock, Mail } from 'lucide-react';
+import { AlertCircle, Loader2, Lock, Mail, Eye, EyeOff } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -44,6 +44,7 @@ export const Login = () => {
   
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // We define the schema inside the component so we can use t() for messages
   const loginSchema = z.object({
@@ -130,12 +131,20 @@ export const Login = () => {
             <Lock className="pointer-events-none absolute start-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
             <Input
               id="password"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               dir="ltr"
-              className="ps-11 h-12 bg-muted/40 focus:bg-background transition-colors rounded-xl border-border/60 hover:border-border"
+              className="ps-11 pe-11 h-12 bg-muted/40 focus:bg-background transition-colors rounded-xl border-border/60 hover:border-border"
               autoComplete="current-password"
               {...register('password')}
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute end-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors focus:outline-none"
+              tabIndex={-1}
+            >
+              {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+            </button>
           </div>
           <FormFieldError message={errors.password?.message} />
         </div>

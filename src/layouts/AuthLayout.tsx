@@ -64,10 +64,10 @@ export const AuthLayout = () => {
 
         <div className="w-full max-w-sm animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out">
           <div className="lg:hidden flex items-center gap-3 justify-center mb-10">
-            {appLogoUrl || authLogoUrl ? (
+            {authLogoUrl ? (
               <BrandLogo
                 appName={appName}
-                logoUrl={appLogoUrl || authLogoUrl}
+                logoUrl={authLogoUrl}
                 className="h-14 object-contain drop-shadow-sm"
               />
             ) : (

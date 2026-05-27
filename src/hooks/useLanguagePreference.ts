@@ -3,7 +3,7 @@ import apiClient from '@/config/axios';
 import { useAuthStore } from '@/store/authStore';
 
 export const useLanguagePreference = () => {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const token = useAuthStore((state) => state.token);
 
   const isEnglish = i18n.language.startsWith('en');
@@ -23,7 +23,7 @@ export const useLanguagePreference = () => {
 
   return {
     language: i18n.language,
-    languageLabel: isEnglish ? 'العربية' : 'English',
+    languageLabel: t(isEnglish ? 'language_ar' : 'language_en'),
     toggleLanguage,
   };
 };
