@@ -13,6 +13,8 @@ import { AlertCircle, Loader2, Lock, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { applyApiValidationErrors } from '@/utils/api';
+import { FormFieldError } from '@/components/FormFieldError';
 
 const getLoginErrorMessage = (error: unknown, fallbackMessage: string) => {
   if (!isAxiosError(error)) return fallbackMessage;
@@ -54,6 +56,7 @@ export const Login = () => {
   const {
     register,
     handleSubmit,
+    setError: setFieldError,
     formState: { errors },
   } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
@@ -89,8 +92,10 @@ export const Login = () => {
         toast.error(t('login_failed'));
       }
     } catch (err) {
+      const hasFieldErrors = applyApiValidationErrors<LoginForm>(err, setFieldError);
       const errorMessage = getLoginErrorMessage(err, t('login_failed'));
-      setError(errorMessage);
+
+      setError(hasFieldErrors ? '' : errorMessage);
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -128,9 +133,7 @@ export const Login = () => {
               {...register('email')}
             />
           </div>
-          {errors.email && (
-            <p className="text-sm font-medium text-destructive mt-1.5">{errors.email.message}</p>
-          )}
+          <FormFieldError message={errors.email?.message} />
         </div>
 
         <div className="space-y-2">
@@ -146,9 +149,7 @@ export const Login = () => {
               {...register('password')}
             />
           </div>
-          {errors.password && (
-            <p className="text-sm font-medium text-destructive mt-1.5">{errors.password.message}</p>
-          )}
+          <FormFieldError message={errors.password?.message} />
         </div>
 
         <Button 

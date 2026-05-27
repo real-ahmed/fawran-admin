@@ -1,4 +1,41 @@
 import { isAxiosError } from 'axios';
+import type { FieldValues, Path, UseFormSetError } from 'react-hook-form';
+
+export type ApiValidationErrors = Record<string, string[]>;
+
+export const getApiValidationErrors = (error: unknown): ApiValidationErrors => {
+  if (!isAxiosError(error) || !error.response?.data) return {};
+
+  const errors = error.response.data.errors;
+
+  if (!errors || typeof errors !== 'object') return {};
+
+  return errors as ApiValidationErrors;
+};
+
+export const applyApiValidationErrors = <TFieldValues extends FieldValues>(
+  error: unknown,
+  setError: UseFormSetError<TFieldValues>,
+  fieldMap: Partial<Record<string, Path<TFieldValues>>> = {}
+) => {
+  const validationErrors = getApiValidationErrors(error);
+  let applied = false;
+
+  Object.entries(validationErrors).forEach(([apiField, messages]) => {
+    const message = messages?.[0];
+    if (!message) return;
+
+    const formField = fieldMap[apiField] || (apiField as Path<TFieldValues>);
+
+    setError(formField, {
+      type: 'server',
+      message,
+    });
+    applied = true;
+  });
+
+  return applied;
+};
 
 /**
  * Extracts a user-friendly error message from a Laravel backend API response.

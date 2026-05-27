@@ -14,7 +14,8 @@ import { PageHeader } from '@/components/PageHeader';
 import { toast } from 'sonner';
 import { createAdmin, updateAdmin, fetchAdminById, AdminPayload } from '@/services/adminService';
 import { fetchRoles } from '@/services/roleService';
-import { parseApiError } from '@/utils/api';
+import { applyApiValidationErrors, parseApiError } from '@/utils/api';
+import { FormFieldError } from '@/components/FormFieldError';
 
 interface AdminForm {
   name: string;
@@ -52,6 +53,7 @@ export const AdminFormPage = () => {
     handleSubmit,
     reset,
     control,
+    setError,
     formState: { errors },
   } = useForm<AdminForm>({
     resolver: zodResolver(adminSchema),
@@ -97,6 +99,11 @@ export const AdminFormPage = () => {
       navigate('/admins');
     },
     onError: (error) => {
+      applyApiValidationErrors<AdminForm>(error, setError, {
+        role: 'roles',
+        role_id: 'roles',
+        role_ids: 'roles',
+      });
       toast.error(parseApiError(error, t('save_failed')));
     },
   });
@@ -138,9 +145,7 @@ export const AdminFormPage = () => {
                 {...register('name')}
                 className="w-full bg-muted/40"
               />
-              {errors.name && (
-                <p className="text-xs text-destructive">{errors.name.message}</p>
-              )}
+              <FormFieldError message={errors.name?.message} />
             </div>
 
             <div className="grid gap-2">
@@ -154,9 +159,7 @@ export const AdminFormPage = () => {
                 className="w-full bg-muted/40"
                 dir="ltr"
               />
-              {errors.email && (
-                <p className="text-xs text-destructive">{errors.email.message}</p>
-              )}
+              <FormFieldError message={errors.email?.message} />
             </div>
           </div>
 
@@ -174,6 +177,7 @@ export const AdminFormPage = () => {
             <p className="text-xs text-muted-foreground">
               {isEditing ? t('admin_password_hint_edit') : t('admin_password_hint')}
             </p>
+            <FormFieldError message={errors.password?.message} />
           </div>
 
           <div className="grid gap-4">
@@ -209,9 +213,7 @@ export const AdminFormPage = () => {
                 )}
               />
             </div>
-            {errors.roles && (
-              <p className="text-xs text-destructive">{errors.roles.message}</p>
-            )}
+            <FormFieldError message={errors.roles?.message} />
           </div>
 
           <div className="flex items-center space-x-2 space-x-reverse rtl:space-x-reverse pt-2">

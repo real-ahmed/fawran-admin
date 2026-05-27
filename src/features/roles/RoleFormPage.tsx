@@ -20,11 +20,13 @@ import {
   type PermissionRecord,
   type RolePayload,
 } from '@/services/roleService';
-import { parseApiError } from '@/utils/api';
+import { applyApiValidationErrors, parseApiError } from '@/utils/api';
+import { FormFieldError } from '@/components/FormFieldError';
 
 interface RoleForm {
   display_name_en: string;
   display_name_ar: string;
+  permissions?: string[];
 }
 
 export const RoleFormPage = () => {
@@ -50,6 +52,7 @@ export const RoleFormPage = () => {
     register,
     handleSubmit,
     reset,
+    setError,
     formState: { errors },
   } = useForm<RoleForm>({
     resolver: zodResolver(roleSchema),
@@ -87,6 +90,12 @@ export const RoleFormPage = () => {
       navigate('/roles');
     },
     onError: (error) => {
+      applyApiValidationErrors<RoleForm>(error, setError, {
+        'display_name.en': 'display_name_en',
+        'display_name.ar': 'display_name_ar',
+        name: 'display_name_en',
+        permissions: 'permissions',
+      });
       toast.error(parseApiError(error, t('save_failed')));
     },
   });
@@ -176,9 +185,7 @@ export const RoleFormPage = () => {
                 className="w-full bg-muted/40"
                 dir="ltr"
               />
-              {errors.display_name_en && (
-                <p className="text-xs text-destructive">{errors.display_name_en.message}</p>
-              )}
+              <FormFieldError message={errors.display_name_en?.message} />
             </div>
 
             <div className="grid gap-2">
@@ -191,9 +198,7 @@ export const RoleFormPage = () => {
                 className="w-full bg-muted/40"
                 dir="rtl"
               />
-              {errors.display_name_ar && (
-                <p className="text-xs text-destructive">{errors.display_name_ar.message}</p>
-              )}
+              <FormFieldError message={errors.display_name_ar?.message} />
             </div>
           </div>
 
@@ -228,6 +233,7 @@ export const RoleFormPage = () => {
                 </div>
               ))}
             </div>
+            <FormFieldError message={errors.permissions?.message} />
           </div>
 
           <div className="pt-6 border-t flex justify-end gap-3">
