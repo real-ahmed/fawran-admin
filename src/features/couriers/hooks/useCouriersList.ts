@@ -68,6 +68,7 @@ export const useCouriersList = ({ approvalStatus }: UseCouriersListParams) => {
       return undefined;
     },
     initialPageParam: 1,
+    refetchInterval: approvalStatus === 'pending' ? 10000 : false, // Poll every 10 seconds for new requests
   });
 
   const deliveryZonesQuery = useQuery({
