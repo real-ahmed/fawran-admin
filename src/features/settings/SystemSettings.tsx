@@ -1,9 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState, useEffect } from 'react';
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
 import {
   fetchSystemSettings,
   updateSystemSettings,
@@ -205,7 +207,7 @@ export const SystemSettings = () => {
     retry: false,
   });
 
-  const { register, handleSubmit, reset } = useForm<SettingsForm>({
+  const { register, handleSubmit, reset, control } = useForm<SettingsForm>({
     resolver: zodResolver(settingsSchema),
   });
 
@@ -564,11 +566,28 @@ export const SystemSettings = () => {
             <div className="grid grid-cols-1 gap-4">
               <div className="grid gap-2 w-full">
                 <Label htmlFor="courier_contract_template" className="text-sm font-medium">{t('courier_contract_template')}</Label>
-                <textarea
-                  id="courier_contract_template"
-                  dir="rtl"
-                  className="w-full min-h-[400px] p-4 bg-muted/40 focus:bg-background transition-colors rounded-xl border-border/60 hover:border-border font-mono text-sm"
-                  {...register('courier_contract_template')}
+                <Controller
+                  name="courier_contract_template"
+                  control={control}
+                  render={({ field }) => (
+                    <div className="bg-background rounded-xl overflow-hidden [&_.ql-toolbar]:bg-muted [&_.ql-container]:min-h-[400px] [&_.ql-editor]:min-h-[400px] [&_.ql-editor]:text-base" dir="rtl">
+                      <ReactQuill 
+                        theme="snow" 
+                        value={field.value || ''} 
+                        onChange={field.onChange}
+                        modules={{
+                          toolbar: [
+                            [{ 'header': [1, 2, 3, false] }],
+                            ['bold', 'italic', 'underline', 'strike'],
+                            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                            [{ 'align': [] }],
+                            ['link', 'clean'],
+                            [{ 'direction': 'rtl' }]
+                          ]
+                        }}
+                      />
+                    </div>
+                  )}
                 />
                 <p className="text-xs font-medium text-muted-foreground">{t('courier_contract_template_desc')}</p>
               </div>
