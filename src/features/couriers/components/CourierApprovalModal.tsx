@@ -88,14 +88,31 @@ export const CourierApprovalModal = ({ courier, isOpen, onClose, onPrint }: Cour
           <div className="space-y-3">
             <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wider">{t('documents')}</h4>
             <div className="bg-muted/50 rounded-lg p-3 space-y-3 text-sm">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-2 pt-2">
                 <div className="flex items-center gap-2">
                   <FileText className="h-4 w-4 text-primary" />
                   <span>{t('criminal_record_file')}</span>
                 </div>
                 {courier.document?.criminal_record_file ? (
-                  <a href={courier.document.criminal_record_file} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline flex items-center gap-1 text-xs">
-                    {t('view_document')} <ExternalLink className="h-3 w-3" />
+                  <a 
+                    href={courier.document.criminal_record_file} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="block rounded-md overflow-hidden border border-border/50 hover:opacity-90 transition-opacity"
+                  >
+                    <img 
+                      src={courier.document.criminal_record_file} 
+                      alt="Criminal Record" 
+                      className="w-full h-40 object-cover"
+                      onError={(e) => {
+                        // Fallback if it's a PDF or broken image
+                        (e.target as HTMLImageElement).style.display = 'none';
+                        (e.target as HTMLImageElement).parentElement?.classList.add('p-4', 'bg-muted', 'text-center', 'text-xs');
+                        if ((e.target as HTMLImageElement).parentElement) {
+                           (e.target as HTMLImageElement).parentElement!.innerHTML = `${t('view_document')} <svg class="inline h-3 w-3 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>`;
+                        }
+                      }}
+                    />
                   </a>
                 ) : (
                   <span className="text-muted-foreground text-xs">{t('not_provided')}</span>
