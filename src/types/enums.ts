@@ -12,3 +12,4 @@ export enum VendorStatus {
   BUSY = 'busy',
   OFFLINE = 'offline',
 }
+

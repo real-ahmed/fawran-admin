@@ -3,15 +3,26 @@ import { Courier } from '@/types/courier';
 import { getLocalizedDisplayName } from '@/utils/displayName';
 import { useCouriersList } from '../hooks/useCouriersList';
 import { EmptyState } from '@/components/EmptyState';
-import { Bike, CarFront, Navigation, User, AlertCircle, Printer } from 'lucide-react';
+import { Bike, CarFront, Navigation, User, AlertCircle, Printer, Loader2, Eye, Edit, MoreHorizontal, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
 import { CourierApprovalModal } from './CourierApprovalModal';
-import { getCourierContractPrintHtml } from '@/services/courierService';
+import { CourierDetailsModal } from './CourierDetailsModal';
+import { CourierFormModal } from './CourierFormModal';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import * as courierService from '@/services/courierService';
 import { toast } from 'sonner';
 import { CouriersToolbar } from './CouriersToolbar';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useMutation } from '@tanstack/react-query';
+import { parseApiError } from '@/utils/api';
 
 interface CouriersListProps {
   approvalStatus: 'pending' | 'approved';
@@ -21,6 +32,10 @@ export const CouriersList = ({ approvalStatus }: CouriersListProps) => {
   const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
   const [selectedCourier, setSelectedCourier] = useState<Courier | null>(null);
+  const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [courierToDelete, setCourierToDelete] = useState<Courier | null>(null);
 
   const {
     couriers,
@@ -45,33 +60,52 @@ export const CouriersList = ({ approvalStatus }: CouriersListProps) => {
     if (selectedCourier && couriers.length > 0) {
       const freshCourier = couriers.find(c => c.id === selectedCourier.id);
       // Only update if the contract number changed to avoid unnecessary re-renders
-      if (freshCourier && freshCourier.document?.contract_number !== selectedCourier.document?.contract_number) {
+      if (freshCourier?.document?.contract_number && freshCourier.document.contract_number !== selectedCourier.document?.contract_number) {
         setSelectedCourier(freshCourier);
       }
     }
   }, [couriers, selectedCourier]);
 
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => courierService.deleteCourier(id),
+    onSuccess: () => {
+      toast.success(t('deleted_successfully'));
+      queryClient.invalidateQueries({ queryKey: ['couriers'] });
+      setCourierToDelete(null);
+    },
+    onError: (err) => {
+      toast.error(parseApiError(err, t('error_deleting')));
+      setCourierToDelete(null);
+    }
+  });
+
+  const handleActionClick = (e: React.MouseEvent, action: () => void) => {
+    e.stopPropagation();
+    action();
+  };
+
   const handlePrint = async (courierId: number) => {
+    const printWindow = window.open('', '_blank');
+
+    if (!printWindow) {
+      toast.error(t('popup_blocked'));
+
+      return;
+    }
+
     try {
-      const contractHtml = await getCourierContractPrintHtml(courierId);
-      const printWindow = window.open('', '_blank');
-      if (printWindow) {
-        printWindow.document.write(contractHtml);
-        printWindow.document.close();
-        
-        // Refresh couriers list to fetch the newly generated contract number
-        setTimeout(() => {
-          queryClient.invalidateQueries({ queryKey: ['couriers'] });
-          // If the modal is open for this courier, update the selected courier locally
-          if (selectedCourier && selectedCourier.id === courierId) {
-            // Alternatively we rely on the query invalidation if we refetch, 
-            // but the easiest is just a fast refetch since query is invalidated
-          }
-        }, 1000);
-      } else {
-        toast.error(t('popup_blocked'));
+      const contractHtml = await courierService.getCourierContractPrintHtml(courierId);
+      printWindow.document.write(contractHtml);
+      printWindow.document.close();
+
+      queryClient.invalidateQueries({ queryKey: ['couriers'] });
+
+      if (selectedCourier?.id === courierId) {
+        const refreshedCourier = await courierService.getCourier(courierId);
+        setSelectedCourier(refreshedCourier);
       }
     } catch (error) {
+      printWindow.close();
       toast.error(t('error_printing'));
     }
   };
@@ -167,7 +201,10 @@ export const CouriersList = ({ approvalStatus }: CouriersListProps) => {
                   <Button 
                     className="w-full gap-2" 
                     variant="outline"
-                    onClick={() => setSelectedCourier(courier)}
+                    onClick={() => {
+                      setSelectedCourier(courier);
+                      setIsApprovalModalOpen(true);
+                    }}
                   >
                     <AlertCircle className="h-4 w-4 text-amber-500" />
                     {t('review_application')}
@@ -176,15 +213,43 @@ export const CouriersList = ({ approvalStatus }: CouriersListProps) => {
               )}
 
               {approvalStatus === 'approved' && (
-                <div className="p-4 border-t border-border/60 bg-muted/20 flex gap-3">
-                  <Button 
-                    className="w-full gap-2" 
-                    variant="outline"
-                    onClick={() => handlePrint(courier.id)}
-                  >
-                    <Printer className="h-4 w-4 text-primary" />
-                    {t('print_contract')}
-                  </Button>
+                <div className="p-4 border-t border-border/60 bg-muted/20 flex justify-end">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                      <Button variant="ghost" className="h-8 w-8 p-0">
+                        <span className="sr-only">Open menu</span>
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={(e) => handleActionClick(e, () => {
+                        setSelectedCourier(courier);
+                        setIsDetailsModalOpen(true);
+                      })}>
+                        <Eye className="mr-2 h-4 w-4 rtl:ml-2 rtl:mr-0" />
+                        {t('view_details')}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={(e) => handleActionClick(e, () => {
+                        setSelectedCourier(courier);
+                        setIsEditModalOpen(true);
+                      })}>
+                        <Edit className="mr-2 h-4 w-4 rtl:ml-2 rtl:mr-0" />
+                        {t('edit')}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={(e) => handleActionClick(e, () => handlePrint(courier.id))}>
+                        <Printer className="mr-2 h-4 w-4 rtl:ml-2 rtl:mr-0" />
+                        {t('print_contract')}
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem 
+                        className="text-destructive focus:bg-destructive/10 focus:text-destructive"
+                        onClick={(e) => handleActionClick(e, () => setCourierToDelete(courier))}
+                      >
+                        <Trash2 className="mr-2 h-4 w-4 rtl:ml-2 rtl:mr-0" />
+                        {t('delete')}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               )}
             </div>
@@ -202,10 +267,44 @@ export const CouriersList = ({ approvalStatus }: CouriersListProps) => {
 
       <CourierApprovalModal 
         courier={selectedCourier} 
-        isOpen={selectedCourier !== null} 
-        onClose={() => setSelectedCourier(null)} 
+        isOpen={isApprovalModalOpen} 
+        onClose={() => setIsApprovalModalOpen(false)} 
         onPrint={handlePrint}
       />
+
+      <CourierDetailsModal
+        courier={selectedCourier}
+        isOpen={isDetailsModalOpen}
+        onClose={() => setIsDetailsModalOpen(false)}
+        onPrint={handlePrint}
+      />
+
+      <CourierFormModal
+        courier={selectedCourier}
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+      />
+
+      <AlertDialog open={!!courierToDelete} onOpenChange={(open) => !open && setCourierToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('confirm_delete')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('confirm_delete_message')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => courierToDelete && deleteMutation.mutate(courierToDelete.id)}
+            >
+              {deleteMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              {t('delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

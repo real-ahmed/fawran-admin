@@ -14,7 +14,7 @@ interface CourierApprovalModalProps {
   courier: Courier | null;
   isOpen: boolean;
   onClose: () => void;
-  onPrint: (id: number) => void;
+  onPrint: (id: number) => Promise<void>;
 }
 
 export const CourierApprovalModal = ({ courier, isOpen, onClose, onPrint }: CourierApprovalModalProps) => {
@@ -114,10 +114,7 @@ export const CourierApprovalModal = ({ courier, isOpen, onClose, onPrint }: Cour
                     variant="outline" 
                     size="sm" 
                     className="h-7 text-xs"
-                    onClick={() => {
-                      onPrint(courier.id);
-                      // Provide a short timeout before refreshing, or rely on manual refresh/parent logic
-                    }}
+                    onClick={() => void onPrint(courier.id)}
                   >
                     {t('print_contract')}
                   </Button>

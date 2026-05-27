@@ -30,10 +30,10 @@ export interface CourierLocation {
 export interface Courier {
   id: number;
   user: CourierUser;
+  national_id?: string;
   vehicle_type: CourierVehicleType;
   plate_number: string;
   is_online: boolean;
-  delivery_zone?: CourierDeliveryZone;
   document?: CourierDocument;
   is_approved: boolean;
   approved_at?: string;

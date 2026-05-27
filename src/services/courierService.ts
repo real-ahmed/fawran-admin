@@ -24,6 +24,20 @@ export const rejectCourier = async (id: number): Promise<void> => {
   await apiClient.put(`/admin/couriers/${id}/reject`);
 };
 
+export const updateCourier = async (id: number, data: {
+  name: string;
+  phone: string;
+  vehicle_type: string;
+  plate_number?: string;
+}): Promise<Courier> => {
+  const response = await apiClient.put<{ data: Courier; message: string }>(`/admin/couriers/${id}`, data);
+  return response.data.data;
+};
+
+export const deleteCourier = async (id: number): Promise<void> => {
+  await apiClient.delete(`/admin/couriers/${id}`);
+};
+
 export const getCourierContractPrintHtml = async (id: number): Promise<string> => {
   const response = await apiClient.get(`/admin/couriers/${id}/contract/print`, {
     responseType: 'text',
