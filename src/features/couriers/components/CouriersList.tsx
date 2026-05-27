@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Courier } from '@/types/courier';
+import { getLocalizedDisplayName } from '@/utils/displayName';
 import { useCouriersList } from '../hooks/useCouriersList';
 import { useInView } from 'react-intersection-observer';
 import { EmptyState } from '@/components/EmptyState';
@@ -14,7 +15,7 @@ interface CouriersListProps {
 }
 
 export const CouriersList = ({ approvalStatus }: CouriersListProps) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { ref, inView } = useInView();
   const [selectedCourier, setSelectedCourier] = useState<Courier | null>(null);
 
@@ -95,7 +96,11 @@ export const CouriersList = ({ approvalStatus }: CouriersListProps) => {
                   </div>
                   <div className="flex items-center gap-2">
                     <Navigation className="h-4 w-4 shrink-0" />
-                    <span className="line-clamp-1">{courier.delivery_zone?.name || t('no_zone_assigned')}</span>
+                    <span className="line-clamp-1">
+                      {courier.delivery_zone 
+                        ? getLocalizedDisplayName(courier.delivery_zone, i18n.language) 
+                        : t('no_zone_assigned')}
+                    </span>
                   </div>
                 </div>
               </div>

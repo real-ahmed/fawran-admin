@@ -13,7 +13,7 @@ export interface CourierUser {
 
 export interface CourierDeliveryZone {
   id: number;
-  name: string;
+  name: { en: string; ar: string } | string;
 }
 
 export interface CourierDocument {

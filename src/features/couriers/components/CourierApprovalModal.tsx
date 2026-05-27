@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { getLocalizedDisplayName } from '@/utils/displayName';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Courier } from '@/types/courier';
@@ -16,7 +17,7 @@ interface CourierApprovalModalProps {
 }
 
 export const CourierApprovalModal = ({ courier, isOpen, onClose }: CourierApprovalModalProps) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
 
   const approveMutation = useMutation({
@@ -77,7 +78,7 @@ export const CourierApprovalModal = ({ courier, isOpen, onClose }: CourierApprov
               </div>
               {courier.delivery_zone && (
                 <div className="text-muted-foreground mt-1 text-xs">
-                  {t('delivery_zone')}: <span className="font-medium text-foreground">{courier.delivery_zone.name}</span>
+                  {t('delivery_zone')}: <span className="font-medium text-foreground">{getLocalizedDisplayName(courier.delivery_zone, i18n.language)}</span>
                 </div>
               )}
             </div>
