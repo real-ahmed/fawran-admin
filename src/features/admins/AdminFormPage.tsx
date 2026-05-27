@@ -121,7 +121,7 @@ export const AdminFormPage = () => {
   }
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto pb-10">
+    <div className="space-y-6 pb-10">
       <PageHeader
         title={isEditing ? t('edit_admin') : t('create_admin')}
         description={isEditing ? t('edit_admin_desc') : t('create_admin_desc')}
@@ -163,7 +163,7 @@ export const AdminFormPage = () => {
             </div>
           </div>
 
-          <div className="grid gap-2 max-w-xl">
+          <div className="grid max-w-2xl gap-2">
             <Label htmlFor="password" className="text-sm font-medium">
               {t('admin_password')} {!isEditing && <span className="text-muted-foreground font-normal">({t('optional')})</span>}
             </Label>
