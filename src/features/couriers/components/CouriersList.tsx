@@ -2,15 +2,15 @@ import { useTranslation } from 'react-i18next';
 import { Courier } from '@/types/courier';
 import { getLocalizedDisplayName } from '@/utils/displayName';
 import { useCouriersList } from '../hooks/useCouriersList';
-import { useInView } from 'react-intersection-observer';
 import { EmptyState } from '@/components/EmptyState';
 import { Bike, CarFront, Navigation, User, AlertCircle, Printer } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { CourierApprovalModal } from './CourierApprovalModal';
-import apiClient from '@/config/axios';
+import { getCourierContractPrintHtml } from '@/services/courierService';
 import { toast } from 'sonner';
+import { CouriersToolbar } from './CouriersToolbar';
 
 interface CouriersListProps {
   approvalStatus: 'pending' | 'approved';
@@ -18,34 +18,32 @@ interface CouriersListProps {
 
 export const CouriersList = ({ approvalStatus }: CouriersListProps) => {
   const { t, i18n } = useTranslation();
-  const { ref, inView } = useInView();
   const [selectedCourier, setSelectedCourier] = useState<Courier | null>(null);
 
   const {
-    data,
+    couriers,
     isLoading,
     isError,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage
+    isFetchingNextPage,
+    loadMoreRef,
+    filters,
+    setSearchTerm,
+    setVehicleType,
+    setOnlineStatus,
+    setDeliveryZoneId,
+    clearFilters,
+    deliveryZones,
+    isLoadingDeliveryZones,
   } = useCouriersList({
-    approval_status: approvalStatus
+    approvalStatus,
   });
-
-  const couriers = data?.pages.flatMap(page => page.data) || [];
-
-  if (inView && hasNextPage && !isFetchingNextPage) {
-    fetchNextPage();
-  }
 
   const handlePrint = async (courierId: number) => {
     try {
-      const response = await apiClient.get(`/admin/couriers/${courierId}/contract/print`, {
-        responseType: 'text',
-      });
+      const contractHtml = await getCourierContractPrintHtml(courierId);
       const printWindow = window.open('', '_blank');
       if (printWindow) {
-        printWindow.document.write(response.data);
+        printWindow.document.write(contractHtml);
         printWindow.document.close();
       } else {
         toast.error(t('popup_blocked'));
@@ -66,6 +64,20 @@ export const CouriersList = ({ approvalStatus }: CouriersListProps) => {
 
   return (
     <div className="space-y-6">
+      <CouriersToolbar
+        searchTerm={filters.searchTerm}
+        vehicleType={filters.vehicleType}
+        onlineStatus={filters.onlineStatus}
+        deliveryZoneId={filters.deliveryZoneId}
+        deliveryZones={deliveryZones}
+        isLoadingDeliveryZones={isLoadingDeliveryZones}
+        onSearchChange={setSearchTerm}
+        onVehicleTypeChange={setVehicleType}
+        onOnlineStatusChange={setOnlineStatus}
+        onDeliveryZoneChange={setDeliveryZoneId}
+        onClearFilters={clearFilters}
+      />
+
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -160,7 +172,7 @@ export const CouriersList = ({ approvalStatus }: CouriersListProps) => {
         </div>
       )}
       
-      <div ref={ref} className="h-4 w-full" />
+      <div ref={loadMoreRef} className="h-4 w-full" />
 
       <CourierApprovalModal 
         courier={selectedCourier} 

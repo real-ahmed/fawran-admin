@@ -780,6 +780,12 @@
                             "path": "api\/v1\/admin\/couriers",
                             "query": [
                                 {
+                                    "key": "search",
+                                    "value": "ahmed",
+                                    "description": "Search couriers by name, email, or phone.",
+                                    "disabled": false
+                                },
+                                {
                                     "key": "is_online",
                                     "value": "1",
                                     "description": "Filter by online status.",
@@ -804,7 +810,7 @@
                                     "disabled": false
                                 }
                             ],
-                            "raw": "{{baseUrl}}\/api\/v1\/admin\/couriers?is_online=1&vehicle_type=motorcycle&delivery_zone_id=1&approval_status=pending"
+                            "raw": "{{baseUrl}}\/api\/v1\/admin\/couriers?search=ahmed&is_online=1&vehicle_type=motorcycle&delivery_zone_id=1&approval_status=pending"
                         },
                         "method": "GET",
                         "header": [
