@@ -53,7 +53,7 @@ export const AdminFormPage = () => {
 
   const { data: zonesData, isLoading: zonesLoading } = useQuery({
     queryKey: ['delivery_zones'],
-    queryFn: () => fetchDeliveryZones({ per_page: 100, is_active: true }),
+    queryFn: () => fetchDeliveryZones({ per_page: 100, is_active: 1 }),
   });
 
   const allRoles = rolesData?.data || [];
@@ -199,22 +199,24 @@ export const AdminFormPage = () => {
             </div>
           </div>
 
-          <div className="grid max-w-2xl gap-2">
-            <Label htmlFor="password" className="text-sm font-medium">
-              {t('admin_password')} {!isEditing && <span className="text-muted-foreground font-normal">({t('optional')})</span>}
-            </Label>
-            <Input
-              id="password"
-              type="password"
-              {...register('password')}
-              className="w-full bg-muted/40"
-              dir="ltr"
-            />
-            <p className="text-xs text-muted-foreground">
-              {isEditing ? t('admin_password_hint_edit') : t('admin_password_hint')}
-            </p>
-            <FormFieldError message={errors.password?.message} />
-          </div>
+          {isEditing && (
+            <div className="grid max-w-2xl gap-2">
+              <Label htmlFor="password" className="text-sm font-medium">
+                {t('admin_password')} <span className="text-muted-foreground font-normal">({t('optional')})</span>
+              </Label>
+              <Input
+                id="password"
+                type="password"
+                {...register('password')}
+                className="w-full bg-muted/40"
+                dir="ltr"
+              />
+              <p className="text-xs text-muted-foreground">
+                {t('admin_password_hint_edit')}
+              </p>
+              <FormFieldError message={errors.password?.message} />
+            </div>
+          )}
 
           <div className="grid gap-4">
             <Label className="text-sm font-medium">{t('admin_roles')} <span className="text-destructive">*</span></Label>
