@@ -111,7 +111,10 @@ export const CouriersList = ({ approvalStatus }: CouriersListProps) => {
                           {t(`vehicle_${courier.vehicle_type}`)}
                         </span>
                         {approvalStatus === 'approved' && (
-                          <Badge variant={courier.is_online ? 'default' : 'secondary'} className="text-[10px] px-1.5 py-0">
+                          <Badge
+                            variant={courier.is_online ? 'default' : 'destructive'}
+                            className="text-[10px] px-1.5 py-0"
+                          >
                             {courier.is_online ? t('online') : t('offline')}
                           </Badge>
                         )}
