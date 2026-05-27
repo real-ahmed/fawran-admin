@@ -16,7 +16,7 @@ export const useLanguagePreference = () => {
 
     apiClient
       .put('/admin/profile/settings', {
-        settings: [{ key: 'language', value: nextLanguage }],
+        settings: [{ key: 'locale', value: nextLanguage }],
       })
       .catch((err) => console.error('Failed to update language on backend', err));
   };

@@ -9,20 +9,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { CourierDeliveryZone, CourierVehicleType } from '@/types/courier';
-import { getLocalizedDisplayName } from '@/utils/displayName';
+import { CourierVehicleType } from '@/types/courier';
 
 interface CouriersToolbarProps {
   searchTerm: string;
   vehicleType: string;
   onlineStatus: string;
-  deliveryZoneId: string;
-  deliveryZones: CourierDeliveryZone[];
-  isLoadingDeliveryZones: boolean;
+
   onSearchChange: (value: string) => void;
   onVehicleTypeChange: (value: string) => void;
   onOnlineStatusChange: (value: string) => void;
-  onDeliveryZoneChange: (value: string) => void;
+
   onClearFilters: () => void;
 }
 
@@ -30,25 +27,22 @@ export const CouriersToolbar = ({
   searchTerm,
   vehicleType,
   onlineStatus,
-  deliveryZoneId,
-  deliveryZones,
-  isLoadingDeliveryZones,
+
   onSearchChange,
   onVehicleTypeChange,
   onOnlineStatusChange,
-  onDeliveryZoneChange,
+
   onClearFilters,
 }: CouriersToolbarProps) => {
   const { t, i18n } = useTranslation();
   const hasActiveFilters =
     searchTerm !== '' ||
     vehicleType !== 'all' ||
-    onlineStatus !== 'all' ||
-    deliveryZoneId !== 'all';
+    onlineStatus !== 'all';
 
   return (
     <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
-      <div className="grid gap-3 md:grid-cols-[minmax(220px,1fr)_repeat(3,minmax(160px,220px))_auto] md:items-center">
+      <div className="grid gap-3 md:grid-cols-[minmax(220px,1fr)_repeat(2,minmax(160px,220px))_auto] md:items-center">
         <div className="relative min-w-0">
           <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -82,23 +76,7 @@ export const CouriersToolbar = ({
           </SelectContent>
         </Select>
 
-        <Select value={deliveryZoneId} onValueChange={onDeliveryZoneChange}>
-          <SelectTrigger>
-            <SelectValue placeholder={t('delivery_zone')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t('all_delivery_zones')}</SelectItem>
-            {isLoadingDeliveryZones ? (
-              <SelectItem value="loading" disabled>{t('loading')}</SelectItem>
-            ) : (
-              deliveryZones.map((zone) => (
-                <SelectItem key={zone.id} value={String(zone.id)}>
-                  {getLocalizedDisplayName(zone, i18n.language)}
-                </SelectItem>
-              ))
-            )}
-          </SelectContent>
-        </Select>
+
 
         <Button
           type="button"

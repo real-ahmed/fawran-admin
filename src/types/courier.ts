@@ -11,11 +11,6 @@ export interface CourierUser {
   phone: string;
 }
 
-export interface CourierDeliveryZone {
-  id: number;
-  name: { en: string; ar: string } | string;
-}
-
 export interface CourierDocument {
   criminal_record_file?: string;
   contract_number?: string;
@@ -47,6 +42,5 @@ export interface CouriersQuery {
   search?: string;
   is_online?: boolean | number;
   vehicle_type?: string;
-  delivery_zone_id?: number;
   approval_status?: 'pending' | 'approved';
 }

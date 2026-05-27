@@ -3,7 +3,7 @@ import { Courier } from '@/types/courier';
 import { getLocalizedDisplayName } from '@/utils/displayName';
 import { useCouriersList } from '../hooks/useCouriersList';
 import { EmptyState } from '@/components/EmptyState';
-import { Bike, CarFront, Navigation, User, AlertCircle, Printer, Loader2, Eye, Edit, MoreHorizontal, Trash2 } from 'lucide-react';
+import { Bike, CarFront, Navigation, User, AlertCircle, Printer, Loader2, Eye, Edit, MoreHorizontal, Trash2, IdCard } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
@@ -47,10 +47,7 @@ export const CouriersList = ({ approvalStatus }: CouriersListProps) => {
     setSearchTerm,
     setVehicleType,
     setOnlineStatus,
-    setDeliveryZoneId,
     clearFilters,
-    deliveryZones,
-    isLoadingDeliveryZones,
   } = useCouriersList({
     approvalStatus,
   });
@@ -125,13 +122,9 @@ export const CouriersList = ({ approvalStatus }: CouriersListProps) => {
         searchTerm={filters.searchTerm}
         vehicleType={filters.vehicleType}
         onlineStatus={filters.onlineStatus}
-        deliveryZoneId={filters.deliveryZoneId}
-        deliveryZones={deliveryZones}
-        isLoadingDeliveryZones={isLoadingDeliveryZones}
         onSearchChange={setSearchTerm}
         onVehicleTypeChange={setVehicleType}
         onOnlineStatusChange={setOnlineStatus}
-        onDeliveryZoneChange={setDeliveryZoneId}
         onClearFilters={clearFilters}
       />
 
@@ -185,14 +178,13 @@ export const CouriersList = ({ approvalStatus }: CouriersListProps) => {
                     <User className="h-4 w-4 shrink-0" />
                     <span>{courier.user?.phone}</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Navigation className="h-4 w-4 shrink-0" />
-                    <span className="line-clamp-1">
-                      {courier.delivery_zone 
-                        ? getLocalizedDisplayName(courier.delivery_zone, i18n.language) 
-                        : t('no_zone_assigned')}
-                    </span>
-                  </div>
+                  {courier.national_id && (
+                    <div className="flex items-center gap-2">
+                      <IdCard className="h-4 w-4 shrink-0" />
+                      <span className="font-mono text-xs">{courier.national_id}</span>
+                    </div>
+                  )}
+
                 </div>
               </div>
 
