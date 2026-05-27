@@ -75,7 +75,7 @@ export const CourierApprovalModal = ({ courier, isOpen, onClose, onPrint }: Cour
               <div className="flex items-center gap-2">
                 <CarFront className="h-4 w-4 text-primary" /> 
                 <span className="capitalize">{courier.vehicle_type}</span>
-                <Badge variant="outline" className="ml-2 rtl:mr-2 rtl:ml-0">{courier.plate_number}</Badge>
+                <Badge variant="outline">{courier.plate_number}</Badge>
               </div>
               {courier.delivery_zone && (
                 <div className="text-muted-foreground mt-1 text-xs">
@@ -141,7 +141,7 @@ export const CourierApprovalModal = ({ courier, isOpen, onClose, onPrint }: Cour
             onClick={() => rejectMutation.mutate(courier.id)}
             disabled={rejectMutation.isPending || approveMutation.isPending}
           >
-            {rejectMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {rejectMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
             {t('reject_courier')}
           </Button>
           <Button
@@ -150,7 +150,7 @@ export const CourierApprovalModal = ({ courier, isOpen, onClose, onPrint }: Cour
             onClick={() => approveMutation.mutate(courier.id)}
             disabled={approveMutation.isPending || rejectMutation.isPending || !courier.document?.contract_number}
           >
-            {approveMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {approveMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
             {t('approve_courier')}
           </Button>
         </DialogFooter>
