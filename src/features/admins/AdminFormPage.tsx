@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, useWatch } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
@@ -108,6 +108,8 @@ export const AdminFormPage = () => {
       delivery_zones: [],
     },
   });
+  const selectedRoles = useWatch({ control, name: 'roles' }) ?? [];
+  const selectedZones = useWatch({ control, name: 'delivery_zones' }) ?? [];
 
   useEffect(() => {
     if (isEditing && id) {
@@ -258,7 +260,13 @@ export const AdminFormPage = () => {
             label={<>{t('admin_roles')} <span className="text-destructive">*</span></>}
             searchTerm={rolesSearchTerm}
             searchPlaceholder={t('search_roles')}
+            clearSearchLabel={t('clear')}
             onSearchChange={setRolesSearchTerm}
+            selectedLabel={
+              selectedRoles.length > 0
+                ? t('selected_permissions_count', { count: selectedRoles.length })
+                : undefined
+            }
             isEmpty={allRoles.length === 0}
             isFetching={rolesFetching}
             emptyMessage={t('roles_empty_title')}
@@ -275,7 +283,10 @@ export const AdminFormPage = () => {
               render={({ field }) => (
                 <>
                   {allRoles.map(role => (
-                    <div key={role.id} className="flex items-center space-x-2 space-x-reverse rtl:space-x-reverse">
+                    <div
+                      key={role.id}
+                      className="flex min-h-12 items-center gap-3 rounded-md border border-border/60 bg-background px-3 py-2 transition-colors hover:border-primary/40 hover:bg-accent/40"
+                    >
                       <Checkbox
                         id={`role-${role.id}`}
                         checked={field.value.includes(role.name)}
@@ -293,7 +304,7 @@ export const AdminFormPage = () => {
                       />
                       <Label
                         htmlFor={`role-${role.id}`}
-                        className="text-sm cursor-pointer font-medium"
+                        className="min-w-0 flex-1 cursor-pointer truncate text-sm font-medium"
                       >
                         {getLocalizedDisplayName(role, i18n.language, role.name)}
                       </Label>
@@ -308,7 +319,13 @@ export const AdminFormPage = () => {
             label={<>{t('delivery_zones')} <span className="text-muted-foreground font-normal">({t('optional')})</span></>}
             searchTerm={zonesSearchTerm}
             searchPlaceholder={t('search_delivery_zones')}
+            clearSearchLabel={t('clear')}
             onSearchChange={setZonesSearchTerm}
+            selectedLabel={
+              selectedZones.length > 0
+                ? t('selected_permissions_count', { count: selectedZones.length })
+                : undefined
+            }
             isEmpty={allZones.length === 0}
             isFetching={zonesFetching}
             emptyMessage={t('delivery_zones_empty_title')}
@@ -325,7 +342,10 @@ export const AdminFormPage = () => {
               render={({ field }) => (
                 <>
                   {allZones.map(zone => (
-                    <div key={zone.id} className="flex items-center space-x-2 space-x-reverse rtl:space-x-reverse">
+                    <div
+                      key={zone.id}
+                      className="flex min-h-12 items-center gap-3 rounded-md border border-border/60 bg-background px-3 py-2 transition-colors hover:border-primary/40 hover:bg-accent/40"
+                    >
                       <Checkbox
                         id={`zone-${zone.id}`}
                         checked={field.value?.some((selectedId) => String(selectedId) === String(zone.id))}
@@ -344,7 +364,7 @@ export const AdminFormPage = () => {
                       />
                       <Label
                         htmlFor={`zone-${zone.id}`}
-                        className="text-sm cursor-pointer font-medium"
+                        className="min-w-0 flex-1 cursor-pointer truncate text-sm font-medium"
                       >
                         {i18n.language === 'ar' ? zone.name?.ar : zone.name?.en}
                       </Label>
