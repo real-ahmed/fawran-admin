@@ -296,5 +296,6 @@
   "select_zone": "Select a zone",
   "min_order_amount": "Min Order Amount",
   "estimated_delivery_time_mins": "Estimated Time (mins)",
-  "no_delivery_zones": "No delivery zones defined. Click 'Add Delivery Zone' to add one."
+  "no_delivery_zones": "No delivery zones defined. Click 'Add Delivery Zone' to add one.",
+  "add_new": "Add New"
 }
