@@ -40,6 +40,9 @@ const DeliveryZonesList = lazy(() =>
 const DeliveryZoneFormPage = lazy(() =>
   import('../features/delivery-zones/DeliveryZoneFormPage').then((module) => ({ default: module.DeliveryZoneFormPage }))
 );
+const CouriersPage = lazy(() =>
+  import('../features/couriers/CouriersPage').then((module) => ({ default: module.CouriersPage }))
+);
 
 const RouteFallback = () => (
   <div className="flex min-h-48 items-center justify-center">
@@ -75,6 +78,9 @@ export const AppRoutes = () => {
               <Route path="/vendors" element={<VendorsList />} />
               <Route path="/vendors/create" element={<VendorFormPage />} />
               <Route path="/vendors/:id/edit" element={<VendorFormPage />} />
+            </Route>
+            <Route element={<PrivateRoute requiredPermission={PERMISSIONS.VIEW_COURIERS} />}>
+              <Route path="/couriers" element={<CouriersPage />} />
             </Route>
             <Route element={<PrivateRoute requiredPermission={PERMISSIONS.VIEW_DELIVERY_ZONES} />}>
               <Route path="/delivery-zones" element={<DeliveryZonesList />} />

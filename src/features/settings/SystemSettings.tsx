@@ -63,6 +63,9 @@ const settingsSchema = z.object({
   // Order Operations
   auto_cancel_unaccepted_minutes: z.string().optional(),
   courier_search_radius_km: z.string().optional(),
+
+  // Legal
+  courier_contract_template: z.string().optional(),
 });
 
 type SettingsForm = z.infer<typeof settingsSchema>;
@@ -241,6 +244,8 @@ export const SystemSettings = () => {
 
         auto_cancel_unaccepted_minutes: settings.auto_cancel_unaccepted_minutes ?? '',
         courier_search_radius_km: settings.courier_search_radius_km ?? '',
+
+        courier_contract_template: settings.courier_contract_template ?? '',
       });
     }
   }, [settings, reset]);
@@ -551,6 +556,24 @@ export const SystemSettings = () => {
               />
               </div>
             </SettingsSection>
+
+          {/* Legal & Contracts */}
+          <SettingsSection
+            title={t('legal_settings')}
+          >
+            <div className="grid grid-cols-1 gap-4">
+              <div className="grid gap-2 w-full">
+                <Label htmlFor="courier_contract_template" className="text-sm font-medium">{t('courier_contract_template')}</Label>
+                <textarea
+                  id="courier_contract_template"
+                  dir="rtl"
+                  className="w-full min-h-[400px] p-4 bg-muted/40 focus:bg-background transition-colors rounded-xl border-border/60 hover:border-border font-mono text-sm"
+                  {...register('courier_contract_template')}
+                />
+                <p className="text-xs font-medium text-muted-foreground">{t('courier_contract_template_desc')}</p>
+              </div>
+            </div>
+          </SettingsSection>
           </div>
 
           <div className="flex justify-end pt-4">
