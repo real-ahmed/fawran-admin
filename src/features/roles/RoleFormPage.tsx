@@ -24,6 +24,7 @@ import {
 import { applyApiValidationErrors, parseApiError } from '@/utils/api';
 import { FormFieldError } from '@/components/FormFieldError';
 import { isSuperAdminRole } from '@/utils/access';
+import { FormPageSkeleton } from '@/components/FormPageSkeleton';
 
 interface RoleForm {
   display_name_en: string;
@@ -200,11 +201,7 @@ export const RoleFormPage = () => {
   const groupedPermissions = getGroupedPermissions();
 
   if (isLoading || permissionsLoading) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <FormPageSkeleton sections={2} />;
   }
 
   return (

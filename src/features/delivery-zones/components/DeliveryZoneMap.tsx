@@ -54,42 +54,33 @@ export const DeliveryZoneMap = ({ coordinates, onChange, error }: DeliveryZoneMa
     mapRef.current = null;
   }, []);
 
-  const handlePolygonComplete = (polygon: google.maps.Polygon) => {
-    // If a polygon already exists, remove it so we only have one
-    if (polygonRef.current) {
-      polygonRef.current.setMap(null);
+  const handlePolygonComplete = (drawnPolygon: google.maps.Polygon) => {
+    const path = drawnPolygon.getPath();
+    const newCoordinates: Coordinate[] = [];
+    for (let i = 0; i < path.getLength(); i++) {
+      const latLng = path.getAt(i);
+      newCoordinates.push({ lat: latLng.lat(), lng: latLng.lng() });
     }
-    polygonRef.current = polygon;
+    
+    // Immediately remove the native polygon created by the DrawingManager
+    // We will rely purely on the React <Polygon /> component to render the shape
+    drawnPolygon.setMap(null);
+    
+    onChange(newCoordinates);
+  };
 
-    const path = polygon.getPath();
+  const updateCoordinates = useCallback(() => {
+    if (!polygonRef.current) return;
+    const path = polygonRef.current.getPath();
     const newCoordinates: Coordinate[] = [];
     for (let i = 0; i < path.getLength(); i++) {
       const latLng = path.getAt(i);
       newCoordinates.push({ lat: latLng.lat(), lng: latLng.lng() });
     }
     onChange(newCoordinates);
-
-    // Setup listener for edits
-    google.maps.event.addListener(path, 'insert_at', () => updateCoordinates(polygon));
-    google.maps.event.addListener(path, 'remove_at', () => updateCoordinates(polygon));
-    google.maps.event.addListener(path, 'set_at', () => updateCoordinates(polygon));
-  };
-
-  const updateCoordinates = (polygon: google.maps.Polygon) => {
-    const path = polygon.getPath();
-    const newCoordinates: Coordinate[] = [];
-    for (let i = 0; i < path.getLength(); i++) {
-      const latLng = path.getAt(i);
-      newCoordinates.push({ lat: latLng.lat(), lng: latLng.lng() });
-    }
-    onChange(newCoordinates);
-  };
+  }, [onChange]);
 
   const clearPolygon = () => {
-    if (polygonRef.current) {
-      polygonRef.current.setMap(null);
-      polygonRef.current = null;
-    }
     onChange([]);
   };
 
@@ -147,8 +138,7 @@ export const DeliveryZoneMap = ({ coordinates, onChange, error }: DeliveryZoneMa
             streetViewControl: false,
           }}
         >
-          {/* If we have initial coordinates, draw them unless user has drawn a new one */}
-          {coordinates && coordinates.length > 0 && !polygonRef.current && (
+          {coordinates && coordinates.length > 0 && (
             <Polygon
               path={coordinates}
               options={{
@@ -158,13 +148,15 @@ export const DeliveryZoneMap = ({ coordinates, onChange, error }: DeliveryZoneMa
                 strokeOpacity: 1,
                 strokeWeight: 2,
                 editable: true,
+                draggable: true,
               }}
               onLoad={(polygon) => {
                 polygonRef.current = polygon;
                 const path = polygon.getPath();
-                google.maps.event.addListener(path, 'insert_at', () => updateCoordinates(polygon));
-                google.maps.event.addListener(path, 'remove_at', () => updateCoordinates(polygon));
-                google.maps.event.addListener(path, 'set_at', () => updateCoordinates(polygon));
+                google.maps.event.addListener(path, 'insert_at', updateCoordinates);
+                google.maps.event.addListener(path, 'remove_at', updateCoordinates);
+                google.maps.event.addListener(path, 'set_at', updateCoordinates);
+                google.maps.event.addListener(polygon, 'dragend', updateCoordinates);
               }}
             />
           )}

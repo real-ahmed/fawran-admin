@@ -1,6 +1,5 @@
-import { Loader2, Shield } from 'lucide-react';
+import { Edit2, Shield, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Button } from '@/components/ui/button';
 import { Can } from '@/components/Can';
 import { PERMISSIONS } from '@/config/permissions';
 import {
@@ -14,6 +13,8 @@ import {
 import type { PermissionRecord, Role } from '@/services/roleService';
 import { getLocalizedDisplayName } from '@/utils/displayName';
 import { isSuperAdminRole } from '@/utils/access';
+import { DataTableSkeletonRows } from '@/components/DataTableSkeletonRows';
+import { TableActionButton } from '@/components/TableActionButton';
 
 interface RolesTableProps {
   roles: Role[];
@@ -49,11 +50,7 @@ export const RolesTable = ({
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={3} className="py-8 text-center text-muted-foreground">
-                  {t('loading')}
-                </TableCell>
-              </TableRow>
+              <DataTableSkeletonRows columns={['w-40', 'w-64', 'w-24']} />
             ) : roles.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={3} className="h-32 text-center">
@@ -93,20 +90,16 @@ export const RolesTable = ({
                       {!protectedRole && (
                         <div className="flex items-center justify-end gap-2">
                           <Can permission={PERMISSIONS.UPDATE_ROLES}>
-                            <Button variant="ghost" size="sm" onClick={() => onEdit(role)}>
-                              {t('edit')}
-                            </Button>
+                            <TableActionButton label={t('edit')} icon={Edit2} onClick={() => onEdit(role)} />
                           </Can>
                           <Can permission={PERMISSIONS.DELETE_ROLES}>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                            <TableActionButton
+                              label={t('delete')}
+                              icon={Trash2}
                               onClick={() => onDelete(role.id)}
                               disabled={isDeleting}
-                            >
-                              {t('delete')}
-                            </Button>
+                              tone="destructive"
+                            />
                           </Can>
                         </div>
                       )}
@@ -116,11 +109,11 @@ export const RolesTable = ({
               })
             )}
             {hasNextPage && (
-              <TableRow ref={loadMoreRef}>
-                <TableCell colSpan={3} className="py-4 text-center text-muted-foreground">
-                  <Loader2 className="mx-auto h-5 w-5 animate-spin" />
-                </TableCell>
-              </TableRow>
+              <DataTableSkeletonRows
+                columns={['w-40', 'w-64', 'w-24']}
+                rows={1}
+                loadMoreRef={loadMoreRef}
+              />
             )}
           </TableBody>
         </Table>

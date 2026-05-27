@@ -1,6 +1,7 @@
 import apiClient from '@/config/axios';
 import { PaginatedResponse } from '@/types/api';
 import { Role } from './roleService';
+import type { DeliveryZone } from '@/types/delivery-zone';
 
 export interface Admin {
   id: number;
@@ -10,7 +11,7 @@ export interface Admin {
   created_at: string;
   updated_at: string;
   roles?: Role[];
-  delivery_zones?: any[];
+  delivery_zones?: DeliveryZone[];
 }
 
 export interface AdminPayload {
@@ -19,7 +20,7 @@ export interface AdminPayload {
   password?: string;
   is_active: boolean;
   roles: string[]; // names of roles
-  delivery_zones?: number[]; // ids of delivery zones
+  delivery_zones?: Array<number | string>; // ids of delivery zones
 }
 
 export interface FetchAdminsParams {

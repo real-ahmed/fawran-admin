@@ -16,6 +16,7 @@ import { Loader2, Settings, Save, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { parseLocalizedText } from '@/utils/localizedText';
 import { resolveStorageAssetUrl } from '@/utils/assets';
@@ -168,6 +169,28 @@ const UnauthorizedSettings = () => {
   );
 };
 
+const SettingsPageSkeleton = () => (
+  <div className="rounded-xl border border-border bg-card p-6 shadow-sm sm:p-8">
+    {Array.from({ length: 4 }).map((_, sectionIndex) => (
+      <div
+        key={sectionIndex}
+        className="grid grid-cols-1 gap-6 border-b border-border/40 py-8 first:pt-0 last:border-0 last:pb-0 lg:grid-cols-12"
+      >
+        <div className="space-y-2 lg:col-span-4">
+          <Skeleton className="h-5 w-40" />
+          <Skeleton className="h-4 w-64 max-w-full" />
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:col-span-8">
+          <Skeleton className="h-16 w-full rounded-xl" />
+          <Skeleton className="h-16 w-full rounded-xl" />
+          <Skeleton className="h-16 w-full rounded-xl" />
+          <Skeleton className="h-16 w-full rounded-xl" />
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
 // ─── Main Settings Page ───────────────────────────────────────────────────────
 export const SystemSettings = () => {
   const { t } = useTranslation();
@@ -277,9 +300,7 @@ export const SystemSettings = () => {
       />
 
       {isLoading ? (
-        <div className="flex items-center justify-center h-48">
-          <Loader2 className="h-7 w-7 animate-spin text-primary" />
-        </div>
+        <SettingsPageSkeleton />
       ) : (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 pb-10">
           <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-sm sm:p-10 divide-y divide-border/40">

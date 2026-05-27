@@ -1,38 +1,32 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { Save } from 'lucide-react';
+import { Loader2, Save } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { PageHeader } from '@/components/PageHeader';
+import { FormFieldError } from '@/components/FormFieldError';
+import { FormPageSkeleton } from '@/components/FormPageSkeleton';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Skeleton } from '@/components/ui/skeleton';
 import { DeliveryZoneMap } from '@/features/delivery-zones/components/DeliveryZoneMap';
 import { getDeliveryZone, createDeliveryZone, updateDeliveryZone } from '@/services/deliveryZoneService';
 import type { Coordinate } from '@/types/delivery-zone';
 
-const formSchema = z.object({
-  name: z.object({
-    en: z.string().min(2, 'Name in English is required'),
-    ar: z.string().min(2, 'Name in Arabic is required'),
-  }),
-  is_active: z.boolean().default(true),
-  coordinates: z.array(
-    z.object({
-      lat: z.number(),
-      lng: z.number(),
-    })
-  ).min(3, 'A delivery zone must have at least 3 coordinates (a polygon).'),
-});
-
-type FormData = z.infer<typeof formSchema>;
+interface FormData {
+  name: {
+    en: string;
+    ar: string;
+  };
+  is_active: boolean;
+  coordinates: Coordinate[];
+}
 
 export const DeliveryZoneFormPage = () => {
   const { id } = useParams();
@@ -40,6 +34,19 @@ export const DeliveryZoneFormPage = () => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const isEditing = Boolean(id);
+  const formSchema = z.object({
+    name: z.object({
+      en: z.string().min(2, t('validation_min_chars', { count: 2 })),
+      ar: z.string().min(2, t('validation_min_chars', { count: 2 })),
+    }),
+    is_active: z.boolean().default(true),
+    coordinates: z.array(
+      z.object({
+        lat: z.number(),
+        lng: z.number(),
+      })
+    ).min(3, t('delivery_zone_polygon_required')),
+  });
 
   const {
     register,
@@ -93,15 +100,7 @@ export const DeliveryZoneFormPage = () => {
   };
 
   if (isEditing && isFetching) {
-    return (
-      <div className="space-y-6">
-        <Skeleton className="h-20 w-full" />
-        <div className="grid gap-6 md:grid-cols-2">
-          <Skeleton className="h-[500px]" />
-          <Skeleton className="h-[500px]" />
-        </div>
-      </div>
-    );
+    return <FormPageSkeleton showMapPanel />;
   }
 
   return (
@@ -112,77 +111,81 @@ export const DeliveryZoneFormPage = () => {
         backUrl="/delivery-zones"
       />
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        <div className="grid gap-6 lg:grid-cols-2">
-          <div className="space-y-6">
-            <div className="rounded-xl border bg-card p-6 shadow-sm">
-              <h2 className="mb-4 text-lg font-semibold">{t('delivery_zone_details')}</h2>
-              
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name_en">{t('name_en')} *</Label>
-                  <Input id="name_en" {...register('name.en')} />
-                  {errors.name?.en && <p className="text-sm text-destructive">{errors.name.en.message}</p>}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="name_ar">{t('name_ar')} *</Label>
-                  <Input id="name_ar" {...register('name.ar')} />
-                  {errors.name?.ar && <p className="text-sm text-destructive">{errors.name.ar.message}</p>}
-                </div>
-
-                <div className="flex items-center justify-between rounded-lg border p-4">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="is_active">{t('status')}</Label>
-                    <p className="text-sm text-muted-foreground">{t('status_desc')}</p>
-                  </div>
-                  <Controller
-                    control={control}
-                    name="is_active"
-                    render={({ field }) => (
-                      <Switch
-                        id="is_active"
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    )}
-                  />
-                </div>
-              </div>
-            </div>
-            
-            <div className="flex justify-end gap-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => navigate('/delivery-zones')}
-                disabled={mutation.isPending}
-              >
-                {t('cancel')}
-              </Button>
-              <Button type="submit" disabled={mutation.isPending} className="gap-2">
-                <Save className="h-4 w-4" />
-                {t('save')}
-              </Button>
-            </div>
+      <form onSubmit={handleSubmit(onSubmit)} className="rounded-xl border border-border bg-card shadow-sm">
+        <section className="space-y-5 border-b border-border p-6 sm:p-8">
+          <div>
+            <h2 className="text-base font-semibold text-foreground">{t('delivery_zone_details')}</h2>
+            <p className="mt-1 text-sm text-muted-foreground">{t('delivery_zone_desc')}</p>
           </div>
 
-          <div className="space-y-6">
-            <div className="rounded-xl border bg-card p-6 shadow-sm">
-              <h2 className="mb-4 text-lg font-semibold">{t('map_area')}</h2>
+          <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid gap-2">
+              <Label htmlFor="name_en" className="text-sm font-medium">
+                {t('name_en')} <span className="text-destructive">*</span>
+              </Label>
+              <Input id="name_en" {...register('name.en')} className="h-11 w-full bg-muted/40" dir="ltr" />
+              <FormFieldError message={errors.name?.en?.message} />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="name_ar" className="text-sm font-medium">
+                {t('name_ar')} <span className="text-destructive">*</span>
+              </Label>
+              <Input id="name_ar" {...register('name.ar')} className="h-11 w-full bg-muted/40" dir="rtl" />
+              <FormFieldError message={errors.name?.ar?.message} />
+            </div>
+
+            <div className="flex min-h-11 items-center justify-between gap-4 rounded-lg border border-border/60 bg-muted/10 px-4 py-3">
+              <div className="space-y-0.5">
+                <Label htmlFor="is_active" className="text-sm font-medium">{t('status')}</Label>
+                <p className="text-xs text-muted-foreground">{t('status_desc')}</p>
+              </div>
               <Controller
                 control={control}
-                name="coordinates"
+                name="is_active"
                 render={({ field }) => (
-                  <DeliveryZoneMap
-                    coordinates={field.value}
-                    onChange={field.onChange}
-                    error={errors.coordinates?.message}
+                  <Switch
+                    id="is_active"
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
                   />
                 )}
               />
             </div>
           </div>
+        </section>
+
+        <section className="space-y-5 border-b border-border p-6 sm:p-8">
+          <div>
+            <h2 className="text-base font-semibold text-foreground">{t('map_area')}</h2>
+            <p className="mt-1 text-sm text-muted-foreground">{t('draw_polygon_instruction')}</p>
+          </div>
+          <Controller
+            control={control}
+            name="coordinates"
+            render={({ field }) => (
+              <DeliveryZoneMap
+                coordinates={field.value}
+                onChange={field.onChange}
+                error={errors.coordinates?.message}
+              />
+            )}
+          />
+        </section>
+
+        <div className="flex justify-end gap-3 px-6 py-5 sm:px-8">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => navigate('/delivery-zones')}
+            disabled={mutation.isPending}
+          >
+            {t('cancel')}
+          </Button>
+          <Button type="submit" disabled={mutation.isPending} className="gap-2">
+            {mutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+            {t('save')}
+          </Button>
         </div>
       </form>
     </div>

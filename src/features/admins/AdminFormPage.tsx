@@ -18,6 +18,7 @@ import { fetchDeliveryZones } from '@/services/deliveryZoneService';
 import { applyApiValidationErrors, parseApiError } from '@/utils/api';
 import { FormFieldError } from '@/components/FormFieldError';
 import { SUPER_ADMIN_ROLE, isProtectedAdminAccount, isSuperAdminRole } from '@/utils/access';
+import { FormPageSkeleton } from '@/components/FormPageSkeleton';
 
 interface AdminForm {
   name: string;
@@ -25,7 +26,7 @@ interface AdminForm {
   password?: string;
   is_active: boolean;
   roles: string[];
-  delivery_zones: number[];
+  delivery_zones: Array<number | string>;
 }
 
 export const AdminFormPage = () => {
@@ -40,7 +41,7 @@ export const AdminFormPage = () => {
     password: z.string().optional(),
     is_active: z.boolean(),
     roles: z.array(z.string()).min(1, t('validation_required_selection')),
-    delivery_zones: z.array(z.number()).optional().default([]),
+    delivery_zones: z.array(z.union([z.number(), z.string()])).optional().default([]),
   });
 
   const [isLoading, setIsLoading] = useState(isEditing);
@@ -91,7 +92,7 @@ export const AdminFormPage = () => {
             password: '',
             is_active: admin.is_active,
             roles: admin.roles?.map(r => r.name) || [],
-            delivery_zones: admin.delivery_zones?.map((z: any) => z.id) || [],
+            delivery_zones: admin.delivery_zones?.map((zone) => zone.id) || [],
           });
         })
         .catch((err) => {
@@ -152,11 +153,7 @@ export const AdminFormPage = () => {
   };
 
   if (isLoading || rolesLoading || zonesLoading) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <FormPageSkeleton sections={2} />;
   }
 
   return (
@@ -256,7 +253,7 @@ export const AdminFormPage = () => {
           </div>
 
           <div className="grid gap-4">
-            <Label className="text-sm font-medium">Delivery Zones <span className="text-muted-foreground font-normal">({t('optional')})</span></Label>
+            <Label className="text-sm font-medium">{t('delivery_zones')} <span className="text-muted-foreground font-normal">({t('optional')})</span></Label>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 p-5 border border-border/60 rounded-xl bg-muted/10">
               <Controller
                 control={control}
@@ -280,13 +277,13 @@ export const AdminFormPage = () => {
                           htmlFor={`zone-${zone.id}`}
                           className="text-sm cursor-pointer font-medium"
                         >
-                          {i18n.language === 'ar' ? zone.name_ar : zone.name_en}
+                          {i18n.language === 'ar' ? zone.name?.ar : zone.name?.en}
                         </Label>
                       </div>
                     ))}
                     {allZones.length === 0 && (
                       <div className="col-span-full text-sm text-muted-foreground text-center py-2">
-                        No delivery zones available.
+                        {t('delivery_zones_empty_title')}
                       </div>
                     )}
                   </>
