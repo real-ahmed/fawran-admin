@@ -1,18 +1,30 @@
 import apiClient from '@/config/axios';
 import { PaginatedResponse } from '@/types/api';
 
+export interface LocalizedName {
+  en?: string;
+  ar?: string;
+}
+
+export interface PermissionRecord {
+  id?: number;
+  name: string;
+  key?: string;
+  display_name?: LocalizedName;
+}
+
 export interface Role {
   id: number;
   name: string;
-  display_name?: { en: string; ar: string };
+  display_name?: LocalizedName;
   guard_name: string;
   created_at: string;
   updated_at: string;
-  permissions?: string[];
+  permissions?: PermissionRecord[];
 }
 
 export interface RolePayload {
-  display_name: { en: string; ar: string };
+  display_name: LocalizedName;
   permissions: string[];
 }
 
@@ -57,7 +69,10 @@ export const fetchRoleById = async (id: number): Promise<Role> => {
   return res.data.data || res.data;
 };
 
-export const fetchPermissions = async (): Promise<any> => {
+export type PermissionInput = PermissionRecord | string;
+export type PermissionsResponse = Record<string, PermissionInput[]> | PermissionInput[];
+
+export const fetchPermissions = async (): Promise<PermissionsResponse> => {
   const res = await apiClient.get('/admin/roles/permissions');
   // It usually returns a list of permission names or objects. Assuming names.
   return res.data.data;

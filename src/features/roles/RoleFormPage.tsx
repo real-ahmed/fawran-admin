@@ -12,7 +12,14 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { PageHeader } from '@/components/PageHeader';
 import { toast } from 'sonner';
-import { createRole, updateRole, fetchPermissions, fetchRoleById, RolePayload } from '@/services/roleService';
+import {
+  createRole,
+  updateRole,
+  fetchPermissions,
+  fetchRoleById,
+  type PermissionRecord,
+  type RolePayload,
+} from '@/services/roleService';
 import { parseApiError } from '@/utils/api';
 
 interface RoleForm {
@@ -106,10 +113,12 @@ export const RoleFormPage = () => {
     if (!allPermissions) return {};
     
     if (!Array.isArray(allPermissions) && typeof allPermissions === 'object') {
-      const grouped: Record<string, any[]> = {};
-      Object.entries(allPermissions).forEach(([group, perms]: [string, any]) => {
+      const grouped: Record<string, PermissionRecord[]> = {};
+      Object.entries(allPermissions).forEach(([group, perms]) => {
         const groupKey = group.toUpperCase().replace(/\s+/g, '_');
-        grouped[groupKey] = perms;
+        grouped[groupKey] = perms.map((permission) =>
+          typeof permission === 'string' ? { name: permission } : permission
+        );
       });
       return grouped;
     }
@@ -123,9 +132,9 @@ export const RoleFormPage = () => {
         const entity = parts.length > 1 ? parts.slice(1).join('_') : 'GENERAL';
         
         if (!acc[entity]) acc[entity] = [];
-        acc[entity].push(p);
+        acc[entity].push(typeof p === 'string' ? { name: p } : p);
         return acc;
-      }, {} as Record<string, any[]>);
+      }, {} as Record<string, PermissionRecord[]>);
     }
     
     return {};
@@ -198,7 +207,7 @@ export const RoleFormPage = () => {
                     {entity.replace(/_/g, ' ')}
                   </h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 px-2">
-                    {perms.map((p: any) => (
+                    {perms.map((p) => (
                       <div key={p.name} className="flex items-start space-x-2 space-x-reverse rtl:space-x-reverse">
                         <Checkbox
                           id={p.name}

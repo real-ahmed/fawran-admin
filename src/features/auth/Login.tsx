@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { isAxiosError } from 'axios';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
@@ -12,6 +13,26 @@ import { AlertCircle, Loader2, Lock, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+
+const getLoginErrorMessage = (error: unknown, fallbackMessage: string) => {
+  if (!isAxiosError(error)) return fallbackMessage;
+
+  const data = error.response?.data;
+
+  if (error.response?.status === 401 || error.response?.status === 422) {
+    return data?.message || fallbackMessage;
+  }
+
+  if (data?.errors && typeof data.errors === 'object') {
+    const firstError = Object.values(data.errors)[0];
+
+    if (Array.isArray(firstError) && typeof firstError[0] === 'string') {
+      return firstError[0];
+    }
+  }
+
+  return data?.message || fallbackMessage;
+};
 
 export const Login = () => {
   const { t } = useTranslation();
@@ -61,14 +82,14 @@ export const Login = () => {
         const permissions = meResponse.data?.data?.permissions || meResponse.data?.permissions || [];
         setUser(userData, permissions);
         
-        toast.success(t('login_success') || 'Login successful');
+        toast.success(t('login_success'));
         navigate('/dashboard');
       } else {
         setError(t('login_failed'));
         toast.error(t('login_failed'));
       }
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.message || t('login_failed');
+    } catch (err) {
+      const errorMessage = getLoginErrorMessage(err, t('login_failed'));
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {

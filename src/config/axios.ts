@@ -26,7 +26,12 @@ apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    const isAuthEndpoint =
+      originalRequest?.url?.includes('/admin/login') ||
+      originalRequest?.url?.includes('/admin/refresh');
+    const token = useAuthStore.getState().token;
+
+    if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint && token) {
       originalRequest._retry = true;
       try {
         const res = await axios.post(
@@ -34,7 +39,7 @@ apiClient.interceptors.response.use(
           {},
           {
             headers: {
-              Authorization: `Bearer ${useAuthStore.getState().token}`,
+              Authorization: `Bearer ${token}`,
             },
           }
         );
