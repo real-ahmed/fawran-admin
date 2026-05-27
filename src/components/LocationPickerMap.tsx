@@ -123,11 +123,11 @@ export const LocationPickerMap: React.FC<LocationPickerMapProps> = ({
           onPlacesChanged={onPlacesChanged}
         >
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground rtl:right-3 rtl:left-auto" />
+            <Search className="absolute start-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               type="text"
               placeholder={t('search_location')}
-              className="pl-9 rtl:pr-9 rtl:pl-3"
+              className="ps-9"
             />
           </div>
         </StandaloneSearchBox>

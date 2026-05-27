@@ -85,10 +85,10 @@ export const VendorList = () => {
 
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground rtl:right-3 rtl:left-auto" />
+          <Search className="absolute start-3 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder={t('search_vendors')}
-            className="pl-9 rtl:pr-9 rtl:pl-3"
+            className="ps-9"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />

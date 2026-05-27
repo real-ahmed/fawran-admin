@@ -335,7 +335,7 @@ export const RoleFormPage = () => {
               {t('cancel')}
             </Button>
             <Button type="submit" disabled={mutation.isPending}>
-              {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {mutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
               {t('save')}
             </Button>
           </div>

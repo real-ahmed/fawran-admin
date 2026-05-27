@@ -7,7 +7,7 @@ import { approveCourier, rejectCourier } from '@/services/courierService';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { parseApiError } from '@/utils/api';
-import { Loader2, ExternalLink, User, Mail, Phone, CarFront, FileText, AlertCircle } from 'lucide-react';
+import { Loader2, ExternalLink, User, Mail, Phone, CarFront, FileText, AlertCircle, IdCard } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 interface CourierApprovalModalProps {
@@ -65,6 +65,9 @@ export const CourierApprovalModal = ({ courier, isOpen, onClose, onPrint }: Cour
               <div className="flex items-center gap-2"><User className="h-4 w-4 text-primary" /> {courier.user.name}</div>
               <div className="flex items-center gap-2"><Mail className="h-4 w-4 text-primary" /> {courier.user.email}</div>
               <div className="flex items-center gap-2"><Phone className="h-4 w-4 text-primary" /> {courier.user.phone}</div>
+              {courier.national_id && (
+                <div className="flex items-center gap-2"><IdCard className="h-4 w-4 text-primary" /> <span className="font-mono">{courier.national_id}</span></div>
+              )}
             </div>
           </div>
 

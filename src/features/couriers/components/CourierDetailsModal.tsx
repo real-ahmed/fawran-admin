@@ -53,7 +53,7 @@ export const CourierDetailsModal = ({ courier, isOpen, onClose, onPrint }: Couri
                   <CarFront className="h-4 w-4 text-primary" /> 
                   <span>{t(`vehicle_${courier.vehicle_type}`)}</span>
                   {courier.plate_number && (
-                    <Badge variant="outline" className="ml-2 rtl:mr-2 rtl:ml-0">{courier.plate_number}</Badge>
+                    <Badge variant="outline">{courier.plate_number}</Badge>
                   )}
                 </div>
                 <Badge variant={courier.is_online ? 'default' : 'secondary'} className="text-xs">

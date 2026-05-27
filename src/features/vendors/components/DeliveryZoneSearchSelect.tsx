@@ -85,14 +85,14 @@ export function DeliveryZoneSearchSelect({ value, onChange, error, className = '
             ? getLocalizedName(selectedZone.name) 
             : `${t('delivery_zone')} #${value}`
           : t('select_zone')}
-        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        <ChevronsUpDown className="ms-2 h-4 w-4 shrink-0 opacity-50" />
       </Button>
 
       {open && (
         <div className="absolute z-50 w-full mt-1 bg-popover text-popover-foreground rounded-md border shadow-md outline-none animate-in fade-in-80 zoom-in-95">
           <div className="flex items-center border-b px-3">
             <Input 
-              placeholder={`${t('search')}...`}
+              placeholder={t('search')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 border-none shadow-none focus-visible:ring-0 px-0"
@@ -104,7 +104,7 @@ export function DeliveryZoneSearchSelect({ value, onChange, error, className = '
             {isLoading && zones.length === 0 ? (
               <div className="py-6 text-center text-sm text-muted-foreground flex flex-col items-center justify-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                {t('loading')}...
+                {t('loading')}
               </div>
             ) : zones.length === 0 ? (
               <div className="py-6 text-center text-sm text-muted-foreground">
@@ -115,13 +115,13 @@ export function DeliveryZoneSearchSelect({ value, onChange, error, className = '
                 {zones.map((zone) => (
                   <div
                     key={zone.id}
-                    className={`relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground ${value === zone.id ? 'bg-accent/50 text-accent-foreground' : ''}`}
+                    className={`relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 ps-8 pe-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground ${value === zone.id ? 'bg-accent/50 text-accent-foreground' : ''}`}
                     onClick={() => {
                       onChange(zone.id);
                       setOpen(false);
                     }}
                   >
-                    <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center rtl:right-2 rtl:left-auto">
+                    <span className="absolute start-2 flex h-3.5 w-3.5 items-center justify-center">
                       {value === zone.id && <Check className="h-4 w-4" />}
                     </span>
                     {getLocalizedName(zone.name)}

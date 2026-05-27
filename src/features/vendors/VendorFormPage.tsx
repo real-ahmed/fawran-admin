@@ -358,7 +358,7 @@ export const VendorFormPage = () => {
                     {searchTerm && (
                       <div className="border rounded-md shadow-sm bg-background p-2 max-h-48 overflow-y-auto">
                         {isSearchingOwners ? (
-                          <div className="text-sm text-muted-foreground text-center p-2">{t('loading')}...</div>
+                          <div className="text-sm text-muted-foreground text-center p-2">{t('loading')}</div>
                         ) : owners.length > 0 ? (
                           owners.map(owner => (
                             <div 
@@ -472,7 +472,7 @@ export const VendorFormPage = () => {
                 <div className="flex items-center justify-between pb-2 border-b">
                   <h3 className="text-lg font-semibold">{t('working_hours')}</h3>
               <Button type="button" variant="outline" size="sm" onClick={() => appendWorkingHour({ day_of_week: 0, open_time: '09:00', close_time: '22:00' })}>
-                <Plus className="h-4 w-4 mr-2 rtl:ml-2" />
+                <Plus className="h-4 w-4" />
                 {t('add_working_hour')}
               </Button>
             </div>
@@ -523,7 +523,7 @@ export const VendorFormPage = () => {
                 <div className="flex items-center justify-between pb-2 border-b">
                   <h3 className="text-lg font-semibold">{t('delivery_zones')}</h3>
               <Button type="button" variant="outline" size="sm" onClick={() => appendDeliveryZone({ delivery_zone_id: 0, min_order_amount: 0, estimated_delivery_time: 30 })}>
-                <Plus className="h-4 w-4 mr-2 rtl:ml-2" />
+                <Plus className="h-4 w-4" />
                 {t('add_delivery_zone')}
               </Button>
             </div>
@@ -572,7 +572,7 @@ export const VendorFormPage = () => {
           </Tabs>
 
           <div className="flex items-center justify-between bg-card border rounded-xl p-6">
-            <div className="flex items-center space-x-2 space-x-reverse rtl:space-x-reverse">
+            <div className="flex items-center gap-2">
               <Controller
               control={control}
               name="is_active"
@@ -594,7 +594,7 @@ export const VendorFormPage = () => {
                 {t('cancel')}
               </Button>
               <Button type="submit" disabled={mutation.isPending}>
-                {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {mutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
                 {t('save')}
               </Button>
             </div>

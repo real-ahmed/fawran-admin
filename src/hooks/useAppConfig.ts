@@ -15,7 +15,7 @@ interface AppConfig {
 }
 
 export const useAppConfig = () => {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const query = useQuery({
     queryKey: ["appConfig"],
@@ -26,7 +26,7 @@ export const useAppConfig = () => {
     staleTime: Infinity, // don't refetch often
   });
 
-  const getLocalizedAppName = (fallback = "Fawran Admin") => {
+  const getLocalizedAppName = (fallback = t("app_name_fallback")) => {
     return getLocalizedText(query.data?.app_name, i18n.language, fallback);
   };
 

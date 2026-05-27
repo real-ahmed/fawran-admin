@@ -209,7 +209,7 @@ export const CouriersList = ({ approvalStatus }: CouriersListProps) => {
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                       <Button variant="ghost" className="h-8 w-8 p-0">
-                        <span className="sr-only">Open menu</span>
+                        <span className="sr-only">{t('open_menu')}</span>
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
@@ -218,18 +218,18 @@ export const CouriersList = ({ approvalStatus }: CouriersListProps) => {
                         setSelectedCourier(courier);
                         setIsDetailsModalOpen(true);
                       })}>
-                        <Eye className="mr-2 h-4 w-4 rtl:ml-2 rtl:mr-0" />
+                        <Eye className="h-4 w-4" />
                         {t('view_details')}
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={(e) => handleActionClick(e, () => {
                         setSelectedCourier(courier);
                         setIsEditModalOpen(true);
                       })}>
-                        <Edit className="mr-2 h-4 w-4 rtl:ml-2 rtl:mr-0" />
+                        <Edit className="h-4 w-4" />
                         {t('edit')}
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={(e) => handleActionClick(e, () => handlePrint(courier.id))}>
-                        <Printer className="mr-2 h-4 w-4 rtl:ml-2 rtl:mr-0" />
+                        <Printer className="h-4 w-4" />
                         {t('print_contract')}
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
@@ -237,7 +237,7 @@ export const CouriersList = ({ approvalStatus }: CouriersListProps) => {
                         className="text-destructive focus:bg-destructive/10 focus:text-destructive"
                         onClick={(e) => handleActionClick(e, () => setCourierToDelete(courier))}
                       >
-                        <Trash2 className="mr-2 h-4 w-4 rtl:ml-2 rtl:mr-0" />
+                        <Trash2 className="h-4 w-4" />
                         {t('delete')}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -291,7 +291,7 @@ export const CouriersList = ({ approvalStatus }: CouriersListProps) => {
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={() => courierToDelete && deleteMutation.mutate(courierToDelete.id)}
             >
-              {deleteMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              {deleteMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
               {t('delete')}
             </AlertDialogAction>
           </AlertDialogFooter>

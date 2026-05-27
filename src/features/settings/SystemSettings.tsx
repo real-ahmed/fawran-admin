@@ -323,13 +323,13 @@ export const SystemSettings = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <SettingField
                 id="app_name_ar"
-                label={`${t('settings_app_name')} (AR)`}
+                label={`${t('settings_app_name')} (${t('language_ar')})`}
                 placeholder="فورا"
                 registration={register}
               />
               <SettingField
                 id="app_name_en"
-                label={`${t('settings_app_name')} (EN)`}
+                label={`${t('settings_app_name')} (${t('language_en')})`}
                 placeholder="Fawran"
                 registration={register}
               />
@@ -347,56 +347,56 @@ export const SystemSettings = () => {
               />
               <SettingField
                 id="app_logo_ar"
-                label={`${t('settings_app_logo')} (AR)`}
+                label={`${t('settings_app_logo')} (${t('language_ar')})`}
                 type="file"
                 previewUrl={resolveStorageAssetUrl(parseLocalizedText(settings?.app_logo)?.ar)}
                 registration={register}
               />
               <SettingField
                 id="app_logo_en"
-                label={`${t('settings_app_logo')} (EN)`}
+                label={`${t('settings_app_logo')} (${t('language_en')})`}
                 type="file"
                 previewUrl={resolveStorageAssetUrl(parseLocalizedText(settings?.app_logo)?.en)}
                 registration={register}
               />
               <SettingField
                 id="app_logo_white_ar"
-                label={`${t('settings_app_logo_white')} (AR)`}
+                label={`${t('settings_app_logo_white')} (${t('language_ar')})`}
                 type="file"
                 previewUrl={resolveStorageAssetUrl(parseLocalizedText(settings?.app_logo_white)?.ar)}
                 registration={register}
               />
               <SettingField
                 id="app_logo_white_en"
-                label={`${t('settings_app_logo_white')} (EN)`}
+                label={`${t('settings_app_logo_white')} (${t('language_en')})`}
                 type="file"
                 previewUrl={resolveStorageAssetUrl(parseLocalizedText(settings?.app_logo_white)?.en)}
                 registration={register}
               />
               <SettingField
                 id="app_icon_ar"
-                label={`${t('settings_app_icon')} (AR)`}
+                label={`${t('settings_app_icon')} (${t('language_ar')})`}
                 type="file"
                 previewUrl={resolveStorageAssetUrl(parseLocalizedText(settings?.app_icon)?.ar)}
                 registration={register}
               />
               <SettingField
                 id="app_icon_en"
-                label={`${t('settings_app_icon')} (EN)`}
+                label={`${t('settings_app_icon')} (${t('language_en')})`}
                 type="file"
                 previewUrl={resolveStorageAssetUrl(parseLocalizedText(settings?.app_icon)?.en)}
                 registration={register}
               />
               <SettingField
                 id="favicon_ar"
-                label={`${t('settings_favicon')} (AR)`}
+                label={`${t('settings_favicon')} (${t('language_ar')})`}
                 type="file"
                 previewUrl={resolveStorageAssetUrl(parseLocalizedText(settings?.favicon)?.ar)}
                 registration={register}
               />
               <SettingField
                 id="favicon_en"
-                label={`${t('settings_favicon')} (EN)`}
+                label={`${t('settings_favicon')} (${t('language_en')})`}
                 type="file"
                 previewUrl={resolveStorageAssetUrl(parseLocalizedText(settings?.favicon)?.en)}
                 registration={register}

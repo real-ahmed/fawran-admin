@@ -375,7 +375,7 @@ export const AdminFormPage = () => {
             />
           </AdminOptionsSection>
 
-          <div className="flex items-center space-x-2 space-x-reverse rtl:space-x-reverse pt-2">
+          <div className="flex items-center gap-2 pt-2">
             <Controller
               control={control}
               name="is_active"
@@ -397,7 +397,7 @@ export const AdminFormPage = () => {
               {t('cancel')}
             </Button>
             <Button type="submit" disabled={mutation.isPending}>
-              {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {mutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
               {t('save')}
             </Button>
           </div>

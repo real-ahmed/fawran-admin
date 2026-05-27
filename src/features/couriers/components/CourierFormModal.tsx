@@ -133,7 +133,7 @@ export const CourierFormModal = ({ courier, isOpen, onClose }: CourierFormModalP
               {t('cancel')}
             </Button>
             <Button type="submit" disabled={updateMutation.isPending}>
-              {updateMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {updateMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
               {t('save_changes')}
             </Button>
           </DialogFooter>

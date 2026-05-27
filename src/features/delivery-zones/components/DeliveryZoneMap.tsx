@@ -145,11 +145,11 @@ export const DeliveryZoneMap = ({ coordinates, onChange, error }: DeliveryZoneMa
             onPlacesChanged={onPlacesChanged}
           >
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 type="text"
-                placeholder={t('search_location', 'Search for a location...')}
-                className="pl-9 bg-background w-full shadow-sm"
+                placeholder={t('search_location')}
+                className="ps-9 bg-background w-full shadow-sm"
               />
             </div>
           </StandaloneSearchBox>
@@ -161,7 +161,7 @@ export const DeliveryZoneMap = ({ coordinates, onChange, error }: DeliveryZoneMa
           className="gap-2 shadow-sm whitespace-nowrap"
         >
           <Locate className="h-4 w-4" />
-          {t('current_location', 'Current Location')}
+          {t('current_location')}
         </Button>
       </div>
 
@@ -224,7 +224,7 @@ export const DeliveryZoneMap = ({ coordinates, onChange, error }: DeliveryZoneMa
           <button
             type="button"
             onClick={clearPolygon}
-            className="absolute bottom-4 left-4 z-10 rounded-lg bg-background px-4 py-2 text-sm font-semibold shadow-md hover:bg-secondary"
+            className="absolute bottom-4 start-4 z-10 rounded-lg bg-background px-4 py-2 text-sm font-semibold shadow-md hover:bg-secondary"
           >
             {t('clear_polygon')}
           </button>
