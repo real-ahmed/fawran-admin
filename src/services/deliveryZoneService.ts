@@ -4,8 +4,9 @@ import type { DeliveryZone, CreateDeliveryZonePayload, UpdateDeliveryZonePayload
 
 export interface FetchDeliveryZonesParams {
   search?: string;
-  is_active?: boolean | string;
+  is_active?: boolean | string | number;
   page?: number;
+  cursor?: string | null;
   per_page?: number;
 }
 

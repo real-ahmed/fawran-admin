@@ -4,9 +4,16 @@ interface LocalizedDisplayName {
 }
 
 interface DisplayNameSource {
-  name?: string;
+  name?: string | LocalizedDisplayName;
   display_name?: LocalizedDisplayName;
 }
+
+const getLocalizedValue = (value: string | LocalizedDisplayName | undefined, locale: 'ar' | 'en') => {
+  if (!value) return '';
+  if (typeof value === 'string') return value;
+
+  return value[locale] || value.en || value.ar || '';
+};
 
 export const getLocalizedDisplayName = (
   source: DisplayNameSource,
@@ -15,5 +22,9 @@ export const getLocalizedDisplayName = (
 ) => {
   const locale = language.startsWith('ar') ? 'ar' : 'en';
 
-  return source.display_name?.[locale] || source.display_name?.en || source.name || fallback;
+  return (
+    getLocalizedValue(source.display_name, locale) ||
+    getLocalizedValue(source.name, locale) ||
+    fallback
+  );
 };
