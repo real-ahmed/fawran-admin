@@ -326,5 +326,7 @@
   "print_contract": "طباعة العقد",
   "legal_settings": "العقود والشروط",
   "courier_contract_template": "نموذج عقد المندوب",
-  "courier_contract_template_desc": "استخدم المتغيرات التالية: {courier_name}, {contract_number}, {phone}, {vehicle_type}, {date}, {day_name}."
+  "courier_contract_template_desc": "استخدم المتغيرات التالية: {courier_name}, {contract_number}, {phone}, {vehicle_type}, {date}, {day_name}.",
+  "popup_blocked": "يرجى السماح بالنوافذ المنبثقة (Popups) لطباعة العقد.",
+  "error_printing": "حدث خطأ أثناء محاولة جلب بيانات العقد للطباعة."
 }

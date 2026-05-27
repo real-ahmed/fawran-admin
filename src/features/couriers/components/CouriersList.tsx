@@ -9,6 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { CourierApprovalModal } from './CourierApprovalModal';
+import apiClient from '@/config/axios';
+import { toast } from 'sonner';
 
 interface CouriersListProps {
   approvalStatus: 'pending' | 'approved';
@@ -35,6 +37,23 @@ export const CouriersList = ({ approvalStatus }: CouriersListProps) => {
   if (inView && hasNextPage && !isFetchingNextPage) {
     fetchNextPage();
   }
+
+  const handlePrint = async (courierId: number) => {
+    try {
+      const response = await apiClient.get(`/admin/couriers/${courierId}/contract/print`, {
+        responseType: 'text',
+      });
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+        printWindow.document.write(response.data);
+        printWindow.document.close();
+      } else {
+        toast.error(t('popup_blocked'));
+      }
+    } catch (error) {
+      toast.error(t('error_printing'));
+    }
+  };
 
   const getVehicleIcon = (type: string) => {
     switch (type) {
@@ -123,7 +142,7 @@ export const CouriersList = ({ approvalStatus }: CouriersListProps) => {
                   <Button 
                     className="w-full gap-2" 
                     variant="outline"
-                    onClick={() => window.open(`/api/v1/admin/couriers/${courier.id}/contract/print`, '_blank')}
+                    onClick={() => handlePrint(courier.id)}
                   >
                     <Printer className="h-4 w-4 text-primary" />
                     {t('print_contract')}

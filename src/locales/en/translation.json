@@ -326,5 +326,7 @@
   "print_contract": "Print Contract",
   "legal_settings": "Legal & Contracts",
   "courier_contract_template": "Courier Contract Template",
-  "courier_contract_template_desc": "Use variables like {courier_name}, {contract_number}, {phone}, {vehicle_type}, {date}, {day_name}."
+  "courier_contract_template_desc": "Use variables like {courier_name}, {contract_number}, {phone}, {vehicle_type}, {date}, {day_name}.",
+  "popup_blocked": "Please allow popups for this site to print the contract.",
+  "error_printing": "Failed to load the contract for printing."
 }
