@@ -48,7 +48,7 @@ export const useCouriersList = ({ approvalStatus }: UseCouriersListParams) => {
   const { ref: loadMoreRef, inView } = useInView();
   const queryClient = useQueryClient();
   const user = useAuthStore(state => state.user);
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const filters = useMemo(
     () => buildCourierFilters(approvalStatus, debouncedSearch, { vehicleType, onlineStatus }),
@@ -81,8 +81,8 @@ export const useCouriersList = ({ approvalStatus }: UseCouriersListParams) => {
   useEffect(() => {
     if (approvalStatus === 'pending' && user?.id) {
       const channel = echo.private(`admin.${user.id}`)
-        .listen('CourierApplicationSubmitted', (e: { message: string; courier_id: number }) => {
-          toast.success(e.message);
+        .listen('CourierApplicationSubmitted', () => {
+          toast.success(t('courier_application_submitted'));
           queryClient.invalidateQueries({ queryKey: ['couriers'] });
         });
 
@@ -90,7 +90,7 @@ export const useCouriersList = ({ approvalStatus }: UseCouriersListParams) => {
         channel.stopListening('CourierApplicationSubmitted');
       };
     }
-  }, [approvalStatus, queryClient, user?.id, i18n.language]);
+  }, [approvalStatus, queryClient, t, user?.id, i18n.language]);
 
   const clearFilters = () => {
     setSearchTerm('');
