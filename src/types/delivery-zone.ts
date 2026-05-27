@@ -10,7 +10,11 @@ export interface DeliveryZone {
     ar: string;
   };
   is_active: boolean;
-  coordinates: Coordinate[];
+  coordinates?: Coordinate[];
+  geometry?: {
+    type: string;
+    coordinates: number[][][];
+  };
   created_at?: string;
   updated_at?: string;
 }

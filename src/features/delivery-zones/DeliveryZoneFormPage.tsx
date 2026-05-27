@@ -71,13 +71,33 @@ export const DeliveryZoneFormPage = () => {
 
   useEffect(() => {
     if (zone && isEditing) {
+      let parsedCoordinates: Coordinate[] = [];
+
+      // Check if backend returned GeoJSON geometry
+      if (zone.geometry && zone.geometry.type === 'Polygon' && zone.geometry.coordinates) {
+        const polyCoords = zone.geometry.coordinates[0] || [];
+        parsedCoordinates = polyCoords.map((coord: number[]) => ({
+          lng: coord[0],
+          lat: coord[1],
+        }));
+      } else if (zone.coordinates) {
+        // Fallback in case coordinates exists (either as string or array)
+        try {
+          parsedCoordinates = typeof zone.coordinates === 'string'
+            ? JSON.parse(zone.coordinates)
+            : zone.coordinates;
+        } catch (e) {
+          console.error('Failed to parse coordinates', e);
+        }
+      }
+
       reset({
         name: {
           en: (zone.name as any)?.en || '',
           ar: (zone.name as any)?.ar || '',
         },
         is_active: zone.is_active,
-        coordinates: zone.coordinates,
+        coordinates: parsedCoordinates,
       });
     }
   }, [zone, isEditing, reset]);
