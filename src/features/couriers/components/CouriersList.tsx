@@ -6,11 +6,12 @@ import { EmptyState } from '@/components/EmptyState';
 import { Bike, CarFront, Navigation, User, AlertCircle, Printer } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { CourierApprovalModal } from './CourierApprovalModal';
 import { getCourierContractPrintHtml } from '@/services/courierService';
 import { toast } from 'sonner';
 import { CouriersToolbar } from './CouriersToolbar';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface CouriersListProps {
   approvalStatus: 'pending' | 'approved';
@@ -18,6 +19,7 @@ interface CouriersListProps {
 
 export const CouriersList = ({ approvalStatus }: CouriersListProps) => {
   const { t, i18n } = useTranslation();
+  const queryClient = useQueryClient();
   const [selectedCourier, setSelectedCourier] = useState<Courier | null>(null);
 
   const {
@@ -38,6 +40,17 @@ export const CouriersList = ({ approvalStatus }: CouriersListProps) => {
     approvalStatus,
   });
 
+  // Sync selectedCourier with fresh data when couriers array updates
+  useEffect(() => {
+    if (selectedCourier && couriers.length > 0) {
+      const freshCourier = couriers.find(c => c.id === selectedCourier.id);
+      // Only update if the contract number changed to avoid unnecessary re-renders
+      if (freshCourier && freshCourier.document?.contract_number !== selectedCourier.document?.contract_number) {
+        setSelectedCourier(freshCourier);
+      }
+    }
+  }, [couriers, selectedCourier]);
+
   const handlePrint = async (courierId: number) => {
     try {
       const contractHtml = await getCourierContractPrintHtml(courierId);
@@ -45,6 +58,16 @@ export const CouriersList = ({ approvalStatus }: CouriersListProps) => {
       if (printWindow) {
         printWindow.document.write(contractHtml);
         printWindow.document.close();
+        
+        // Refresh couriers list to fetch the newly generated contract number
+        setTimeout(() => {
+          queryClient.invalidateQueries({ queryKey: ['couriers'] });
+          // If the modal is open for this courier, update the selected courier locally
+          if (selectedCourier && selectedCourier.id === courierId) {
+            // Alternatively we rely on the query invalidation if we refetch, 
+            // but the easiest is just a fast refetch since query is invalidated
+          }
+        }, 1000);
       } else {
         toast.error(t('popup_blocked'));
       }
@@ -181,6 +204,7 @@ export const CouriersList = ({ approvalStatus }: CouriersListProps) => {
         courier={selectedCourier} 
         isOpen={selectedCourier !== null} 
         onClose={() => setSelectedCourier(null)} 
+        onPrint={handlePrint}
       />
     </div>
   );

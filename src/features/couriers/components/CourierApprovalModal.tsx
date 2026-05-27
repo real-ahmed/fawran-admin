@@ -7,16 +7,17 @@ import { approveCourier, rejectCourier } from '@/services/courierService';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { parseApiError } from '@/utils/api';
-import { Loader2, ExternalLink, User, Mail, Phone, CarFront, FileText } from 'lucide-react';
+import { Loader2, ExternalLink, User, Mail, Phone, CarFront, FileText, AlertCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 interface CourierApprovalModalProps {
   courier: Courier | null;
   isOpen: boolean;
   onClose: () => void;
+  onPrint: (id: number) => void;
 }
 
-export const CourierApprovalModal = ({ courier, isOpen, onClose }: CourierApprovalModalProps) => {
+export const CourierApprovalModal = ({ courier, isOpen, onClose, onPrint }: CourierApprovalModalProps) => {
   const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
 
@@ -106,13 +107,34 @@ export const CourierApprovalModal = ({ courier, isOpen, onClose }: CourierApprov
                   <FileText className="h-4 w-4 text-primary" />
                   <span>{t('contract_number')}</span>
                 </div>
-                <span className="font-medium">{courier.document?.contract_number || t('not_provided')}</span>
+                <div className="flex items-center gap-3">
+                  <span className="font-medium">{courier.document?.contract_number || t('not_provided')}</span>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm" 
+                    className="h-7 text-xs"
+                    onClick={() => {
+                      onPrint(courier.id);
+                      // Provide a short timeout before refreshing, or rely on manual refresh/parent logic
+                    }}
+                  >
+                    {t('print_contract')}
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <DialogFooter className="gap-2 sm:justify-end">
+        {!courier.document?.contract_number && (
+          <div className="px-6 py-2 text-sm text-amber-600 bg-amber-50 dark:bg-amber-950/30 flex items-center gap-2 border-y border-amber-200 dark:border-amber-900/50">
+            <AlertCircle className="h-4 w-4" />
+            <span>{t('print_contract_to_enable')}</span>
+          </div>
+        )}
+
+        <DialogFooter className="gap-2 sm:justify-end px-6 pb-6 pt-4">
           <Button
             type="button"
             variant="destructive"
@@ -126,7 +148,7 @@ export const CourierApprovalModal = ({ courier, isOpen, onClose }: CourierApprov
             type="button"
             className="bg-emerald-600 hover:bg-emerald-700 text-white"
             onClick={() => approveMutation.mutate(courier.id)}
-            disabled={approveMutation.isPending || rejectMutation.isPending}
+            disabled={approveMutation.isPending || rejectMutation.isPending || !courier.document?.contract_number}
           >
             {approveMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {t('approve_courier')}
