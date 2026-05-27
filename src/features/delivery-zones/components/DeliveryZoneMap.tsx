@@ -15,6 +15,9 @@ const defaultCenter = {
   lng: 46.6753,
 };
 
+const getInitialCenter = (coordinates?: Coordinate[]) =>
+  coordinates && coordinates.length > 0 ? coordinates[0] : defaultCenter;
+
 interface DeliveryZoneMapProps {
   coordinates?: Coordinate[];
   onChange: (coordinates: Coordinate[]) => void;
@@ -27,6 +30,8 @@ export const DeliveryZoneMap = ({ coordinates, onChange, error }: DeliveryZoneMa
   const { t } = useTranslation();
   const mapRef = useRef<google.maps.Map | null>(null);
   const polygonRef = useRef<google.maps.Polygon | null>(null);
+  const hasCoordinates = Boolean(coordinates?.length);
+  const [mapCenter, setMapCenter] = useState<Coordinate>(() => getInitialCenter(coordinates));
 
   const { isLoaded, loadError } = useJsApiLoader({
     id: 'google-map-script',
@@ -40,8 +45,10 @@ export const DeliveryZoneMap = ({ coordinates, onChange, error }: DeliveryZoneMa
       const bounds = new window.google.maps.LatLngBounds();
       coordinates.forEach((coord) => bounds.extend(coord));
       map.fitBounds(bounds);
+    } else {
+      map.setCenter(mapCenter);
     }
-  }, [coordinates]);
+  }, [coordinates, mapCenter]);
 
   const onMapUnmount = useCallback(() => {
     mapRef.current = null;
@@ -86,6 +93,34 @@ export const DeliveryZoneMap = ({ coordinates, onChange, error }: DeliveryZoneMa
     onChange([]);
   };
 
+  useEffect(() => {
+    if (hasCoordinates) {
+      setMapCenter(getInitialCenter(coordinates));
+      return;
+    }
+
+    if (!navigator.geolocation) return;
+
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        const currentLocation = {
+          lat: coords.latitude,
+          lng: coords.longitude,
+        };
+
+        setMapCenter(currentLocation);
+        mapRef.current?.setCenter(currentLocation);
+        mapRef.current?.setZoom(13);
+      },
+      () => undefined,
+      {
+        enableHighAccuracy: true,
+        maximumAge: 60000,
+        timeout: 10000,
+      }
+    );
+  }, [coordinates, hasCoordinates]);
+
   if (loadError) {
     return (
       <div className="flex h-[500px] items-center justify-center rounded-xl border bg-destructive/10 text-destructive">
@@ -103,7 +138,7 @@ export const DeliveryZoneMap = ({ coordinates, onChange, error }: DeliveryZoneMa
       <div className={`relative overflow-hidden rounded-xl border ${error ? 'border-destructive' : 'border-border'}`}>
         <GoogleMap
           mapContainerStyle={containerStyle}
-          center={coordinates && coordinates.length > 0 ? coordinates[0] : defaultCenter}
+          center={hasCoordinates ? coordinates?.[0] : mapCenter}
           zoom={11}
           onLoad={onMapLoad}
           onUnmount={onMapUnmount}
