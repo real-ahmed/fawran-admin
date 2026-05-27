@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useInView } from 'react-intersection-observer';
 import { getCouriers } from '@/services/courierService';
 import { fetchDeliveryZones } from '@/services/deliveryZoneService';
 import { CourierVehicleType, CouriersQuery } from '@/types/courier';
 import { useDebounce } from '@/hooks/useDebounce';
+import echo from '@/config/echo';
+import { toast } from 'sonner';
+import { useAuthStore } from '@/store/authStore';
 
 const ALL_FILTER_VALUE = 'all';
 
@@ -50,6 +53,8 @@ export const useCouriersList = ({ approvalStatus }: UseCouriersListParams) => {
   const [deliveryZoneId, setDeliveryZoneId] = useState<DeliveryZoneFilterValue>(ALL_FILTER_VALUE);
   const debouncedSearch = useDebounce(searchTerm, 500);
   const { ref: loadMoreRef, inView } = useInView();
+  const queryClient = useQueryClient();
+  const user = useAuthStore(state => state.user);
 
   const filters = useMemo(
     () => buildCourierFilters(approvalStatus, debouncedSearch, { vehicleType, onlineStatus, deliveryZoneId }),
@@ -68,7 +73,6 @@ export const useCouriersList = ({ approvalStatus }: UseCouriersListParams) => {
       return undefined;
     },
     initialPageParam: 1,
-    refetchInterval: approvalStatus === 'pending' ? 10000 : false, // Poll every 10 seconds for new requests
   });
 
   const deliveryZonesQuery = useQuery({
@@ -83,6 +87,21 @@ export const useCouriersList = ({ approvalStatus }: UseCouriersListParams) => {
       fetchNextPage();
     }
   }, [fetchNextPage, hasNextPage, inView, isFetchingNextPage]);
+
+  // Real-time updates for pending couriers
+  useEffect(() => {
+    if (approvalStatus === 'pending' && user?.id) {
+      const channel = echo.private(`admin.${user.id}`)
+        .listen('CourierApplicationSubmitted', (e: { message: string; courier_id: number }) => {
+          toast.info(e.message);
+          queryClient.invalidateQueries({ queryKey: ['couriers'] });
+        });
+
+      return () => {
+        channel.stopListening('CourierApplicationSubmitted');
+      };
+    }
+  }, [approvalStatus, queryClient, user?.id]);
 
   const clearFilters = () => {
     setSearchTerm('');
