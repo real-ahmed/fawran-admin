@@ -29,10 +29,14 @@ const settingsSchema = z.object({
   // General
   app_name_ar: z.string().optional(),
   app_name_en: z.string().optional(),
-  app_logo: z.any().optional(),
-  app_logo_white: z.any().optional(),
-  app_icon: z.any().optional(),
-  favicon: z.any().optional(),
+  app_logo_ar: z.any().optional(),
+  app_logo_en: z.any().optional(),
+  app_logo_white_ar: z.any().optional(),
+  app_logo_white_en: z.any().optional(),
+  app_icon_ar: z.any().optional(),
+  app_icon_en: z.any().optional(),
+  favicon_ar: z.any().optional(),
+  favicon_en: z.any().optional(),
   currency: z.string().min(2).max(10).optional(),
   support_phone: z.string().optional(),
   timezone: z.string().optional(),
@@ -342,31 +346,59 @@ export const SystemSettings = () => {
                 registration={register}
               />
               <SettingField
-                id="app_logo"
-                label={t('settings_app_logo')}
+                id="app_logo_ar"
+                label={`${t('settings_app_logo')} (AR)`}
                 type="file"
-                previewUrl={resolveStorageAssetUrl(settings?.app_logo)}
+                previewUrl={resolveStorageAssetUrl(parseLocalizedText(settings?.app_logo)?.ar)}
                 registration={register}
               />
               <SettingField
-                id="app_logo_white"
-                label={t('settings_app_logo_white')}
+                id="app_logo_en"
+                label={`${t('settings_app_logo')} (EN)`}
                 type="file"
-                previewUrl={resolveStorageAssetUrl(settings?.app_logo_white)}
+                previewUrl={resolveStorageAssetUrl(parseLocalizedText(settings?.app_logo)?.en)}
                 registration={register}
               />
               <SettingField
-                id="app_icon"
-                label={t('settings_app_icon')}
+                id="app_logo_white_ar"
+                label={`${t('settings_app_logo_white')} (AR)`}
                 type="file"
-                previewUrl={resolveStorageAssetUrl(settings?.app_icon)}
+                previewUrl={resolveStorageAssetUrl(parseLocalizedText(settings?.app_logo_white)?.ar)}
                 registration={register}
               />
               <SettingField
-                id="favicon"
-                label={t('settings_favicon')}
+                id="app_logo_white_en"
+                label={`${t('settings_app_logo_white')} (EN)`}
                 type="file"
-                previewUrl={resolveStorageAssetUrl(settings?.favicon)}
+                previewUrl={resolveStorageAssetUrl(parseLocalizedText(settings?.app_logo_white)?.en)}
+                registration={register}
+              />
+              <SettingField
+                id="app_icon_ar"
+                label={`${t('settings_app_icon')} (AR)`}
+                type="file"
+                previewUrl={resolveStorageAssetUrl(parseLocalizedText(settings?.app_icon)?.ar)}
+                registration={register}
+              />
+              <SettingField
+                id="app_icon_en"
+                label={`${t('settings_app_icon')} (EN)`}
+                type="file"
+                previewUrl={resolveStorageAssetUrl(parseLocalizedText(settings?.app_icon)?.en)}
+                registration={register}
+              />
+              <SettingField
+                id="favicon_ar"
+                label={`${t('settings_favicon')} (AR)`}
+                type="file"
+                previewUrl={resolveStorageAssetUrl(parseLocalizedText(settings?.favicon)?.ar)}
+                registration={register}
+              />
+              <SettingField
+                id="favicon_en"
+                label={`${t('settings_favicon')} (EN)`}
+                type="file"
+                previewUrl={resolveStorageAssetUrl(parseLocalizedText(settings?.favicon)?.en)}
                 registration={register}
               />
             </div>

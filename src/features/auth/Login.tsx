@@ -4,7 +4,6 @@ import { isAxiosError } from 'axios';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
-import apiClient from '@/config/axios';
 import { useAuthStore } from '@/store/authStore';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -15,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { applyApiValidationErrors } from '@/utils/api';
 import { FormFieldError } from '@/components/FormFieldError';
+import { fetchCurrentAdmin, loginAdmin } from '@/services/authService';
 
 const getLoginErrorMessage = (error: unknown, fallbackMessage: string) => {
   if (!isAxiosError(error)) return fallbackMessage;
@@ -66,24 +66,12 @@ export const Login = () => {
     try {
       setLoading(true);
       setError('');
-      // Make login request
-      const response = await apiClient.post('/admin/login', data);
-      
-      const token = response.data?.data?.access_token;
+      const token = await loginAdmin(data);
       
       if (token) {
         setToken(token);
-        
-        // Fetch user profile and permissions
-        const meResponse = await apiClient.get('/admin/me', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          }
-        });
-        
-        const userData = meResponse.data?.data || meResponse.data;
-        const permissions = meResponse.data?.data?.permissions || meResponse.data?.permissions || [];
-        setUser(userData, permissions);
+        const { user, permissions } = await fetchCurrentAdmin(token);
+        setUser(user, permissions);
         
         toast.success(t('login_success'));
         navigate('/dashboard');

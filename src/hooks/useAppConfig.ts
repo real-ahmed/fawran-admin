@@ -31,10 +31,10 @@ export const useAppConfig = () => {
   };
 
   const appName = getLocalizedAppName();
-  const appLogoUrl = resolveStorageAssetUrl(query.data?.app_logo);
-  const appLogoWhiteUrl = resolveStorageAssetUrl(query.data?.app_logo_white);
-  const appIconUrl = resolveStorageAssetUrl(query.data?.app_icon);
-  const faviconUrl = resolveStorageAssetUrl(query.data?.favicon);
+  const appLogoUrl = resolveStorageAssetUrl(getLocalizedText(query.data?.app_logo, i18n.language));
+  const appLogoWhiteUrl = resolveStorageAssetUrl(getLocalizedText(query.data?.app_logo_white, i18n.language));
+  const appIconUrl = resolveStorageAssetUrl(getLocalizedText(query.data?.app_icon, i18n.language));
+  const faviconUrl = resolveStorageAssetUrl(getLocalizedText(query.data?.favicon, i18n.language));
 
   useApplyAppBranding(appName, faviconUrl);
 

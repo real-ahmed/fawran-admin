@@ -4,6 +4,7 @@ import { Loader2, Package, Store } from 'lucide-react';
 import { AuthLayout } from '../layouts/AuthLayout';
 import { MainLayout } from '../layouts/MainLayout';
 import { PrivateRoute } from './PrivateRoute';
+import { PublicRoute } from './PublicRoute';
 import { PERMISSIONS } from '@/config/permissions';
 import { PlaceholderPage } from '@/components/PlaceholderPage';
 
@@ -55,8 +56,10 @@ export const AppRoutes = () => {
     <Suspense fallback={<RouteFallback />}>
       <Routes>
         {/* Public Auth Routes */}
-        <Route element={<AuthLayout />}>
-          <Route path="/login" element={<Login />} />
+        <Route element={<PublicRoute />}>
+          <Route element={<AuthLayout />}>
+            <Route path="/login" element={<Login />} />
+          </Route>
         </Route>
 
         {/* Protected Routes */}

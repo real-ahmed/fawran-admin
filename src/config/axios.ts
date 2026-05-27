@@ -1,14 +1,40 @@
 import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
 import i18n from './i18n';
+import { extractAccessToken } from '@/utils/auth';
+
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL + import.meta.env.VITE_API_PREFIX;
+let refreshTokenRequest: Promise<string> | null = null;
 
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL + import.meta.env.VITE_API_PREFIX,
+  baseURL: apiBaseUrl,
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   },
 });
+
+const refreshAdminToken = async (token: string): Promise<string> => {
+  const response = await axios.post(
+    `${apiBaseUrl}/admin/refresh`,
+    {},
+    {
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Accept-Language': i18n.language,
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  const refreshedToken = extractAccessToken(response.data);
+
+  if (!refreshedToken) {
+    throw new Error('Refresh response did not include an access token.');
+  }
+
+  return refreshedToken;
+};
 
 apiClient.interceptors.request.use(
   (config) => {
@@ -31,26 +57,18 @@ apiClient.interceptors.response.use(
       originalRequest?.url?.includes('/admin/refresh');
     const token = useAuthStore.getState().token;
 
-    if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint && token) {
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry && !isAuthEndpoint && token) {
       originalRequest._retry = true;
       try {
-        const res = await axios.post(
-          `${import.meta.env.VITE_API_BASE_URL}${import.meta.env.VITE_API_PREFIX}/admin/refresh`,
-          {},
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        const token = res.data?.data?.access_token || res.data?.token;
-        useAuthStore.getState().setToken(token);
-        originalRequest.headers.Authorization = `Bearer ${token}`;
+        refreshTokenRequest = refreshTokenRequest || refreshAdminToken(token);
+        const refreshedToken = await refreshTokenRequest;
+        useAuthStore.getState().setToken(refreshedToken);
+        originalRequest.headers.Authorization = `Bearer ${refreshedToken}`;
         return apiClient(originalRequest);
       } catch (refreshError) {
-        useAuthStore.getState().logout();
-        window.location.href = '/login';
         return Promise.reject(refreshError);
+      } finally {
+        refreshTokenRequest = null;
       }
     }
     return Promise.reject(error);
