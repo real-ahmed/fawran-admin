@@ -31,6 +31,12 @@ const RoleFormPage = lazy(() =>
 const SystemSettings = lazy(() =>
   import('../features/settings/SystemSettings').then((module) => ({ default: module.SystemSettings }))
 );
+const DeliveryZonesList = lazy(() =>
+  import('../features/delivery-zones/DeliveryZonesList').then((module) => ({ default: module.DeliveryZonesList }))
+);
+const DeliveryZoneFormPage = lazy(() =>
+  import('../features/delivery-zones/DeliveryZoneFormPage').then((module) => ({ default: module.DeliveryZoneFormPage }))
+);
 
 const RouteFallback = () => (
   <div className="flex min-h-48 items-center justify-center">
@@ -64,6 +70,11 @@ export const AppRoutes = () => {
             </Route>
             <Route element={<PrivateRoute requiredPermission={PERMISSIONS.VIEW_VENDORS} />}>
               <Route path="/vendors" element={<VendorsList />} />
+            </Route>
+            <Route element={<PrivateRoute requiredPermission={PERMISSIONS.VIEW_DELIVERY_ZONES} />}>
+              <Route path="/delivery-zones" element={<DeliveryZonesList />} />
+              <Route path="/delivery-zones/create" element={<DeliveryZoneFormPage />} />
+              <Route path="/delivery-zones/:id/edit" element={<DeliveryZoneFormPage />} />
             </Route>
             <Route
               element={(

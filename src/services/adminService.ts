@@ -10,6 +10,7 @@ export interface Admin {
   created_at: string;
   updated_at: string;
   roles?: Role[];
+  delivery_zones?: any[];
 }
 
 export interface AdminPayload {
@@ -18,6 +19,7 @@ export interface AdminPayload {
   password?: string;
   is_active: boolean;
   roles: string[]; // names of roles
+  delivery_zones?: number[]; // ids of delivery zones
 }
 
 export interface FetchAdminsParams {

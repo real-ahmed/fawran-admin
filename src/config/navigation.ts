@@ -1,6 +1,7 @@
 import {
   CreditCard,
   LayoutDashboard,
+  MapPin,
   Package,
   Settings,
   Shield,
@@ -78,6 +79,7 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
     ],
   },
   { to: '/finances', labelKey: 'finances', icon: CreditCard, permission: PERMISSIONS.VIEW_FINANCES },
+  { to: '/delivery-zones', labelKey: 'delivery_zones', icon: MapPin, permission: PERMISSIONS.VIEW_DELIVERY_ZONES },
   {
     to: '/settings',
     labelKey: 'settings',

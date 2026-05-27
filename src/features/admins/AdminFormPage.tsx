@@ -14,6 +14,7 @@ import { PageHeader } from '@/components/PageHeader';
 import { toast } from 'sonner';
 import { createAdmin, updateAdmin, fetchAdminById, AdminPayload } from '@/services/adminService';
 import { fetchRoles } from '@/services/roleService';
+import { fetchDeliveryZones } from '@/services/deliveryZoneService';
 import { applyApiValidationErrors, parseApiError } from '@/utils/api';
 import { FormFieldError } from '@/components/FormFieldError';
 import { SUPER_ADMIN_ROLE, isProtectedAdminAccount, isSuperAdminRole } from '@/utils/access';
@@ -24,6 +25,7 @@ interface AdminForm {
   password?: string;
   is_active: boolean;
   roles: string[];
+  delivery_zones: number[];
 }
 
 export const AdminFormPage = () => {
@@ -38,6 +40,7 @@ export const AdminFormPage = () => {
     password: z.string().optional(),
     is_active: z.boolean(),
     roles: z.array(z.string()).min(1, t('validation_required_selection')),
+    delivery_zones: z.array(z.number()).optional().default([]),
   });
 
   const [isLoading, setIsLoading] = useState(isEditing);
@@ -47,7 +50,13 @@ export const AdminFormPage = () => {
     queryFn: () => fetchRoles({ per_page: 100 }),
   });
 
+  const { data: zonesData, isLoading: zonesLoading } = useQuery({
+    queryKey: ['delivery_zones'],
+    queryFn: () => fetchDeliveryZones({ per_page: 100, is_active: true }),
+  });
+
   const allRoles = rolesData?.data || [];
+  const allZones = zonesData?.data || [];
 
   const {
     register,
@@ -61,6 +70,7 @@ export const AdminFormPage = () => {
     defaultValues: {
       is_active: true,
       roles: [],
+      delivery_zones: [],
     },
   });
 
@@ -81,6 +91,7 @@ export const AdminFormPage = () => {
             password: '',
             is_active: admin.is_active,
             roles: admin.roles?.map(r => r.name) || [],
+            delivery_zones: admin.delivery_zones?.map((z: any) => z.id) || [],
           });
         })
         .catch((err) => {
@@ -110,6 +121,8 @@ export const AdminFormPage = () => {
         role: 'roles',
         role_id: 'roles',
         role_ids: 'roles',
+        delivery_zones: 'delivery_zones',
+        delivery_zone_ids: 'delivery_zones'
       });
       toast.error(parseApiError(error, t('save_failed')));
     },
@@ -138,7 +151,7 @@ export const AdminFormPage = () => {
     );
   };
 
-  if (isLoading || rolesLoading) {
+  if (isLoading || rolesLoading || zonesLoading) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -240,6 +253,47 @@ export const AdminFormPage = () => {
               />
             </div>
             <FormFieldError message={errors.roles?.message} />
+          </div>
+
+          <div className="grid gap-4">
+            <Label className="text-sm font-medium">Delivery Zones <span className="text-muted-foreground font-normal">({t('optional')})</span></Label>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 p-5 border border-border/60 rounded-xl bg-muted/10">
+              <Controller
+                control={control}
+                name="delivery_zones"
+                render={({ field }) => (
+                  <>
+                    {allZones.map(zone => (
+                      <div key={zone.id} className="flex items-center space-x-2 space-x-reverse rtl:space-x-reverse">
+                        <Checkbox
+                          id={`zone-${zone.id}`}
+                          checked={field.value?.includes(zone.id)}
+                          onCheckedChange={(checked) => {
+                            const current = field.value || [];
+                            const updated = checked
+                              ? [...current, zone.id]
+                              : current.filter(id => id !== zone.id);
+                            field.onChange(updated);
+                          }}
+                        />
+                        <Label
+                          htmlFor={`zone-${zone.id}`}
+                          className="text-sm cursor-pointer font-medium"
+                        >
+                          {i18n.language === 'ar' ? zone.name_ar : zone.name_en}
+                        </Label>
+                      </div>
+                    ))}
+                    {allZones.length === 0 && (
+                      <div className="col-span-full text-sm text-muted-foreground text-center py-2">
+                        No delivery zones available.
+                      </div>
+                    )}
+                  </>
+                )}
+              />
+            </div>
+            <FormFieldError message={errors.delivery_zones?.message} />
           </div>
 
           <div className="flex items-center space-x-2 space-x-reverse rtl:space-x-reverse pt-2">
