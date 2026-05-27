@@ -205,6 +205,9 @@
   "edit_admin_desc": "Modify the details of this administrator",
   "create_role_desc": "Create a new role with specific permissions",
   "edit_role_desc": "Modify the permissions for this role",
+  "super_admin_role_protected": "The Super Admin role cannot be modified.",
+  "super_admin_account_protected": "The Super Admin account cannot be modified.",
+  "super_admin_exclusive_role": "Super Admin cannot be combined with another role.",
   "back": "Back",
   "save": "Save"
 }

@@ -23,6 +23,7 @@ import {
 } from '@/services/roleService';
 import { applyApiValidationErrors, parseApiError } from '@/utils/api';
 import { FormFieldError } from '@/components/FormFieldError';
+import { isSuperAdminRole } from '@/utils/access';
 
 interface RoleForm {
   display_name_en: string;
@@ -64,6 +65,12 @@ export const RoleFormPage = () => {
       setIsLoading(true);
       fetchRoleById(Number(id))
         .then((role) => {
+          if (isSuperAdminRole(role)) {
+            toast.error(t('super_admin_role_protected'));
+            navigate('/roles');
+            return;
+          }
+
           reset({ 
             display_name_en: role.display_name?.en || role.name,
             display_name_ar: role.display_name?.ar || role.name,

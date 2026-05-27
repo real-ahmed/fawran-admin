@@ -205,6 +205,9 @@
   "edit_admin_desc": "تعديل تفاصيل هذا المشرف",
   "create_role_desc": "إنشاء دور جديد بصلاحيات محددة",
   "edit_role_desc": "تعديل صلاحيات هذا الدور",
+  "super_admin_role_protected": "لا يمكن تعديل دور المدير العام.",
+  "super_admin_account_protected": "لا يمكن تعديل حساب المدير العام.",
+  "super_admin_exclusive_role": "لا يمكن دمج دور المدير العام مع أي دور آخر.",
   "back": "رجوع",
   "save": "حفظ"
 }

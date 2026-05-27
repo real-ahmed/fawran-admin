@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/table';
 import type { PermissionRecord, Role } from '@/services/roleService';
 import { getLocalizedDisplayName } from '@/utils/displayName';
+import { isSuperAdminRole } from '@/utils/access';
 
 interface RolesTableProps {
   roles: Role[];
@@ -63,52 +64,56 @@ export const RolesTable = ({
                 </TableCell>
               </TableRow>
             ) : (
-              roles.map((role) => (
-                <TableRow key={role.id}>
-                  <TableCell className="font-medium text-foreground">
-                    {getLocalizedDisplayName(role, i18n.language)}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap gap-1">
-                      {role.permissions?.slice(0, 3).map((permission: PermissionRecord, index) => (
-                        <span
-                          key={permission.name || index}
-                          className="inline-flex items-center rounded-md bg-secondary px-2 py-1 text-xs font-medium text-secondary-foreground"
-                        >
-                          {getLocalizedDisplayName(permission, i18n.language)}
-                        </span>
-                      ))}
-                      {(role.permissions?.length || 0) > 3 && (
-                        <span className="inline-flex items-center rounded-md bg-muted px-2 py-1 text-xs font-medium text-muted-foreground">
-                          +{(role.permissions?.length || 0) - 3}
-                        </span>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-end">
-                    <div className="flex items-center justify-end gap-2">
-                      <Can permission={PERMISSIONS.UPDATE_ROLES}>
-                        <Button variant="ghost" size="sm" onClick={() => onEdit(role)}>
-                          {t('edit')}
-                        </Button>
-                      </Can>
-                      {role.name !== 'Super Admin' && (
-                        <Can permission={PERMISSIONS.DELETE_ROLES}>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                            onClick={() => onDelete(role.id)}
-                            disabled={isDeleting}
+              roles.map((role) => {
+                const protectedRole = isSuperAdminRole(role);
+
+                return (
+                  <TableRow key={role.id}>
+                    <TableCell className="font-medium text-foreground">
+                      {getLocalizedDisplayName(role, i18n.language)}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
+                        {role.permissions?.slice(0, 3).map((permission: PermissionRecord, index) => (
+                          <span
+                            key={permission.name || index}
+                            className="inline-flex items-center rounded-md bg-secondary px-2 py-1 text-xs font-medium text-secondary-foreground"
                           >
-                            {t('delete')}
-                          </Button>
-                        </Can>
+                            {getLocalizedDisplayName(permission, i18n.language)}
+                          </span>
+                        ))}
+                        {(role.permissions?.length || 0) > 3 && (
+                          <span className="inline-flex items-center rounded-md bg-muted px-2 py-1 text-xs font-medium text-muted-foreground">
+                            +{(role.permissions?.length || 0) - 3}
+                          </span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-end">
+                      {!protectedRole && (
+                        <div className="flex items-center justify-end gap-2">
+                          <Can permission={PERMISSIONS.UPDATE_ROLES}>
+                            <Button variant="ghost" size="sm" onClick={() => onEdit(role)}>
+                              {t('edit')}
+                            </Button>
+                          </Can>
+                          <Can permission={PERMISSIONS.DELETE_ROLES}>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                              onClick={() => onDelete(role.id)}
+                              disabled={isDeleting}
+                            >
+                              {t('delete')}
+                            </Button>
+                          </Can>
+                        </div>
                       )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             )}
             {hasNextPage && (
               <TableRow ref={loadMoreRef}>

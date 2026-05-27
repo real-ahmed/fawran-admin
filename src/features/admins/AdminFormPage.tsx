@@ -16,6 +16,7 @@ import { createAdmin, updateAdmin, fetchAdminById, AdminPayload } from '@/servic
 import { fetchRoles } from '@/services/roleService';
 import { applyApiValidationErrors, parseApiError } from '@/utils/api';
 import { FormFieldError } from '@/components/FormFieldError';
+import { SUPER_ADMIN_ROLE, isProtectedAdminAccount, isSuperAdminRole } from '@/utils/access';
 
 interface AdminForm {
   name: string;
@@ -68,6 +69,12 @@ export const AdminFormPage = () => {
       setIsLoading(true);
       fetchAdminById(Number(id))
         .then((admin) => {
+          if (isProtectedAdminAccount(admin)) {
+            toast.error(t('super_admin_account_protected'));
+            navigate('/admins');
+            return;
+          }
+
           reset({
             name: admin.name,
             email: admin.email,
@@ -110,6 +117,25 @@ export const AdminFormPage = () => {
 
   const onSubmit = (data: AdminForm) => {
     mutation.mutate(data);
+  };
+
+  const getUpdatedRoleSelection = (
+    currentRoles: string[],
+    roleName: string,
+    checked: boolean | 'indeterminate'
+  ) => {
+    if (!checked) {
+      return currentRoles.filter((currentRole) => currentRole !== roleName);
+    }
+
+    if (roleName === SUPER_ADMIN_ROLE) {
+      toast.info(t('super_admin_exclusive_role'));
+      return [SUPER_ADMIN_ROLE];
+    }
+
+    return Array.from(
+      new Set([...currentRoles.filter((currentRole) => currentRole !== SUPER_ADMIN_ROLE), roleName])
+    );
   };
 
   if (isLoading || rolesLoading) {
@@ -194,11 +220,11 @@ export const AdminFormPage = () => {
                           id={`role-${role.id}`}
                           checked={field.value.includes(role.name)}
                           onCheckedChange={(checked) => {
-                            const current = field.value;
-                            const updated = checked
-                              ? [...current, role.name]
-                              : current.filter(r => r !== role.name);
-                            field.onChange(updated);
+                            if (checked && !isSuperAdminRole(role) && field.value.includes(SUPER_ADMIN_ROLE)) {
+                              toast.info(t('super_admin_exclusive_role'));
+                            }
+
+                            field.onChange(getUpdatedRoleSelection(field.value, role.name, checked));
                           }}
                         />
                         <Label

@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/table';
 import type { Admin } from '@/services/adminService';
 import { getLocalizedDisplayName } from '@/utils/displayName';
+import { isProtectedAdminAccount } from '@/utils/access';
 
 interface AdminsTableProps {
   admins: Admin[];
@@ -65,34 +66,38 @@ export const AdminsTable = ({
                 </TableCell>
               </TableRow>
             ) : (
-              admins.map((admin) => (
-                <TableRow key={admin.id}>
-                  <TableCell className="font-medium text-foreground">{admin.name}</TableCell>
-                  <TableCell className="text-muted-foreground">{admin.email}</TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap gap-1">
-                      {admin.roles?.map((role) => (
-                        <span
-                          key={role.id}
-                          className="inline-flex items-center rounded-md bg-secondary px-2 py-1 text-xs font-medium text-secondary-foreground"
-                        >
-                          {getLocalizedDisplayName(role, i18n.language)}
-                        </span>
-                      ))}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${admin.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
-                      {admin.is_active ? t('active') : t('inactive')}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-end">
-                    <Can permission={PERMISSIONS.UPDATE_ADMINS}>
-                      <div className="flex items-center justify-end gap-2">
-                        <Button variant="ghost" size="sm" onClick={() => onEdit(admin)}>
-                          {t('edit')}
-                        </Button>
-                        {admin.id !== 1 && !admin.roles?.some((role) => role.name === 'Super Admin') && (
+              admins.map((admin) => {
+                const isProtectedAdmin = isProtectedAdminAccount(admin);
+
+                return (
+                  <TableRow key={admin.id}>
+                    <TableCell className="font-medium text-foreground">{admin.name}</TableCell>
+                    <TableCell className="text-muted-foreground">{admin.email}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
+                        {admin.roles?.map((role) => (
+                          <span
+                            key={role.id}
+                            className="inline-flex items-center rounded-md bg-secondary px-2 py-1 text-xs font-medium text-secondary-foreground"
+                          >
+                            {getLocalizedDisplayName(role, i18n.language)}
+                          </span>
+                        ))}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${admin.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                        {admin.is_active ? t('active') : t('inactive')}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-end">
+                      {!isProtectedAdmin && (
+                        <div className="flex items-center justify-end gap-2">
+                          <Can permission={PERMISSIONS.UPDATE_ADMINS}>
+                            <Button variant="ghost" size="sm" onClick={() => onEdit(admin)}>
+                              {t('edit')}
+                            </Button>
+                          </Can>
                           <Can permission={PERMISSIONS.DELETE_ADMINS}>
                             <Button
                               variant="ghost"
@@ -104,12 +109,12 @@ export const AdminsTable = ({
                               {t('delete')}
                             </Button>
                           </Can>
-                        )}
-                      </div>
-                    </Can>
-                  </TableCell>
-                </TableRow>
-              ))
+                        </div>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             )}
             {hasNextPage && (
               <TableRow ref={loadMoreRef}>
