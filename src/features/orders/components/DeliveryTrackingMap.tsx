@@ -11,46 +11,41 @@ const containerStyle = {
 
 // ── Custom SVG marker icons ────────────────────────────────────────────
 
-/** Create a data-URL SVG icon with a colored pin and an inner symbol */
-function makeSvgIcon(bgColor: string, symbol: string, size = 40): string {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size + 10}" viewBox="0 0 ${size} ${size + 10}">
-    <defs><filter id="s"><feDropShadow dx="0" dy="1" stdDeviation="1.5" flood-opacity="0.3"/></filter></defs>
-    <path d="M${size / 2} ${size + 8} C${size / 2} ${size + 8} 4 ${size * 0.6} 4 ${size * 0.42}
-      A${size * 0.42 - 4} ${size * 0.42 - 4} 0 1 1 ${size - 4} ${size * 0.42}
-      C${size - 4} ${size * 0.6} ${size / 2} ${size + 8} ${size / 2} ${size + 8}Z"
-      fill="${bgColor}" stroke="#fff" stroke-width="2" filter="url(#s)"/>
-    <text x="${size / 2}" y="${size * 0.45}" text-anchor="middle" dominant-baseline="central"
-      font-size="${size * 0.4}px" fill="#fff">${symbol}</text>
+/** Create a clean emoji-only SVG icon — no pin shape, no border */
+function makeEmojiIcon(emoji: string, size = 36): string {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+    <text x="${size / 2}" y="${size / 2}" text-anchor="middle" dominant-baseline="central"
+      font-size="${size * 0.7}px">${emoji}</text>
   </svg>`;
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 }
 
 /** Courier icon depends on vehicle type */
 function getCourierIcon(vehicleType?: string): google.maps.Icon {
-  let symbol = '🏍️';
-  if (vehicleType === VehicleType.Car) symbol = '🚗';
-  else if (vehicleType === VehicleType.Bicycle) symbol = '🚲';
+  let emoji = '🏍️';
+  if (vehicleType === VehicleType.Car) emoji = '🚗';
+  else if (vehicleType === VehicleType.Bicycle) emoji = '🚲';
 
   return {
-    url: makeSvgIcon('#3b82f6', symbol, 44),
-    scaledSize: new window.google.maps.Size(44, 54),
-    anchor: new window.google.maps.Point(22, 54),
+    url: makeEmojiIcon(emoji, 40),
+    scaledSize: new window.google.maps.Size(40, 40),
+    anchor: new window.google.maps.Point(20, 20),
   };
 }
 
 function getVendorIcon(): google.maps.Icon {
   return {
-    url: makeSvgIcon('#16a34a', '🏪', 40),
-    scaledSize: new window.google.maps.Size(40, 50),
-    anchor: new window.google.maps.Point(20, 50),
+    url: makeEmojiIcon('🏪', 36),
+    scaledSize: new window.google.maps.Size(36, 36),
+    anchor: new window.google.maps.Point(18, 18),
   };
 }
 
 function getCustomerIcon(): google.maps.Icon {
   return {
-    url: makeSvgIcon('#dc2626', '📍', 40),
-    scaledSize: new window.google.maps.Size(40, 50),
-    anchor: new window.google.maps.Point(20, 50),
+    url: makeEmojiIcon('📍', 36),
+    scaledSize: new window.google.maps.Size(36, 36),
+    anchor: new window.google.maps.Point(18, 36),
   };
 }
 
