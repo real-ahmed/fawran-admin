@@ -4,6 +4,7 @@ import { ArrowLeft, MapPin, Phone, User, Truck, CreditCard } from 'lucide-react'
 import { useOrderDetail } from './hooks/useOrderDetail';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Money } from '@/components/Money';
 import { OrderStatusTimeline } from './components/OrderStatusTimeline';
 import { DeliveryTrackingMap } from './components/DeliveryTrackingMap';
 import { SubOrderCard } from './components/SubOrderCard';
@@ -88,7 +89,7 @@ export const OrderDetailPage = () => {
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <span className="text-muted-foreground">{t('delivery_fee')}: </span>
-                    <span className="font-medium">{order.delivery_info.total_delivery_fee} L.E</span>
+                    <Money amount={order.delivery_info.total_delivery_fee} className="font-medium" />
                   </div>
                   <div>
                     <span className="text-muted-foreground">{t('delivery_zone')}: </span>
@@ -183,7 +184,7 @@ export const OrderDetailPage = () => {
                         <span className="font-medium">{t(`payment_method.${payment.payment_method}`)}</span>
                         <span className="text-xs text-muted-foreground">{t(`payment_status.${payment.status}`)}</span>
                       </div>
-                      <span className="font-bold">{payment.amount} L.E</span>
+                      <Money amount={payment.amount} className="font-bold" />
                     </div>
                   ))}
                 </div>

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { OrderType } from '@/types/enums';
+import { DateFilterInput } from './DateFilterInput';
 
 interface OrdersToolbarProps {
   searchTerm: string;
@@ -49,8 +50,8 @@ export const OrdersToolbar = ({
           </SelectContent>
         </Select>
 
-        <Input type="date" value={dateFrom} onChange={(e) => onDateFromChange(e.target.value)} placeholder={t('date_from')} className="w-[150px]" />
-        <Input type="date" value={dateTo} onChange={(e) => onDateToChange(e.target.value)} placeholder={t('date_to')} className="w-[150px]" />
+        <DateFilterInput label={t('date_from')} value={dateFrom} onChange={onDateFromChange} />
+        <DateFilterInput label={t('date_to')} value={dateTo} onChange={onDateToChange} />
 
         <Button type="button" variant="outline" className="gap-2" onClick={onClearFilters} disabled={!hasActiveFilters}>
           {hasActiveFilters ? <X className="h-4 w-4" /> : <SlidersHorizontal className="h-4 w-4" />}

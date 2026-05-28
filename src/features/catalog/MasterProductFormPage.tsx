@@ -248,9 +248,9 @@ export const MasterProductFormPage = () => {
         <form id="master-product-form" onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <Tabs defaultValue="details" className="w-full" dir={i18n.dir()}>
             <TabsList className="grid w-full grid-cols-3 gap-2 p-1 bg-muted/50 rounded-lg mb-6 h-auto">
-              <TabsTrigger value="details" className="py-2.5 rounded-md">{t('details', 'Details')}</TabsTrigger>
-              <TabsTrigger value="categorization" className="py-2.5 rounded-md">{t('categorization', 'Categorization')}</TabsTrigger>
-              <TabsTrigger value="media" className="py-2.5 rounded-md">{t('media', 'Media')}</TabsTrigger>
+              <TabsTrigger value="details" className="py-2.5 rounded-md">{t('details')}</TabsTrigger>
+              <TabsTrigger value="categorization" className="py-2.5 rounded-md">{t('categorization')}</TabsTrigger>
+              <TabsTrigger value="media" className="py-2.5 rounded-md">{t('media')}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="details" className="mt-0 outline-none">

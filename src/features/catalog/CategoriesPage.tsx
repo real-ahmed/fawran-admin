@@ -64,7 +64,7 @@ export const CategoriesPage = () => {
     {
       key: 'icon',
       header: t('category_icon'),
-      render: (category) => category.icon ? <img src={category.icon} alt="Icon" className="w-8 h-8 object-contain" /> : '-',
+      render: (category) => category.icon ? <img src={category.icon} alt={t('category_icon')} className="w-8 h-8 object-contain" /> : '-',
     },
   ], [i18n.language, t]);
 

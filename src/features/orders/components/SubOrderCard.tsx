@@ -3,6 +3,7 @@ import { SubOrder } from '@/types/order';
 import { Store, ReceiptText } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Money } from '@/components/Money';
 
 interface SubOrderCardProps {
   subOrder: SubOrder;
@@ -21,7 +22,7 @@ export const SubOrderCard = ({ subOrder }: SubOrderCardProps) => {
           </CardTitle>
           <div className="flex items-center gap-3 text-sm">
             <span className="text-muted-foreground">{t(`sub_order_status.${subOrder.status}`)}</span>
-            <span className="font-semibold">{subOrder.sub_total} L.E</span>
+            <Money amount={subOrder.sub_total} className="font-semibold" />
           </div>
         </div>
       </CardHeader>
@@ -43,7 +44,12 @@ export const SubOrderCard = ({ subOrder }: SubOrderCardProps) => {
                   {item.options && item.options.length > 0 && (
                     <div className="text-xs text-muted-foreground mt-1 space-y-0.5">
                       {item.options.map((opt, idx) => (
-                        <div key={idx}>+ {opt.option}: {opt.value} {opt.additional_price !== '0.00' ? `(${opt.additional_price} L.E)` : ''}</div>
+                        <div key={idx}>
+                          + {opt.option}: {opt.value}{' '}
+                          {opt.additional_price !== '0.00' && (
+                            <span>(<Money amount={opt.additional_price} />)</span>
+                          )}
+                        </div>
                       ))}
                     </div>
                   )}
@@ -56,13 +62,15 @@ export const SubOrderCard = ({ subOrder }: SubOrderCardProps) => {
                 </TableCell>
                 <TableCell>{item.quantity}</TableCell>
                 <TableCell>
-                  {item.unit_price} L.E
+                  <Money amount={item.unit_price} />
                   {item.options_price !== '0.00' && (
-                    <span className="block text-xs text-muted-foreground">+ {item.options_price} L.E {t('options')}</span>
+                    <span className="block text-xs text-muted-foreground">
+                      + <Money amount={item.options_price} /> {t('options')}
+                    </span>
                   )}
                 </TableCell>
                 <TableCell className="text-end font-medium">
-                  {((parseFloat(item.unit_price) + parseFloat(item.options_price)) * parseInt(item.quantity)).toFixed(2)} L.E
+                  <Money amount={((parseFloat(item.unit_price) + parseFloat(item.options_price)) * parseInt(item.quantity)).toFixed(2)} />
                 </TableCell>
               </TableRow>
             ))}

@@ -40,6 +40,8 @@ export interface SubOrder {
   id: number;
   vendor_id: number;
   vendor_name: string;
+  vendor_lat?: number;
+  vendor_lng?: number;
   sub_total: string;
   status: string;
   items: OrderItem[];
@@ -51,6 +53,8 @@ export interface OrderCourier {
   phone: string;
   vehicle_type: VehicleType;
   status: DeliveryStatus;
+  latitude?: string | number;
+  longitude?: string | number;
 }
 
 export interface OrderPayment {

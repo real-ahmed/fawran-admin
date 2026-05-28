@@ -54,8 +54,8 @@ export const MultiImageUploader = ({ id, registration, previewUrls = [], classNa
           <div className="w-12 h-12 mb-3 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 group-hover:bg-primary/20 transition-all">
             <ImagePlus className="w-6 h-6" />
           </div>
-          <p className="text-sm font-semibold text-foreground">{t('upload_images', 'Upload images')}</p>
-          <p className="text-xs font-medium text-muted-foreground mt-1">{t('image_formats', 'PNG, JPG, WEBP')}</p>
+          <p className="text-sm font-semibold text-foreground">{t('upload_images')}</p>
+          <p className="text-xs font-medium text-muted-foreground mt-1">{t('image_formats')}</p>
         </div>
         
         {/* We can show an overlay on hover similar to single uploader if images are present */}
@@ -63,7 +63,7 @@ export const MultiImageUploader = ({ id, registration, previewUrls = [], classNa
            <div className="absolute inset-0 bg-background/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
              <div className="bg-background text-foreground px-4 py-2 rounded-xl font-semibold flex items-center gap-2 shadow-lg border border-border/50">
                 <UploadCloud className="w-4 h-4 text-primary" />
-                {t('change_images', 'Change images')}
+                {t('change_images')}
              </div>
            </div>
         )}
@@ -73,7 +73,7 @@ export const MultiImageUploader = ({ id, registration, previewUrls = [], classNa
         <div className="flex flex-wrap gap-4 mt-2">
           {previewUrls.map((src, idx) => (
             <div key={idx} className="w-24 h-24 rounded-xl border border-border/60 overflow-hidden bg-muted/20 flex items-center justify-center relative group shadow-sm">
-              <img src={src} alt={`${t('image_preview', 'Image preview')} ${idx + 1}`} className="max-w-full max-h-full object-cover transition-transform group-hover:scale-105" />
+              <img src={src} alt={`${t('image_preview')} ${idx + 1}`} className="max-w-full max-h-full object-cover transition-transform group-hover:scale-105" />
               {onRemove && (
                 <button
                   type="button"

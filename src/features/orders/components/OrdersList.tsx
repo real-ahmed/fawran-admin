@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { PackageSearch, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Money } from '@/components/Money';
 import { formatOrderDate } from '../utils/date';
 
 interface OrdersListProps {
@@ -118,11 +119,7 @@ export const OrdersList = ({ status }: OrdersListProps) => {
                     {t(`order_type_${order.order_type}`)}
                   </TableCell>
                   <TableCell className="font-medium">
-                    {order.payments_count > 0 ? (
-                      `${order.payments[0]?.amount} L.E`
-                    ) : (
-                      '—'
-                    )}
+                    {order.payments_count > 0 ? <Money amount={order.payments[0]?.amount ?? 0} /> : '—'}
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline" className={`border-none ${getStatusColor(order.status)}`}>
