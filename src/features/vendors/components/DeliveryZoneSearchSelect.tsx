@@ -48,7 +48,6 @@ export function DeliveryZoneSearchSelect({ value, onChange, error, className = '
 
       return fetchDeliveryZones({
         search: searchTerm,
-        per_page: 15,
         is_active: 1,
         ...pageParams,
       });

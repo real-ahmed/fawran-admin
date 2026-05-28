@@ -18,15 +18,25 @@ const queryClient = new QueryClient({
 
 const App: React.FC = () => {
   const { t, i18n } = useTranslation();
+  const direction = i18n.dir();
 
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <AppRoutes />
         <Toaster
+          key={direction}
           position="top-center"
           richColors
-          dir={i18n.dir()}
+          dir={direction}
+          toastOptions={{
+            classNames: {
+              toast: 'text-start',
+              content: 'text-start',
+              title: 'text-start',
+              description: 'text-start',
+            },
+          }}
           containerAriaLabel={t('notifications')}
         />
       </BrowserRouter>

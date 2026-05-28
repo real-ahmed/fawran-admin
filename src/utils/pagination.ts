@@ -9,6 +9,7 @@ type PaginationLinks = {
 };
 
 type PaginatedLike = {
+  next_cursor?: string | null;
   meta?: PaginationMeta;
   links?: PaginationLinks;
 };
@@ -41,6 +42,10 @@ export const getNextPageNumberParam = (lastPage: PaginatedLike): number | undefi
 };
 
 export const getNextCursorOrPageParam = (lastPage: PaginatedLike): number | string | undefined => {
+  if (lastPage.next_cursor) {
+    return lastPage.next_cursor;
+  }
+
   if (lastPage.meta?.next_cursor) {
     return lastPage.meta.next_cursor;
   }

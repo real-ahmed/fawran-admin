@@ -54,12 +54,12 @@ export const MasterProductsPage = () => {
 
   const categoriesQuery = useQuery({
     queryKey: ['catalog', 'categories', 'options'],
-    queryFn: () => getCategories({ per_page: 100 }),
+    queryFn: () => getCategories(),
   });
 
   const brandsQuery = useQuery({
     queryKey: ['catalog', 'brands', 'options'],
-    queryFn: () => getBrands({ per_page: 100 }),
+    queryFn: () => getBrands(),
   });
 
   const categories = categoriesQuery.data?.data || [];

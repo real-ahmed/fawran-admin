@@ -17,7 +17,6 @@ export const useVendorsList = (options: UseVendorsListOptions = {}) => {
     queryFn: async ({ pageParam = 1 }) => {
       return fetchVendors({
         page: pageParam,
-        per_page: 15,
         search: options.search,
         type: options.type !== ALL_FILTER_VALUE ? options.type : undefined,
         status: options.status !== ALL_FILTER_VALUE ? options.status : undefined,

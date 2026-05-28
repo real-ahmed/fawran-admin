@@ -108,12 +108,12 @@ export const MasterProductFormPage = () => {
 
   const { data: categoriesData } = useQuery({
     queryKey: ['catalog', 'categories', 'options'],
-    queryFn: () => getCategories({ per_page: 100 }),
+    queryFn: () => getCategories(),
   });
   
   const { data: brandsData } = useQuery({
     queryKey: ['catalog', 'brands', 'options'],
-    queryFn: () => getBrands({ per_page: 100 }),
+    queryFn: () => getBrands(),
   });
 
   const categories = categoriesData?.data || [];

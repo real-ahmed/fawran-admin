@@ -2,6 +2,7 @@ import { Languages, Menu } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { useLanguagePreference } from '@/hooks/useLanguagePreference';
+import { NotificationBell } from './NotificationBell';
 
 interface AppTopbarProps {
   onOpenSidebar: () => void;
@@ -25,14 +26,17 @@ export const AppTopbar = ({ onOpenSidebar }: AppTopbarProps) => {
         </Button>
       </div>
 
-      <Button
-        variant="outline"
-        onClick={toggleLanguage}
-        className="gap-2 rounded-full border-border/60 text-sm font-semibold shadow-sm ms-auto"
-      >
-        <Languages className="h-4 w-4" />
-        {languageLabel}
-      </Button>
+      <div className="ms-auto flex items-center gap-3">
+        <NotificationBell />
+        <Button
+          variant="outline"
+          onClick={toggleLanguage}
+          className="gap-2 rounded-full border-border/60 text-sm font-semibold shadow-sm"
+        >
+          <Languages className="h-4 w-4" />
+          {languageLabel}
+        </Button>
+      </div>
     </header>
   );
 };

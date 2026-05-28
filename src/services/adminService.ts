@@ -27,7 +27,6 @@ export interface FetchAdminsParams {
   search?: string;
   is_active?: boolean | string;
   page?: number;
-  per_page?: number;
 }
 
 export const fetchAdmins = async (params?: FetchAdminsParams): Promise<PaginatedResponse<Admin>> => {

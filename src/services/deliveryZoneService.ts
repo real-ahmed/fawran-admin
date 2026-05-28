@@ -7,7 +7,6 @@ export interface FetchDeliveryZonesParams {
   is_active?: boolean | string | number;
   page?: number;
   cursor?: string | null;
-  per_page?: number;
 }
 
 export const fetchDeliveryZones = async (params?: FetchDeliveryZonesParams): Promise<PaginatedResponse<DeliveryZone>> => {

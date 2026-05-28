@@ -7,7 +7,7 @@ export const useVendorOwnerSearch = () => {
 
   const query = useQuery({
     queryKey: ['vendorOwners', searchTerm],
-    queryFn: () => fetchVendorOwners({ search: searchTerm, per_page: 5 }),
+    queryFn: () => fetchVendorOwners({ search: searchTerm }),
     enabled: true,
   });
 
