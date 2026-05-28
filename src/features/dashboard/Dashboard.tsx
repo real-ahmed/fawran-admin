@@ -9,6 +9,9 @@ import { DashboardError, DashboardLoading } from '@/features/dashboard/component
 import { OrderStatusSummary } from '@/features/dashboard/components/OrderStatusSummary';
 import { PageHeader } from '@/components/PageHeader';
 import { OrderStatus } from '@/types/enums';
+import { useNotificationStore } from '@/store/notificationStore';
+import { useEffect } from 'react';
+import { getLocalizedDisplayName } from '@/utils/displayName';
 import {
   Chart as ChartJS,
   ArcElement,
@@ -28,7 +31,7 @@ ChartJS.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Le
 
 // ─── Dashboard Page ──────────────────────────────────────────────────────────
 export const Dashboard = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { formatNumber } = useFormatters();
 
   const {
@@ -43,11 +46,20 @@ export const Dashboard = () => {
     refetchInterval: 60_000, // auto-refresh every minute
   });
 
-  const { data: pending, isLoading: pendingLoading } = useQuery({
+  const { data: pending, isLoading: pendingLoading, refetch: refetchPending } = useQuery({
     queryKey: ['dashboard-pending'],
     queryFn: fetchPendingApprovals,
     refetchInterval: 60_000,
   });
+
+  const latestNotificationId = useNotificationStore(state => state.notifications[0]?.id);
+
+  useEffect(() => {
+    if (latestNotificationId) {
+      refetchMetrics();
+      refetchPending();
+    }
+  }, [latestNotificationId, refetchMetrics, refetchPending]);
 
   // ── Chart Data ──────────────────────────────────────────────────────────
   const ordersDonutData = {
@@ -194,17 +206,26 @@ export const Dashboard = () => {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <PendingApprovalsCard
             title={t('brands')}
-            items={pending?.brands ?? []}
+            items={(pending?.brands ?? []).map((b: any) => ({
+              id: b.id,
+              name: getLocalizedDisplayName(b, i18n.language)
+            }))}
             icon={<Store className="h-4 w-4 text-primary" />}
           />
           <PendingApprovalsCard
             title={t('categories')}
-            items={pending?.categories ?? []}
+            items={(pending?.categories ?? []).map((c: any) => ({
+              id: c.id,
+              name: getLocalizedDisplayName(c, i18n.language)
+            }))}
             icon={<ShoppingCart className="h-4 w-4 text-primary" />}
           />
           <PendingApprovalsCard
             title={t('couriers')}
-            items={pending?.couriers ?? []}
+            items={(pending?.couriers ?? []).map((c: any) => ({
+              id: c.id,
+              name: c.user?.name || t('unknown')
+            }))}
             icon={<Truck className="h-4 w-4 text-primary" />}
           />
         </div>
