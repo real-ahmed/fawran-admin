@@ -2,18 +2,69 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { GoogleMap, Marker, Polyline, DirectionsRenderer, useJsApiLoader } from '@react-google-maps/api';
 import { useTranslation } from 'react-i18next';
 import { Order } from '@/types/order';
+import { VehicleType } from '@/types/enums';
 
 const containerStyle = {
   width: '100%',
   height: '100%'
 };
 
+// ── Custom SVG marker icons ────────────────────────────────────────────
+
+/** Create a data-URL SVG icon with a colored pin and an inner symbol */
+function makeSvgIcon(bgColor: string, symbol: string, size = 40): string {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size + 10}" viewBox="0 0 ${size} ${size + 10}">
+    <defs><filter id="s"><feDropShadow dx="0" dy="1" stdDeviation="1.5" flood-opacity="0.3"/></filter></defs>
+    <path d="M${size / 2} ${size + 8} C${size / 2} ${size + 8} 4 ${size * 0.6} 4 ${size * 0.42}
+      A${size * 0.42 - 4} ${size * 0.42 - 4} 0 1 1 ${size - 4} ${size * 0.42}
+      C${size - 4} ${size * 0.6} ${size / 2} ${size + 8} ${size / 2} ${size + 8}Z"
+      fill="${bgColor}" stroke="#fff" stroke-width="2" filter="url(#s)"/>
+    <text x="${size / 2}" y="${size * 0.45}" text-anchor="middle" dominant-baseline="central"
+      font-size="${size * 0.4}px" fill="#fff">${symbol}</text>
+  </svg>`;
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+}
+
+/** Courier icon depends on vehicle type */
+function getCourierIcon(vehicleType?: string): google.maps.Icon {
+  let symbol = '🏍️';
+  if (vehicleType === VehicleType.Car) symbol = '🚗';
+  else if (vehicleType === VehicleType.Bicycle) symbol = '🚲';
+
+  return {
+    url: makeSvgIcon('#3b82f6', symbol, 44),
+    scaledSize: new window.google.maps.Size(44, 54),
+    anchor: new window.google.maps.Point(22, 54),
+  };
+}
+
+function getVendorIcon(): google.maps.Icon {
+  return {
+    url: makeSvgIcon('#16a34a', '🏪', 40),
+    scaledSize: new window.google.maps.Size(40, 50),
+    anchor: new window.google.maps.Point(20, 50),
+  };
+}
+
+function getCustomerIcon(): google.maps.Icon {
+  return {
+    url: makeSvgIcon('#dc2626', '📍', 40),
+    scaledSize: new window.google.maps.Size(40, 50),
+    anchor: new window.google.maps.Point(20, 50),
+  };
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────
+
 interface DeliveryTrackingMapProps {
   order: Order;
 }
 
-/** Nearest-neighbour greedy sort for waypoints so the polyline follows the shortest path */
-function sortByNearest(start: { lat: number; lng: number }, points: { lat: number; lng: number; name: string }[]): { lat: number; lng: number; name: string }[] {
+/** Nearest-neighbour greedy sort for waypoints so the route follows the shortest path */
+function sortByNearest(
+  start: { lat: number; lng: number },
+  points: { lat: number; lng: number; name: string }[]
+): { lat: number; lng: number; name: string }[] {
   if (points.length <= 1) return [...points];
   const remaining = [...points];
   const sorted: typeof points = [];
@@ -36,6 +87,8 @@ function sortByNearest(start: { lat: number; lng: number }, points: { lat: numbe
 }
 
 type RouteState = 'loading' | 'directions' | 'fallback';
+
+// ── Component ──────────────────────────────────────────────────────────
 
 export const DeliveryTrackingMap = ({ order }: DeliveryTrackingMapProps) => {
   const { t } = useTranslation();
@@ -179,35 +232,35 @@ export const DeliveryTrackingMap = ({ order }: DeliveryTrackingMapProps) => {
       onUnmount={onUnmount}
       options={{ disableDefaultUI: false, zoomControl: true }}
     >
-      {/* ── Customer (Red) ────────────────────────────────────────── */}
+      {/* ── Customer (Red pin with 📍) ────────────────────────────── */}
       {customerLocation && (
         <Marker
           position={customerLocation}
           title={t('customer_location')}
-          icon={{ url: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png' }}
+          icon={getCustomerIcon()}
         />
       )}
 
-      {/* ── Vendors (Green) ───────────────────────────────────────── */}
+      {/* ── Vendors (Green pin with 🏪) ──────────────────────────── */}
       {vendorLocations.map((vendor, i) => (
         <Marker
           key={`vendor-${i}`}
           position={{ lat: vendor.lat, lng: vendor.lng }}
           title={vendor.name}
-          icon={{ url: 'https://maps.google.com/mapfiles/ms/icons/green-dot.png' }}
+          icon={getVendorIcon()}
         />
       ))}
 
-      {/* ── Courier (Blue) – shown when no live path ──────────────── */}
+      {/* ── Courier (Blue pin with vehicle emoji) ─────────────────── */}
       {courierLocation && !hasLivePath && (
         <Marker
           position={courierLocation}
-          title={t('courier')}
-          icon={{ url: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png' }}
+          title={`${t('courier')} – ${order.courier?.name || ''}`}
+          icon={getCourierIcon(order.courier?.vehicle_type)}
         />
       )}
 
-      {/* ── Road-level route via Directions API (ONLY when directions succeeded) ── */}
+      {/* ── Road-level route via Directions API ───────────────────── */}
       {routeState === 'directions' && directionsResult && !hasLivePath && (
         <DirectionsRenderer
           directions={directionsResult}
@@ -222,7 +275,7 @@ export const DeliveryTrackingMap = ({ order }: DeliveryTrackingMapProps) => {
         />
       )}
 
-      {/* ── Straight-line fallback (ONLY when directions failed) ── */}
+      {/* ── Straight-line fallback (only when directions failed) ──── */}
       {routeState === 'fallback' && !hasLivePath && routePath.length > 1 && (
         <Polyline
           path={routePath}
@@ -248,7 +301,7 @@ export const DeliveryTrackingMap = ({ order }: DeliveryTrackingMapProps) => {
           <Marker
             position={order.delivery_path[order.delivery_path.length - 1]}
             title={t('courier')}
-            icon={{ url: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png' }}
+            icon={getCourierIcon(order.courier?.vehicle_type)}
           />
         </>
       )}
