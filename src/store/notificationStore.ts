@@ -108,6 +108,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
         const uniqueMore = moreData.filter((newItem: AppNotification) => 
           !state.notifications.some(existing => existing.id === newItem.id)
         );
+
         return {
           notifications: [...state.notifications, ...uniqueMore],
           cursor: nextCursor,

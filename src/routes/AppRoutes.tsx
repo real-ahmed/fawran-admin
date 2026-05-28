@@ -55,6 +55,12 @@ const MasterProductsPage = lazy(() =>
 const MasterProductFormPage = lazy(() =>
   import('../features/catalog/MasterProductFormPage').then((module) => ({ default: module.MasterProductFormPage }))
 );
+const OrdersPage = lazy(() =>
+  import('../features/orders/OrdersPage').then((module) => ({ default: module.OrdersPage }))
+);
+const OrderDetailPage = lazy(() =>
+  import('../features/orders/OrderDetailPage').then((module) => ({ default: module.OrderDetailPage }))
+);
 
 const RouteFallback = () => (
   <div className="flex min-h-48 items-center justify-center">
@@ -92,6 +98,10 @@ export const AppRoutes = () => {
               <Route path="/vendors" element={<VendorsList />} />
               <Route path="/vendors/create" element={<VendorFormPage />} />
               <Route path="/vendors/:id/edit" element={<VendorFormPage />} />
+            </Route>
+            <Route element={<PrivateRoute requiredPermission={PERMISSIONS.VIEW_ORDERS} />}>
+              <Route path="/orders" element={<OrdersPage />} />
+              <Route path="/orders/:id" element={<OrderDetailPage />} />
             </Route>
             <Route element={<PrivateRoute requiredPermission={PERMISSIONS.VIEW_COURIERS} />}>
               <Route path="/couriers" element={<CouriersPage />} />

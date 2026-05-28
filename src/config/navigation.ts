@@ -47,6 +47,7 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
     ],
   },
   { to: '/vendors', labelKey: 'vendors', icon: Store, permission: PERMISSIONS.VIEW_VENDORS },
+  { to: '/orders', labelKey: 'orders', icon: Package, permission: PERMISSIONS.VIEW_ORDERS },
   { to: '/couriers', labelKey: 'couriers', icon: Truck, permission: PERMISSIONS.VIEW_COURIERS },
   {
     to: '/catalog',
