@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Courier } from '@/types/courier';
+import { Courier, CourierApprovalStatus } from '@/types/courier';
 import { getLocalizedDisplayName } from '@/utils/displayName';
 import { useCouriersList } from '../hooks/useCouriersList';
 import { EmptyState } from '@/components/EmptyState';
@@ -25,7 +25,7 @@ import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { parseApiError } from '@/utils/api';
 
 interface CouriersListProps {
-  approvalStatus: 'pending' | 'approved';
+  approvalStatus: CourierApprovalStatus;
 }
 
 export const CouriersList = ({ approvalStatus }: CouriersListProps) => {
@@ -168,6 +168,11 @@ export const CouriersList = ({ approvalStatus }: CouriersListProps) => {
                             {courier.is_online ? t('online') : t('offline')}
                           </Badge>
                         )}
+                        {approvalStatus === 'rejected' && (
+                          <Badge variant="destructive" className="text-[10px] px-1.5 py-0">
+                            {t('rejected')}
+                          </Badge>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -204,7 +209,7 @@ export const CouriersList = ({ approvalStatus }: CouriersListProps) => {
                 </div>
               )}
 
-              {approvalStatus === 'approved' && (
+              {approvalStatus !== 'pending' && (
                 <div className="p-4 border-t border-border/60 bg-muted/20 flex justify-end">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
@@ -228,10 +233,12 @@ export const CouriersList = ({ approvalStatus }: CouriersListProps) => {
                         <Edit className="h-4 w-4" />
                         {t('edit')}
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={(e) => handleActionClick(e, () => handlePrint(courier.id))}>
-                        <Printer className="h-4 w-4" />
-                        {t('print_contract')}
-                      </DropdownMenuItem>
+                      {approvalStatus === 'approved' && (
+                        <DropdownMenuItem onClick={(e) => handleActionClick(e, () => handlePrint(courier.id))}>
+                          <Printer className="h-4 w-4" />
+                          {t('print_contract')}
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuSeparator />
                       <DropdownMenuItem 
                         className="text-destructive focus:bg-destructive/10 focus:text-destructive"

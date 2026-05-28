@@ -1,12 +1,11 @@
 import { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { Loader2, Package, Store } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { AuthLayout } from '../layouts/AuthLayout';
 import { MainLayout } from '../layouts/MainLayout';
 import { PrivateRoute } from './PrivateRoute';
 import { PublicRoute } from './PublicRoute';
 import { PERMISSIONS } from '@/config/permissions';
-import { PlaceholderPage } from '@/components/PlaceholderPage';
 
 const Login = lazy(() =>
   import('../features/auth/Login').then((module) => ({ default: module.Login }))
@@ -43,6 +42,18 @@ const DeliveryZoneFormPage = lazy(() =>
 );
 const CouriersPage = lazy(() =>
   import('../features/couriers/CouriersPage').then((module) => ({ default: module.CouriersPage }))
+);
+const CategoriesPage = lazy(() =>
+  import('../features/catalog/CategoriesPage').then((module) => ({ default: module.CategoriesPage }))
+);
+const BrandsPage = lazy(() =>
+  import('../features/catalog/BrandsPage').then((module) => ({ default: module.BrandsPage }))
+);
+const MasterProductsPage = lazy(() =>
+  import('../features/catalog/MasterProductsPage').then((module) => ({ default: module.MasterProductsPage }))
+);
+const MasterProductFormPage = lazy(() =>
+  import('../features/catalog/MasterProductFormPage').then((module) => ({ default: module.MasterProductFormPage }))
 );
 
 const RouteFallback = () => (
@@ -104,40 +115,15 @@ export const AppRoutes = () => {
               <Route path="/catalog" element={<Navigate to="/catalog/categories" replace />} />
             </Route>
             <Route element={<PrivateRoute requiredPermission={PERMISSIONS.VIEW_CATEGORIES} />}>
-              <Route
-                path="/catalog/categories"
-                element={(
-                  <PlaceholderPage
-                    titleKey="categories"
-                    descriptionKey="categories_placeholder_desc"
-                    icon={Package}
-                  />
-                )}
-              />
+              <Route path="/catalog/categories" element={<CategoriesPage />} />
             </Route>
             <Route element={<PrivateRoute requiredPermission={PERMISSIONS.VIEW_BRANDS} />}>
-              <Route
-                path="/catalog/brands"
-                element={(
-                  <PlaceholderPage
-                    titleKey="brands"
-                    descriptionKey="brands_placeholder_desc"
-                    icon={Store}
-                  />
-                )}
-              />
+              <Route path="/catalog/brands" element={<BrandsPage />} />
             </Route>
             <Route element={<PrivateRoute requiredPermission={PERMISSIONS.VIEW_MASTER_PRODUCTS} />}>
-              <Route
-                path="/catalog/products"
-                element={(
-                  <PlaceholderPage
-                    titleKey="master_products"
-                    descriptionKey="master_products_placeholder_desc"
-                    icon={Package}
-                  />
-                )}
-              />
+              <Route path="/catalog/products" element={<MasterProductsPage />} />
+              <Route path="/catalog/products/create" element={<MasterProductFormPage />} />
+              <Route path="/catalog/products/:id/edit" element={<MasterProductFormPage />} />
             </Route>
             <Route element={<PrivateRoute requiredPermission={PERMISSIONS.MANAGE_SYSTEM_SETTINGS} />}>
               <Route path="/settings" element={<SystemSettings />} />

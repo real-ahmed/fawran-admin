@@ -32,6 +32,7 @@ export interface Courier {
   document?: CourierDocument;
   is_approved: boolean;
   approved_at?: string;
+  rejected_at?: string | null;
   location?: CourierLocation;
   created_at: string;
 }
@@ -42,5 +43,7 @@ export interface CouriersQuery {
   search?: string;
   is_online?: boolean | number;
   vehicle_type?: string;
-  approval_status?: 'pending' | 'approved';
+  approval_status?: CourierApprovalStatus;
 }
+
+export type CourierApprovalStatus = 'pending' | 'approved' | 'rejected';

@@ -14,9 +14,10 @@ export const CouriersPage = () => {
       />
 
       <Tabs defaultValue="pending" className="w-full" dir={i18n.dir()}>
-        <TabsList className="grid w-full max-w-[400px] grid-cols-2 p-1 bg-muted/50 rounded-lg mb-6">
+        <TabsList className="grid w-full max-w-[540px] grid-cols-3 p-1 bg-muted/50 rounded-lg mb-6">
           <TabsTrigger value="pending" className="py-2.5 rounded-md">{t('pending_couriers')}</TabsTrigger>
           <TabsTrigger value="all" className="py-2.5 rounded-md">{t('all_couriers')}</TabsTrigger>
+          <TabsTrigger value="rejected" className="py-2.5 rounded-md">{t('rejected_couriers')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="pending" className="mt-0 outline-none">
@@ -25,6 +26,10 @@ export const CouriersPage = () => {
 
         <TabsContent value="all" className="mt-0 outline-none">
           <CouriersList approvalStatus="approved" />
+        </TabsContent>
+
+        <TabsContent value="rejected" className="mt-0 outline-none">
+          <CouriersList approvalStatus="rejected" />
         </TabsContent>
       </Tabs>
     </div>

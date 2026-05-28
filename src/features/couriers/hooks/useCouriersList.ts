@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useInView } from 'react-intersection-observer';
 import { getCouriers } from '@/services/courierService';
-import { CourierVehicleType, CouriersQuery } from '@/types/courier';
+import { CourierApprovalStatus, CourierVehicleType, CouriersQuery } from '@/types/courier';
 import { useDebounce } from '@/hooks/useDebounce';
 import echo from '@/config/echo';
 import { toast } from 'sonner';
@@ -21,11 +21,11 @@ export interface CourierFilters {
 }
 
 interface UseCouriersListParams {
-  approvalStatus: 'pending' | 'approved';
+  approvalStatus: CourierApprovalStatus;
 }
 
 const buildCourierFilters = (
-  approvalStatus: 'pending' | 'approved',
+  approvalStatus: CourierApprovalStatus,
   debouncedSearch: string,
   filters: Pick<CourierFilters, 'vehicleType' | 'onlineStatus'>
 ): CouriersQuery => ({
