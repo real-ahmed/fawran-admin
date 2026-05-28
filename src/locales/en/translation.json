@@ -112,7 +112,7 @@
   "description_ar": "Arabic Description",
   "parent_category": "Parent Category",
   "no_parent_category": "No parent category",
-  "icon_class": "Icon Class",
+  "category_icon": "Icon",
   "select_icon": "Select Icon",
   "none": "None",
   "category": "Category",

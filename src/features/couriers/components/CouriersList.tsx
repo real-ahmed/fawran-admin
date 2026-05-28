@@ -23,6 +23,7 @@ import { toast } from 'sonner';
 import { CouriersToolbar } from './CouriersToolbar';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { parseApiError } from '@/utils/api';
+import { ApprovalStatus, VehicleType } from '@/types/enums';
 
 interface CouriersListProps {
   approvalStatus: CourierApprovalStatus;
@@ -107,11 +108,11 @@ export const CouriersList = ({ approvalStatus }: CouriersListProps) => {
     }
   };
 
-  const getVehicleIcon = (type: string) => {
+  const getVehicleIcon = (type: VehicleType) => {
     switch (type) {
-      case 'motorcycle': return <Bike className="h-5 w-5" />;
-      case 'bicycle': return <Bike className="h-5 w-5" />;
-      case 'car': return <CarFront className="h-5 w-5" />;
+      case VehicleType.Motorcycle: return <Bike className="h-5 w-5" />;
+      case VehicleType.Bicycle: return <Bike className="h-5 w-5" />;
+      case VehicleType.Car: return <CarFront className="h-5 w-5" />;
       default: return <CarFront className="h-5 w-5" />;
     }
   };
@@ -160,7 +161,7 @@ export const CouriersList = ({ approvalStatus }: CouriersListProps) => {
                         <span className={`text-xs px-2 py-0.5 rounded-full font-medium bg-secondary text-secondary-foreground`}>
                           {t(`vehicle_${courier.vehicle_type}`)}
                         </span>
-                        {approvalStatus === 'approved' && (
+                        {approvalStatus === ApprovalStatus.Approved && (
                           <Badge
                             variant={courier.is_online ? 'default' : 'destructive'}
                             className="text-[10px] px-1.5 py-0"
@@ -168,7 +169,7 @@ export const CouriersList = ({ approvalStatus }: CouriersListProps) => {
                             {courier.is_online ? t('online') : t('offline')}
                           </Badge>
                         )}
-                        {approvalStatus === 'rejected' && (
+                        {approvalStatus === ApprovalStatus.Rejected && (
                           <Badge variant="destructive" className="text-[10px] px-1.5 py-0">
                             {t('rejected')}
                           </Badge>
@@ -193,7 +194,7 @@ export const CouriersList = ({ approvalStatus }: CouriersListProps) => {
                 </div>
               </div>
 
-              {approvalStatus === 'pending' && (
+              {approvalStatus === ApprovalStatus.Pending && (
                 <div className="p-4 border-t border-border/60 bg-muted/20 flex gap-3">
                   <Button 
                     className="w-full gap-2" 
@@ -209,7 +210,7 @@ export const CouriersList = ({ approvalStatus }: CouriersListProps) => {
                 </div>
               )}
 
-              {approvalStatus !== 'pending' && (
+              {approvalStatus !== ApprovalStatus.Pending && (
                 <div className="p-4 border-t border-border/60 bg-muted/20 flex justify-end">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
@@ -233,7 +234,7 @@ export const CouriersList = ({ approvalStatus }: CouriersListProps) => {
                         <Edit className="h-4 w-4" />
                         {t('edit')}
                       </DropdownMenuItem>
-                      {approvalStatus === 'approved' && (
+                      {approvalStatus === ApprovalStatus.Approved && (
                         <DropdownMenuItem onClick={(e) => handleActionClick(e, () => handlePrint(courier.id))}>
                           <Printer className="h-4 w-4" />
                           {t('print_contract')}
@@ -257,8 +258,10 @@ export const CouriersList = ({ approvalStatus }: CouriersListProps) => {
       )}
 
       {isFetchingNextPage && (
-        <div className="py-4 flex justify-center">
-          <div className="h-6 w-6 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="rounded-xl border border-border/60 bg-card p-6 h-48 animate-pulse" />
+          ))}
         </div>
       )}
       

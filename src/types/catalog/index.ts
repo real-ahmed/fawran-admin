@@ -1,4 +1,6 @@
 // Base types
+import type { ApprovalStatus, UnitType } from '../enums';
+
 export type { BrandSubmittedEvent } from './BrandSubmittedEvent';
 export type { CategorySubmittedEvent } from './CategorySubmittedEvent';
 export type { MasterProductSubmittedEvent } from './MasterProductSubmittedEvent';
@@ -9,12 +11,12 @@ export type LocalizedValue = {
   ar?: string;
 };
 
-export type CatalogApprovalStatus = 'pending' | 'approved' | 'rejected';
+export type CatalogApprovalStatus = ApprovalStatus;
 export type CatalogStatusFilter = 'all' | CatalogApprovalStatus;
 export type ActiveFilter = 'all' | 'active' | 'inactive';
 export type CatalogResourceKey = 'brands' | 'categories' | 'master-products';
 
-export type ProductUnitType = 'piece' | 'kg' | 'gram' | 'portion';
+export type ProductUnitType = UnitType;
 
 // Query params
 export interface CatalogQuery {
@@ -41,7 +43,11 @@ export interface Category {
   name: LocalizedValue;
   is_active: boolean;
   parent_category_id?: number | null;
-  icon_class?: string | null;
+  parent?: {
+    id: number;
+    name: LocalizedValue;
+  } | null;
+  icon?: string | null;
   image?: string | null;
 }
 
@@ -73,7 +79,7 @@ export interface BrandPayload {
 
 export interface CategoryPayload extends BrandPayload {
   parent_category_id?: number | null;
-  icon_class?: string | null;
+  icon?: FileList | null;
 }
 
 export interface MasterProductPayload {

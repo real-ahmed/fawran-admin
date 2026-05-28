@@ -9,16 +9,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { CourierVehicleType } from '@/types/courier';
+import { VehicleType } from '@/types/enums';
+
+const ALL_FILTER_VALUE = 'all';
+
+type VehicleFilterValue = typeof ALL_FILTER_VALUE | VehicleType;
+type OnlineFilterValue = typeof ALL_FILTER_VALUE | 'online' | 'offline';
 
 interface CouriersToolbarProps {
   searchTerm: string;
-  vehicleType: string;
-  onlineStatus: string;
+  vehicleType: VehicleFilterValue;
+  onlineStatus: OnlineFilterValue;
 
   onSearchChange: (value: string) => void;
-  onVehicleTypeChange: (value: string) => void;
-  onOnlineStatusChange: (value: string) => void;
+  onVehicleTypeChange: (value: VehicleFilterValue) => void;
+  onOnlineStatusChange: (value: OnlineFilterValue) => void;
 
   onClearFilters: () => void;
 }
@@ -37,8 +42,8 @@ export const CouriersToolbar = ({
   const { t, i18n } = useTranslation();
   const hasActiveFilters =
     searchTerm !== '' ||
-    vehicleType !== 'all' ||
-    onlineStatus !== 'all';
+    vehicleType !== ALL_FILTER_VALUE ||
+    onlineStatus !== ALL_FILTER_VALUE;
 
   return (
     <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
@@ -53,24 +58,24 @@ export const CouriersToolbar = ({
           />
         </div>
 
-        <Select value={vehicleType} onValueChange={onVehicleTypeChange}>
+        <Select value={vehicleType} onValueChange={(value) => onVehicleTypeChange(value as VehicleFilterValue)}>
           <SelectTrigger>
             <SelectValue placeholder={t('vehicle_type')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">{t('all_vehicle_types')}</SelectItem>
-            <SelectItem value={CourierVehicleType.MOTORCYCLE}>{t('vehicle_motorcycle')}</SelectItem>
-            <SelectItem value={CourierVehicleType.BICYCLE}>{t('vehicle_bicycle')}</SelectItem>
-            <SelectItem value={CourierVehicleType.CAR}>{t('vehicle_car')}</SelectItem>
+            <SelectItem value={ALL_FILTER_VALUE}>{t('all_vehicle_types')}</SelectItem>
+            <SelectItem value={VehicleType.Motorcycle}>{t('vehicle_motorcycle')}</SelectItem>
+            <SelectItem value={VehicleType.Bicycle}>{t('vehicle_bicycle')}</SelectItem>
+            <SelectItem value={VehicleType.Car}>{t('vehicle_car')}</SelectItem>
           </SelectContent>
         </Select>
 
-        <Select value={onlineStatus} onValueChange={onOnlineStatusChange}>
+        <Select value={onlineStatus} onValueChange={(value) => onOnlineStatusChange(value as OnlineFilterValue)}>
           <SelectTrigger>
             <SelectValue placeholder={t('online_status')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">{t('all_online_statuses')}</SelectItem>
+            <SelectItem value={ALL_FILTER_VALUE}>{t('all_online_statuses')}</SelectItem>
             <SelectItem value="online">{t('online')}</SelectItem>
             <SelectItem value="offline">{t('offline')}</SelectItem>
           </SelectContent>

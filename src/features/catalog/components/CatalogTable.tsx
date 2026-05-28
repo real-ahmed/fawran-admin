@@ -14,6 +14,7 @@ import { DataTableSkeletonRows } from '@/components/DataTableSkeletonRows';
 import { TableActionButton } from '@/components/TableActionButton';
 import type { PermissionRequirement } from '@/utils/access';
 import type { CatalogApprovalStatus } from '@/types/catalog';
+import { ApprovalStatus } from '@/types/enums';
 
 export interface CatalogTableColumn<TItem> {
   key: string;
@@ -58,7 +59,7 @@ export const CatalogTable = <TItem extends { id: number; is_active?: boolean }>(
   onReject,
 }: CatalogTableProps<TItem>) => {
   const { t } = useTranslation();
-  const canReview = approvalStatus === 'pending';
+  const canReview = approvalStatus === ApprovalStatus.Pending;
 
   return (
     <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">

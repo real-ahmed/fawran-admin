@@ -6,6 +6,7 @@ import { Check, ChevronsUpDown, Loader2 } from 'lucide-react';
 import { fetchDeliveryZones } from '@/services/deliveryZoneService';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { getNextCursorOrPageParam } from '@/utils/pagination';
 
 interface DeliveryZoneSearchSelectProps {
   value: number;
@@ -39,24 +40,30 @@ export function DeliveryZoneSearchSelect({ value, onChange, error, className = '
     fetchNextPage,
   } = useInfiniteQuery({
     queryKey: ['deliveryZones', 'infinite', searchTerm],
-    queryFn: ({ pageParam = null }) => fetchDeliveryZones({ search: searchTerm, cursor: pageParam as string | null, per_page: 15, is_active: 1 }),
-    initialPageParam: null as string | null,
-    getNextPageParam: (lastPage: any) => {
-      // Handle both cursor and standard pagination meta formats defensively
-      if (lastPage.meta?.next_cursor) {
-        return lastPage.meta.next_cursor;
-      }
-      return undefined;
+    queryFn: ({ pageParam = 1 }) => {
+      const pageParams =
+        typeof pageParam === 'string'
+          ? { cursor: pageParam }
+          : { page: pageParam };
+
+      return fetchDeliveryZones({
+        search: searchTerm,
+        per_page: 15,
+        is_active: 1,
+        ...pageParams,
+      });
     },
+    initialPageParam: 1 as number | string,
+    getNextPageParam: getNextCursorOrPageParam,
   });
 
   const { ref: inViewRef, inView } = useInView();
 
   useEffect(() => {
-    if (inView && hasNextPage) {
+    if (inView && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
-  }, [inView, hasNextPage, fetchNextPage]);
+  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   // Flatten pages into a single array
   const zones = data?.pages.flatMap(page => page.data) || [];

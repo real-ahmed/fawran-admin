@@ -1,8 +1,4 @@
-export enum CourierVehicleType {
-  MOTORCYCLE = 'motorcycle',
-  BICYCLE = 'bicycle',
-  CAR = 'car',
-}
+import type { ApprovalStatus, VehicleType } from './enums';
 
 export interface CourierUser {
   id: number;
@@ -26,7 +22,7 @@ export interface Courier {
   id: number;
   user: CourierUser;
   national_id?: string;
-  vehicle_type: CourierVehicleType;
+  vehicle_type: VehicleType;
   plate_number: string;
   is_online: boolean;
   document?: CourierDocument;
@@ -42,8 +38,8 @@ export interface CouriersQuery {
   per_page?: number;
   search?: string;
   is_online?: boolean | number;
-  vehicle_type?: string;
+  vehicle_type?: VehicleType;
   approval_status?: CourierApprovalStatus;
 }
 
-export type CourierApprovalStatus = 'pending' | 'approved' | 'rejected';
+export type CourierApprovalStatus = ApprovalStatus;

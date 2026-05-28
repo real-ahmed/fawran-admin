@@ -37,6 +37,13 @@ if (!VITE_API_KEY) {
 
 const API_URL = `${VITE_API_BASE_URL}${VITE_API_PREFIX}/public/admin-enums`;
 const OUTPUT_FILE = path.join(__dirname, '../src/types/enums.ts');
+const BUILT_IN_ENUMS = {
+  ApprovalStatus: {
+    Pending: 'pending',
+    Approved: 'approved',
+    Rejected: 'rejected',
+  },
+};
 
 console.log('Fetching enums from:', API_URL);
 
@@ -53,7 +60,7 @@ fetch(API_URL, {
       process.exit(1);
     }
 
-    const enums = json.data;
+    const enums = { ...BUILT_IN_ENUMS, ...json.data };
     let tsContent = `// AUTO-GENERATED FILE. DO NOT EDIT DIRECTLY.\n// Run 'npm run sync:enums' to update.\n\n`;
     
     for (const [enumName, enumValues] of Object.entries(enums)) {

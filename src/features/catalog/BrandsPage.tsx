@@ -14,6 +14,7 @@ import {
   rejectBrand,
 } from '@/services/catalog/brandService';
 import type { Brand, CatalogApprovalStatus } from '@/types/catalog';
+import { ApprovalStatus } from '@/types/enums';
 import { useCatalogResourceList } from './hooks/useCatalogResourceList';
 import { CatalogToolbar } from './components/CatalogToolbar';
 import { CatalogTable, type CatalogTableColumn } from './components/CatalogTable';
@@ -24,7 +25,7 @@ export const BrandsPage = () => {
   const { t, i18n } = useTranslation();
   const [editingBrand, setEditingBrand] = useState<Brand | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [approvalStatus, setApprovalStatus] = useState<CatalogApprovalStatus>('pending');
+  const [approvalStatus, setApprovalStatus] = useState<CatalogApprovalStatus>(ApprovalStatus.Pending);
   const {
     items,
     isLoading,
@@ -80,9 +81,9 @@ export const BrandsPage = () => {
 
       <Tabs value={approvalStatus} onValueChange={(value) => setApprovalStatus(value as CatalogApprovalStatus)} className="w-full" dir={i18n.dir()}>
         <TabsList className="grid w-full max-w-[540px] grid-cols-3 p-1 bg-muted/50 rounded-lg mb-6">
-          <TabsTrigger value="pending" className="py-2.5 rounded-md">{t('pending')}</TabsTrigger>
-          <TabsTrigger value="approved" className="py-2.5 rounded-md">{t('approved')}</TabsTrigger>
-          <TabsTrigger value="rejected" className="py-2.5 rounded-md">{t('rejected')}</TabsTrigger>
+          <TabsTrigger value={ApprovalStatus.Pending} className="py-2.5 rounded-md">{t('pending')}</TabsTrigger>
+          <TabsTrigger value={ApprovalStatus.Approved} className="py-2.5 rounded-md">{t('approved')}</TabsTrigger>
+          <TabsTrigger value={ApprovalStatus.Rejected} className="py-2.5 rounded-md">{t('rejected')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value={approvalStatus} className="mt-0 outline-none">

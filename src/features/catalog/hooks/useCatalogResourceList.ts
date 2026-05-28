@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { useDebounce } from '@/hooks/useDebounce';
 import { parseApiError } from '@/utils/api';
+import { getNextPageNumberParam } from '@/utils/pagination';
 import type { ActiveFilter, CatalogApprovalStatus, CatalogQuery } from '@/types/catalog';
 import type { PaginatedResponse } from '@/types/api';
 import { useCatalogRealtime } from './useCatalogRealtime';
@@ -49,13 +50,7 @@ export const useCatalogResourceList = <TItem extends { id: number }>({
   const query = useInfiniteQuery({
     queryKey: ['catalog', resourceKey, queryParams],
     queryFn: ({ pageParam = 1 }) => fetchItems({ ...queryParams, page: pageParam }),
-    getNextPageParam: (lastPage) => {
-      if (lastPage.meta.current_page < lastPage.meta.last_page) {
-        return lastPage.meta.current_page + 1;
-      }
-
-      return undefined;
-    },
+    getNextPageParam: getNextPageNumberParam,
     initialPageParam: 1,
   });
 

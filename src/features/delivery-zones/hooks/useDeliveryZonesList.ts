@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { useInView } from 'react-intersection-observer';
 import { fetchDeliveryZones, deleteDeliveryZone } from '@/services/deliveryZoneService';
 import { useDebounce } from '@/hooks/useDebounce';
+import { getNextPageNumberParam } from '@/utils/pagination';
 
 export const useDeliveryZonesList = () => {
   const { t } = useTranslation();
@@ -14,19 +15,14 @@ export const useDeliveryZonesList = () => {
   const debouncedSearch = useDebounce(searchTerm, 500);
   const { ref: loadMoreRef, inView } = useInView();
 
-  const { data, fetchNextPage, hasNextPage, isLoading } = useInfiniteQuery({
+  const { data, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage } = useInfiniteQuery({
     queryKey: ['delivery-zones', debouncedSearch],
     queryFn: ({ pageParam = 1 }) =>
       fetchDeliveryZones({
         page: pageParam,
         search: debouncedSearch,
       }),
-    getNextPageParam: (lastPage) => {
-      if (lastPage.meta.current_page < lastPage.meta.last_page) {
-        return lastPage.meta.current_page + 1;
-      }
-      return undefined;
-    },
+    getNextPageParam: getNextPageNumberParam,
     initialPageParam: 1,
   });
 
@@ -44,9 +40,11 @@ export const useDeliveryZonesList = () => {
   });
 
   // Fetch next page when load more element is in view
-  if (inView && hasNextPage) {
-    fetchNextPage();
-  }
+  useEffect(() => {
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const zones = data?.pages.flatMap((page) => page.data) ?? [];
 
@@ -54,6 +52,7 @@ export const useDeliveryZonesList = () => {
     zones,
     isLoading,
     hasNextPage,
+    isFetchingNextPage,
     loadMoreRef,
     searchTerm,
     setSearchTerm,

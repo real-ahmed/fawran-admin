@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { deleteAdmin, fetchAdmins } from '@/services/adminService';
 import { parseApiError } from '@/utils/api';
+import { getNextPageNumberParam } from '@/utils/pagination';
 
 export const useAdminsList = () => {
   const { t } = useTranslation();
@@ -16,13 +17,7 @@ export const useAdminsList = () => {
   const query = useInfiniteQuery({
     queryKey: ['admins', searchTerm],
     queryFn: ({ pageParam = 1 }) => fetchAdmins({ search: searchTerm, page: pageParam }),
-    getNextPageParam: (lastPage) => {
-      if (lastPage.meta.current_page < lastPage.meta.last_page) {
-        return lastPage.meta.current_page + 1;
-      }
-
-      return undefined;
-    },
+    getNextPageParam: getNextPageNumberParam,
     initialPageParam: 1,
   });
 

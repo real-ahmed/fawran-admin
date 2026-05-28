@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { useInView } from 'react-intersection-observer';
 import { getCouriers } from '@/services/courierService';
-import { CourierApprovalStatus, CourierVehicleType, CouriersQuery } from '@/types/courier';
+import type { CourierApprovalStatus, CouriersQuery } from '@/types/courier';
+import { ApprovalStatus, VehicleType } from '@/types/enums';
 import { useDebounce } from '@/hooks/useDebounce';
+import { getNextPageNumberParam } from '@/utils/pagination';
 import echo from '@/config/echo';
 import { toast } from 'sonner';
 import { useAuthStore } from '@/store/authStore';
@@ -12,7 +14,7 @@ import { useAuthStore } from '@/store/authStore';
 const ALL_FILTER_VALUE = 'all';
 
 type OnlineFilterValue = typeof ALL_FILTER_VALUE | 'online' | 'offline';
-type VehicleFilterValue = typeof ALL_FILTER_VALUE | CourierVehicleType;
+type VehicleFilterValue = typeof ALL_FILTER_VALUE | VehicleType;
 
 export interface CourierFilters {
   searchTerm: string;
@@ -60,12 +62,7 @@ export const useCouriersList = ({ approvalStatus }: UseCouriersListParams) => {
     queryFn: async ({ pageParam = 1 }) => {
       return getCouriers({ ...filters, page: pageParam });
     },
-    getNextPageParam: (lastPage) => {
-      if (lastPage.meta.current_page < lastPage.meta.last_page) {
-        return lastPage.meta.current_page + 1;
-      }
-      return undefined;
-    },
+    getNextPageParam: getNextPageNumberParam,
     initialPageParam: 1,
   });
 
@@ -79,7 +76,7 @@ export const useCouriersList = ({ approvalStatus }: UseCouriersListParams) => {
 
   // Real-time updates for pending couriers
   useEffect(() => {
-    if (approvalStatus === 'pending' && user?.id) {
+    if (approvalStatus === ApprovalStatus.Pending && user?.id) {
       const channel = echo.private(`admin.${user.id}`)
         .listen('CourierApplicationSubmitted', () => {
           toast.success(t('courier_application_submitted'));

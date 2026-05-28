@@ -8,9 +8,10 @@ interface ImageUploaderProps {
   registration: UseFormRegisterReturn;
   previewUrl?: string;
   className?: string;
+  accept?: string;
 }
 
-export const ImageUploader = ({ id, registration, previewUrl, className = '' }: ImageUploaderProps) => {
+export const ImageUploader = ({ id, registration, previewUrl, className = '', accept = 'image/*' }: ImageUploaderProps) => {
   const { t } = useTranslation();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [localPreview, setLocalPreview] = useState<string | null>(null);
@@ -38,7 +39,7 @@ export const ImageUploader = ({ id, registration, previewUrl, className = '' }: 
       <input
         id={id}
         type="file"
-        accept="image/*"
+        accept={accept}
         className="hidden"
         {...rest}
         onChange={handleFileChange}

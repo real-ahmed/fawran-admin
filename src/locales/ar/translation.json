@@ -112,7 +112,7 @@
   "description_ar": "الوصف بالعربية",
   "parent_category": "الفئة الرئيسية",
   "no_parent_category": "بدون فئة رئيسية",
-  "icon_class": "فئة الأيقونة",
+  "category_icon": "الأيقونة",
   "select_icon": "اختر الأيقونة",
   "none": "لا يوجد",
   "category": "الفئة",

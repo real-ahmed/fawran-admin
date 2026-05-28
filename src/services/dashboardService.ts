@@ -1,12 +1,15 @@
 import apiClient from '@/config/axios';
+import type { OrderStatus } from '@/types/enums';
+
+type DashboardOrderStatus =
+  | OrderStatus.Pending
+  | OrderStatus.Processing
+  | OrderStatus.Delivered
+  | OrderStatus.Cancelled;
 
 export interface DashboardMetrics {
-  orders: {
+  orders: Record<DashboardOrderStatus, number> & {
     total: number;
-    pending: number;
-    processing: number;
-    delivered: number;
-    cancelled: number;
   };
   vendors: {
     total: number;

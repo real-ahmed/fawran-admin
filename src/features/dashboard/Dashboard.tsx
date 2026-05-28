@@ -8,6 +8,7 @@ import { PendingApprovalsCard } from '@/features/dashboard/components/PendingApp
 import { DashboardError, DashboardLoading } from '@/features/dashboard/components/DashboardStates';
 import { OrderStatusSummary } from '@/features/dashboard/components/OrderStatusSummary';
 import { PageHeader } from '@/components/PageHeader';
+import { OrderStatus } from '@/types/enums';
 import {
   Chart as ChartJS,
   ArcElement,
@@ -54,10 +55,10 @@ export const Dashboard = () => {
     datasets: [
       {
         data: [
-          metrics?.orders.pending ?? 0,
-          metrics?.orders.processing ?? 0,
-          metrics?.orders.delivered ?? 0,
-          metrics?.orders.cancelled ?? 0,
+          metrics?.orders[OrderStatus.Pending] ?? 0,
+          metrics?.orders[OrderStatus.Processing] ?? 0,
+          metrics?.orders[OrderStatus.Delivered] ?? 0,
+          metrics?.orders[OrderStatus.Cancelled] ?? 0,
         ],
         backgroundColor: ['#f59e0b', '#3b82f6', '#606C38', '#ef4444'],
         borderWidth: 0,
@@ -126,7 +127,7 @@ export const Dashboard = () => {
         <StatCard
           title={t('total_orders')}
           value={formatNumber(metrics?.orders.total ?? 0)}
-          sub={`${formatNumber(metrics?.orders.pending ?? 0)} ${t('pending')}`}
+          sub={`${formatNumber(metrics?.orders[OrderStatus.Pending] ?? 0)} ${t('pending')}`}
           icon={<ShoppingCart className="h-5 w-5 text-blue-600" />}
           tone="bg-blue-50"
         />
@@ -177,10 +178,10 @@ export const Dashboard = () => {
 
       <OrderStatusSummary
         items={[
-          { label: t('pending'), value: formatNumber(metrics?.orders.pending), icon: <Clock className="h-4 w-4" />, color: 'text-amber-600 bg-amber-50' },
-          { label: t('processing'), value: formatNumber(metrics?.orders.processing), icon: <Loader2 className="h-4 w-4" />, color: 'text-blue-600 bg-blue-50' },
-          { label: t('delivered'), value: formatNumber(metrics?.orders.delivered), icon: <CheckCircle className="h-4 w-4" />, color: 'text-emerald-600 bg-emerald-50' },
-          { label: t('cancelled'), value: formatNumber(metrics?.orders.cancelled), icon: <XCircle className="h-4 w-4" />, color: 'text-red-500 bg-red-50' },
+          { label: t('pending'), value: formatNumber(metrics?.orders[OrderStatus.Pending]), icon: <Clock className="h-4 w-4" />, color: 'text-amber-600 bg-amber-50' },
+          { label: t('processing'), value: formatNumber(metrics?.orders[OrderStatus.Processing]), icon: <Loader2 className="h-4 w-4" />, color: 'text-blue-600 bg-blue-50' },
+          { label: t('delivered'), value: formatNumber(metrics?.orders[OrderStatus.Delivered]), icon: <CheckCircle className="h-4 w-4" />, color: 'text-emerald-600 bg-emerald-50' },
+          { label: t('cancelled'), value: formatNumber(metrics?.orders[OrderStatus.Cancelled]), icon: <XCircle className="h-4 w-4" />, color: 'text-red-500 bg-red-50' },
         ]}
       />
 

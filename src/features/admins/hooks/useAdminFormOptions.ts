@@ -3,14 +3,7 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { useDebounce } from '@/hooks/useDebounce';
 import { fetchDeliveryZones } from '@/services/deliveryZoneService';
 import { fetchRoles } from '@/services/roleService';
-
-const getNextPageParam = (lastPage: { meta: { current_page: number; last_page: number } }) => {
-  if (lastPage.meta.current_page < lastPage.meta.last_page) {
-    return lastPage.meta.current_page + 1;
-  }
-
-  return undefined;
-};
+import { getNextPageNumberParam } from '@/utils/pagination';
 
 export const useAdminFormOptions = () => {
   const [rolesSearchTerm, setRolesSearchTerm] = useState('');
@@ -21,7 +14,7 @@ export const useAdminFormOptions = () => {
   const rolesQuery = useInfiniteQuery({
     queryKey: ['admin-form', 'roles', debouncedRolesSearch],
     queryFn: ({ pageParam = 1 }) => fetchRoles({ search: debouncedRolesSearch, page: pageParam }),
-    getNextPageParam,
+    getNextPageParam: getNextPageNumberParam,
     initialPageParam: 1,
     placeholderData: (previousData) => previousData,
   });
@@ -34,7 +27,7 @@ export const useAdminFormOptions = () => {
         page: pageParam,
         is_active: '1',
       }),
-    getNextPageParam,
+    getNextPageParam: getNextPageNumberParam,
     initialPageParam: 1,
     placeholderData: (previousData) => previousData,
   });

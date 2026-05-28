@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Search, MapPin, Store, Settings, Mail, Phone } from 'lucide-react';
@@ -18,12 +18,14 @@ import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { getLocalizedDisplayName } from '@/utils/displayName';
 import { Badge } from '@/components/ui/badge';
 
+const ALL_FILTER_VALUE = 'all';
+
 export const VendorList = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
-  const [typeFilter, setTypeFilter] = useState('all');
+  const [typeFilter, setTypeFilter] = useState<typeof ALL_FILTER_VALUE | VendorType>(ALL_FILTER_VALUE);
 
   const { ref, inView } = useInView();
   
@@ -56,17 +58,17 @@ export const VendorList = () => {
     }
   });
 
-  if (inView && hasNextPage && !isFetchingNextPage) {
-    fetchNextPage();
-  }
+  useEffect(() => {
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const getTypeBadgeColor = (type: VendorType) => {
     switch (type) {
       case VendorType.RESTAURANT: return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300';
       case VendorType.PHARMACY: return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300';
       case VendorType.GROCERY: return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
-      case VendorType.FLORIST: return 'bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300';
-      case VendorType.COFFEE_SHOP: return 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300';
       default: return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
     }
   };
@@ -96,14 +98,12 @@ export const VendorList = () => {
         <select
           className="flex h-10 w-full sm:w-48 items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           value={typeFilter}
-          onChange={(e) => setTypeFilter(e.target.value)}
+          onChange={(e) => setTypeFilter(e.target.value as typeof ALL_FILTER_VALUE | VendorType)}
         >
-          <option value="all">{t('all_types')}</option>
-          <option value={VendorType.RESTAURANT}>{t(`vendor_type_${VendorType.RESTAURANT}`)}</option>
-          <option value={VendorType.PHARMACY}>{t(`vendor_type_${VendorType.PHARMACY}`)}</option>
-          <option value={VendorType.GROCERY}>{t(`vendor_type_${VendorType.GROCERY}`)}</option>
-          <option value={VendorType.FLORIST}>{t(`vendor_type_${VendorType.FLORIST}`)}</option>
-          <option value={VendorType.COFFEE_SHOP}>{t(`vendor_type_${VendorType.COFFEE_SHOP}`)}</option>
+          <option value={ALL_FILTER_VALUE}>{t('all_types')}</option>
+          {Object.values(VendorType).map((type) => (
+            <option key={type} value={type}>{t(`vendor_type_${type}`)}</option>
+          ))}
         </select>
       </div>
 
@@ -174,8 +174,10 @@ export const VendorList = () => {
       )}
 
       {isFetchingNextPage && (
-        <div className="py-4 flex justify-center">
-          <div className="h-6 w-6 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="rounded-xl border border-border/60 bg-card p-6 h-48 animate-pulse" />
+          ))}
         </div>
       )}
       

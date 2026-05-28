@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Loader2, ArrowLeft, Image as ImageIcon } from 'lucide-react';
+import { Loader2, ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -39,6 +39,7 @@ import {
 import { getBrands } from '@/services/catalog/brandService';
 import { getCategories } from '@/services/catalog/categoryService';
 import type { Brand, Category, MasterProduct, MasterProductPayload, ProductUnitType } from '@/types/catalog';
+import { UnitType } from '@/types/enums';
 import { localizedName, productDescription } from './utils';
 
 interface MasterProductFormValues {
@@ -55,7 +56,7 @@ interface MasterProductFormValues {
   images?: FileList | null;
 }
 
-const unitTypes: ProductUnitType[] = ['piece', 'kg', 'gram', 'portion'];
+const unitTypes = Object.values(UnitType);
 
 export const MasterProductFormPage = () => {
   const { t, i18n } = useTranslation();
@@ -73,7 +74,7 @@ export const MasterProductFormPage = () => {
     description_ar: z.string().min(1, t('validation_required')),
     category_id: z.string().min(1, t('validation_required')),
     brand_id: z.string(),
-    unit_type: z.enum(unitTypes as [string, ...string[]]),
+    unit_type: z.nativeEnum(UnitType),
     sku_barcode: z.string().optional(),
     is_active: z.boolean(),
     image: z.any().optional(),
@@ -97,7 +98,7 @@ export const MasterProductFormPage = () => {
       description_ar: '',
       category_id: '',
       brand_id: 'none',
-      unit_type: 'piece',
+      unit_type: UnitType.Piece,
       sku_barcode: '',
       is_active: true,
       image: null,
@@ -133,7 +134,7 @@ export const MasterProductFormPage = () => {
         description_ar: productDescription(product, 'ar'),
         category_id: product.category?.id ? String(product.category.id) : '',
         brand_id: product.retail_detail?.brand_id ? String(product.retail_detail.brand_id) : 'none',
-        unit_type: product.unit_type || 'piece',
+        unit_type: product.unit_type || UnitType.Piece,
         sku_barcode: product.retail_detail?.sku_barcode || '',
         is_active: product.is_active ?? true,
         image: null,

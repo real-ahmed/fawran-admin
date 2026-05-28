@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2, ShoppingBag, Smartphone, Laptop, Pizza, Coffee, Car, Home, Gift, Shirt, Watch, Bike, Briefcase, Camera, Music, Book, Heart, Star, Tag, Monitor, Speaker } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -32,29 +32,6 @@ import type { Category, CategoryPayload } from '@/types/catalog';
 import { localizedName } from '../utils';
 import { ImageUploader } from '@/components/ImageUploader';
 
-const CATEGORY_ICONS = [
-  { id: 'shopping-bag', icon: ShoppingBag, label: 'Shopping Bag' },
-  { id: 'smartphone', icon: Smartphone, label: 'Smartphone' },
-  { id: 'laptop', icon: Laptop, label: 'Laptop' },
-  { id: 'pizza', icon: Pizza, label: 'Food/Pizza' },
-  { id: 'coffee', icon: Coffee, label: 'Coffee' },
-  { id: 'car', icon: Car, label: 'Car' },
-  { id: 'home', icon: Home, label: 'Home' },
-  { id: 'gift', icon: Gift, label: 'Gift' },
-  { id: 'shirt', icon: Shirt, label: 'Clothing' },
-  { id: 'watch', icon: Watch, label: 'Watch' },
-  { id: 'bike', icon: Bike, label: 'Bike' },
-  { id: 'briefcase', icon: Briefcase, label: 'Briefcase' },
-  { id: 'camera', icon: Camera, label: 'Camera' },
-  { id: 'music', icon: Music, label: 'Music' },
-  { id: 'book', icon: Book, label: 'Book' },
-  { id: 'heart', icon: Heart, label: 'Heart' },
-  { id: 'star', icon: Star, label: 'Star' },
-  { id: 'tag', icon: Tag, label: 'Tag' },
-  { id: 'monitor', icon: Monitor, label: 'Monitor' },
-  { id: 'speaker', icon: Speaker, label: 'Electronics' },
-];
-
 interface CategoryFormDialogProps {
   category: Category | null;
   categories: Category[];
@@ -66,7 +43,7 @@ interface CategoryFormValues {
   name_en: string;
   name_ar: string;
   parent_category_id: string;
-  icon_class: string;
+  icon?: FileList | null;
   is_active: boolean;
   image?: FileList | null;
 }
@@ -78,7 +55,7 @@ export const CategoryFormDialog = ({ category, categories, isOpen, onClose }: Ca
     name_en: z.string().min(1, t('validation_required')),
     name_ar: z.string().min(1, t('validation_required')),
     parent_category_id: z.string(),
-    icon_class: z.string(),
+    icon: z.any().optional(),
     is_active: z.boolean(),
     image: z.any().optional(),
   });
@@ -97,7 +74,7 @@ export const CategoryFormDialog = ({ category, categories, isOpen, onClose }: Ca
       name_en: '',
       name_ar: '',
       parent_category_id: 'none',
-      icon_class: '',
+      icon: null,
       is_active: true,
       image: null,
     },
@@ -110,7 +87,7 @@ export const CategoryFormDialog = ({ category, categories, isOpen, onClose }: Ca
       name_en: category?.name?.en || '',
       name_ar: category?.name?.ar || '',
       parent_category_id: category?.parent_category_id ? String(category.parent_category_id) : 'none',
-      icon_class: category?.icon_class || '',
+      icon: null,
       is_active: category?.is_active ?? true,
       image: null,
     });
@@ -128,7 +105,7 @@ export const CategoryFormDialog = ({ category, categories, isOpen, onClose }: Ca
         'name.en': 'name_en',
         'name.ar': 'name_ar',
         parent_category_id: 'parent_category_id',
-        icon_class: 'icon_class',
+        icon: 'icon',
       });
       toast.error(parseApiError(error, t('save_failed')));
     },
@@ -142,7 +119,7 @@ export const CategoryFormDialog = ({ category, categories, isOpen, onClose }: Ca
       },
       is_active: values.is_active,
       parent_category_id: values.parent_category_id === 'none' ? null : Number(values.parent_category_id),
-      icon_class: values.icon_class || null,
+      icon: values.icon?.length ? values.icon : null,
       image: values.image?.length ? values.image : null,
     });
   };
@@ -201,27 +178,15 @@ export const CategoryFormDialog = ({ category, categories, isOpen, onClose }: Ca
               <FormFieldError message={errors.parent_category_id?.message} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="category-icon">{t('icon_class')}</Label>
-              <Select value={watch('icon_class')} onValueChange={(value) => setValue('icon_class', value)}>
-                <SelectTrigger id="category-icon">
-                  <SelectValue placeholder={t('select_icon')} />
-                </SelectTrigger>
-                <SelectContent className="max-h-60">
-                  <SelectItem value="none">{t('none')}</SelectItem>
-                  {CATEGORY_ICONS.map((item) => {
-                    const IconComp = item.icon;
-                    return (
-                      <SelectItem key={item.id} value={item.id}>
-                        <div className="flex items-center gap-2">
-                          <IconComp className="h-4 w-4" />
-                          <span>{item.label}</span>
-                        </div>
-                      </SelectItem>
-                    );
-                  })}
-                </SelectContent>
-              </Select>
-              <FormFieldError message={errors.icon_class?.message} />
+              <Label>{t('category_icon')}</Label>
+              <ImageUploader
+                 id="category-icon"
+                 registration={register('icon')}
+                 previewUrl={category?.icon || undefined}
+                 className="w-32 h-32"
+                 accept=".svg, image/svg+xml"
+              />
+              <FormFieldError message={errors.icon?.message as string} />
             </div>
           </div>
 

@@ -1,12 +1,13 @@
 import apiClient from '@/config/axios';
 import type { PaginatedResponse } from '@/types/api';
 import type { Vendor, CreateVendorPayload, UpdateVendorPayload } from '@/types/vendor';
+import type { VendorStatus, VendorType } from '@/types/enums';
 
 export interface FetchVendorsParams {
   search?: string;
-  type?: string;
+  type?: VendorType;
   is_active?: boolean;
-  status?: string;
+  status?: VendorStatus;
   page?: number;
   per_page?: number;
 }

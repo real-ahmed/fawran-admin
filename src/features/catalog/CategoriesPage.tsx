@@ -14,6 +14,7 @@ import {
   rejectCategory,
 } from '@/services/catalog/categoryService';
 import type { CatalogApprovalStatus, Category } from '@/types/catalog';
+import { ApprovalStatus } from '@/types/enums';
 import { useCatalogResourceList } from './hooks/useCatalogResourceList';
 import { CatalogToolbar } from './components/CatalogToolbar';
 import { CatalogTable, type CatalogTableColumn } from './components/CatalogTable';
@@ -24,7 +25,7 @@ export const CategoriesPage = () => {
   const { t, i18n } = useTranslation();
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [approvalStatus, setApprovalStatus] = useState<CatalogApprovalStatus>('pending');
+  const [approvalStatus, setApprovalStatus] = useState<CatalogApprovalStatus>(ApprovalStatus.Pending);
   const {
     items,
     isLoading,
@@ -49,14 +50,6 @@ export const CategoriesPage = () => {
     rejectItem: rejectCategory,
   });
 
-  const categoryNameById = useMemo(() => {
-    const names = new Map<number, string>();
-    items.forEach((category) => {
-      names.set(category.id, localizedName(category.name, i18n.language));
-    });
-    return names;
-  }, [i18n.language, items]);
-
   const columns = useMemo<CatalogTableColumn<Category>[]>(() => [
     {
       key: 'name',
@@ -66,14 +59,14 @@ export const CategoriesPage = () => {
     {
       key: 'parent',
       header: t('parent_category'),
-      render: (category) => category.parent_category_id ? categoryNameById.get(category.parent_category_id) || category.parent_category_id : t('none'),
+      render: (category) => category.parent ? <span className="text-muted-foreground">{localizedName(category.parent.name, i18n.language)}</span> : <span className="text-muted-foreground opacity-50">-</span>,
     },
     {
       key: 'icon',
-      header: t('icon_class'),
-      render: (category) => category.icon_class || '-',
+      header: t('category_icon'),
+      render: (category) => category.icon ? <img src={category.icon} alt="Icon" className="w-8 h-8 object-contain" /> : '-',
     },
-  ], [categoryNameById, i18n.language, t]);
+  ], [i18n.language, t]);
 
   const openCreateForm = () => {
     setEditingCategory(null);
@@ -98,9 +91,9 @@ export const CategoriesPage = () => {
 
       <Tabs value={approvalStatus} onValueChange={(value) => setApprovalStatus(value as CatalogApprovalStatus)} className="w-full" dir={i18n.dir()}>
         <TabsList className="grid w-full max-w-[540px] grid-cols-3 p-1 bg-muted/50 rounded-lg mb-6">
-          <TabsTrigger value="pending" className="py-2.5 rounded-md">{t('pending')}</TabsTrigger>
-          <TabsTrigger value="approved" className="py-2.5 rounded-md">{t('approved')}</TabsTrigger>
-          <TabsTrigger value="rejected" className="py-2.5 rounded-md">{t('rejected')}</TabsTrigger>
+          <TabsTrigger value={ApprovalStatus.Pending} className="py-2.5 rounded-md">{t('pending')}</TabsTrigger>
+          <TabsTrigger value={ApprovalStatus.Approved} className="py-2.5 rounded-md">{t('approved')}</TabsTrigger>
+          <TabsTrigger value={ApprovalStatus.Rejected} className="py-2.5 rounded-md">{t('rejected')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value={approvalStatus} className="mt-0 outline-none">
