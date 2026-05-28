@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label';
 import { applyApiValidationErrors } from '@/utils/api';
 import { FormFieldError } from '@/components/FormFieldError';
 import { fetchCurrentAdmin, loginAdmin } from '@/services/authService';
+import { useRecaptcha } from '@/hooks/useRecaptcha';
 
 const getLoginErrorMessage = (error: unknown, fallbackMessage: string) => {
   if (!isAxiosError(error)) return fallbackMessage;
@@ -45,6 +46,11 @@ export const Login = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const {
+    enabled: recaptchaEnabled,
+    executeRecaptcha,
+    isLoading: recaptchaLoading,
+  } = useRecaptcha();
 
   // We define the schema inside the component so we can use t() for messages
   const loginSchema = z.object({
@@ -67,7 +73,23 @@ export const Login = () => {
     try {
       setLoading(true);
       setError('');
-      const token = await loginAdmin(data);
+      let recaptchaToken: string | null = null;
+
+      if (recaptchaEnabled) {
+        try {
+          recaptchaToken = await executeRecaptcha();
+        } catch {
+          const message = t('recaptcha_failed');
+          setError(message);
+          toast.error(message);
+          return;
+        }
+      }
+
+      const token = await loginAdmin({
+        ...data,
+        ...(recaptchaToken ? { recaptcha_token: recaptchaToken } : {}),
+      });
       
       if (token) {
         setToken(token);
@@ -151,7 +173,7 @@ export const Login = () => {
 
         <Button 
           type="submit" 
-          disabled={loading} 
+          disabled={loading || recaptchaLoading} 
           className="w-full h-12 mt-2 text-base font-semibold rounded-xl shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all hover:-translate-y-0.5 active:translate-y-0"
         >
           {loading && <Loader2 className="me-2 h-5 w-5 animate-spin" />}

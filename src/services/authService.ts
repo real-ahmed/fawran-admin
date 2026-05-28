@@ -4,6 +4,7 @@ import { extractAccessToken } from '@/utils/auth';
 export interface LoginAdminPayload {
   email: string;
   password: string;
+  recaptcha_token?: string;
 }
 
 export interface CurrentAdmin {
