@@ -92,7 +92,7 @@ export const NotificationBell = () => {
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-80 p-0 text-start" align="end" dir={direction}>
+      <DropdownMenuContent className="w-80 max-w-[calc(100vw-2rem)] p-0 text-start" align="end" dir={direction}>
         <div className="flex items-center justify-between border-b px-4 py-3">
           <h4 className="font-semibold">{t('notifications')}</h4>
           {unreadCount > 0 && (
@@ -107,7 +107,7 @@ export const NotificationBell = () => {
             </Button>
           )}
         </div>
-        <ScrollArea className="h-[300px]">
+        <ScrollArea className="h-[300px]" dir={direction}>
           {isLoading && notifications.length === 0 ? (
             <div className="flex h-full items-center justify-center p-4">
               <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
@@ -118,27 +118,28 @@ export const NotificationBell = () => {
               {t('no_notifications')}
             </div>
           ) : (
-            <div className="flex flex-col">
+            <div className="flex flex-col text-start" dir={direction}>
               {notifications.map((notification) => (
                 <div
                   key={notification.id}
-                  className={`flex cursor-pointer flex-col items-start gap-1 border-b p-4 text-sm transition-colors hover:bg-muted/50 ${
+                  className={`flex cursor-pointer flex-col items-stretch gap-1 border-b p-4 text-start text-sm transition-colors hover:bg-muted/50 ${
                     !notification.read_at ? 'bg-primary/5' : ''
                   }`}
+                  dir={direction}
                   onClick={() => handleNotificationClick(notification.id)}
                 >
                   <div className="flex w-full items-start justify-between gap-2">
-                  <span className="font-medium">
-                    {notification.data.title || t('notification')}
-                  </span>
+                    <span className="font-medium [unicode-bidi:plaintext]" dir="auto">
+                      {notification.data.title || t('notification')}
+                    </span>
                     {!notification.read_at && (
                       <span className="h-2 w-2 shrink-0 rounded-full bg-primary" />
                     )}
                   </div>
-                  <p className="line-clamp-2 text-xs text-muted-foreground">
+                  <p className="line-clamp-2 text-start text-xs text-muted-foreground [unicode-bidi:plaintext]" dir="auto">
                     {notification.data.body}
                   </p>
-                  <span className="mt-1 text-[10px] text-muted-foreground/80">
+                  <span className="mt-1 text-start text-[10px] text-muted-foreground/80">
                     {new Date(notification.created_at).toLocaleString(dateLocale)}
                   </span>
                 </div>

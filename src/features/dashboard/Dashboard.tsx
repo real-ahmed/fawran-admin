@@ -1,5 +1,8 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchDashboardMetrics, fetchPendingApprovals } from '@/services/dashboardService';
+import { approveBrand, rejectBrand } from '@/services/catalog/brandService';
+import { approveCategory, rejectCategory } from '@/services/catalog/categoryService';
+import { rejectCourier, getCourier, getCourierContractPrintHtml } from '@/services/courierService';
 import { useTranslation } from 'react-i18next';
 import { useFormatters } from '@/hooks/useFormatters';
 import { Money } from '@/components/Money';
@@ -7,11 +10,14 @@ import { StatCard } from '@/features/dashboard/components/StatCard';
 import { PendingApprovalsCard } from '@/features/dashboard/components/PendingApprovalsCard';
 import { DashboardError, DashboardLoading } from '@/features/dashboard/components/DashboardStates';
 import { OrderStatusSummary } from '@/features/dashboard/components/OrderStatusSummary';
+import { CourierApprovalModal } from '@/features/couriers/components/CourierApprovalModal';
 import { PageHeader } from '@/components/PageHeader';
 import { OrderStatus } from '@/types/enums';
+import { Courier } from '@/types/courier';
 import { useNotificationStore } from '@/store/notificationStore';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { getLocalizedDisplayName } from '@/utils/displayName';
+import { toast } from 'sonner';
 import {
   Chart as ChartJS,
   ArcElement,
@@ -51,6 +57,64 @@ export const Dashboard = () => {
     queryFn: fetchPendingApprovals,
     refetchInterval: 60_000,
   });
+
+  const queryClient = useQueryClient();
+  const [loadingId, setLoadingId] = useState<number | null>(null);
+  const [selectedCourier, setSelectedCourier] = useState<Courier | null>(null);
+  const [isCourierApprovalModalOpen, setIsCourierApprovalModalOpen] = useState(false);
+
+  const handleAction = async (actionFn: (id: number) => Promise<void>, id: number, successMsg: string) => {
+    setLoadingId(id);
+    try {
+      await actionFn(id);
+      toast.success(successMsg);
+      queryClient.invalidateQueries({ queryKey: ['dashboard-pending'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || t('action_failed'));
+    } finally {
+      setLoadingId(null);
+    }
+  };
+
+  const handleCourierApproveClick = async (id: number) => {
+    try {
+      setLoadingId(id);
+      const courierData = await getCourier(id);
+      setSelectedCourier(courierData);
+      setIsCourierApprovalModalOpen(true);
+    } catch (error) {
+      toast.error(t('error_loading_details'));
+    } finally {
+      setLoadingId(null);
+    }
+  };
+
+  const handleCourierPrint = async (courierId: number) => {
+    const printWindow = window.open('', '_blank');
+
+    if (!printWindow) {
+      toast.error(t('popup_blocked'));
+      return;
+    }
+
+    try {
+      const contractHtml = await getCourierContractPrintHtml(courierId);
+      printWindow.document.write(contractHtml);
+      printWindow.document.close();
+
+      queryClient.invalidateQueries({ queryKey: ['dashboard-pending'] });
+      queryClient.invalidateQueries({ queryKey: ['couriers'] });
+
+      if (selectedCourier?.id === courierId) {
+        const refreshedCourier = await getCourier(courierId);
+        setSelectedCourier(refreshedCourier);
+      }
+    } catch (error) {
+      printWindow.close();
+      toast.error(t('error_printing'));
+    }
+  };
 
   const latestNotificationId = useNotificationStore(state => state.notifications[0]?.id);
 
@@ -211,6 +275,9 @@ export const Dashboard = () => {
               name: getLocalizedDisplayName(b, i18n.language)
             }))}
             icon={<Store className="h-4 w-4 text-primary" />}
+            onApprove={(id) => handleAction(approveBrand, id, t('brand_approved'))}
+            onReject={(id) => handleAction(rejectBrand, id, t('brand_rejected'))}
+            loadingId={loadingId}
           />
           <PendingApprovalsCard
             title={t('categories')}
@@ -219,6 +286,9 @@ export const Dashboard = () => {
               name: getLocalizedDisplayName(c, i18n.language)
             }))}
             icon={<ShoppingCart className="h-4 w-4 text-primary" />}
+            onApprove={(id) => handleAction(approveCategory, id, t('category_approved'))}
+            onReject={(id) => handleAction(rejectCategory, id, t('category_rejected'))}
+            loadingId={loadingId}
           />
           <PendingApprovalsCard
             title={t('couriers')}
@@ -227,9 +297,24 @@ export const Dashboard = () => {
               name: c.user?.name || t('unknown')
             }))}
             icon={<Truck className="h-4 w-4 text-primary" />}
+            onApprove={handleCourierApproveClick}
+            onReject={(id) => handleAction(rejectCourier, id, t('courier_rejected'))}
+            loadingId={loadingId}
           />
         </div>
       </div>
+
+      <CourierApprovalModal
+        courier={selectedCourier}
+        isOpen={isCourierApprovalModalOpen}
+        onClose={() => {
+          setIsCourierApprovalModalOpen(false);
+          // Refetch pending to update the list if courier was approved/rejected
+          refetchPending();
+          refetchMetrics();
+        }}
+        onPrint={handleCourierPrint}
+      />
     </div>
   );
 };
