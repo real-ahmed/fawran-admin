@@ -158,4 +158,9 @@ export enum WalletTransactionType {
   Deposit = 'deposit',
   Withdrawal = 'withdrawal',
   Refund = 'refund',
+  DeliveryEarning = 'delivery_earning',
+  CommissionEarning = 'commission_earning',
+  CodDeduction = 'cod_deduction',
+  PayoutWithdrawal = 'payout_withdrawal',
 }
+
