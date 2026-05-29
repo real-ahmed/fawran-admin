@@ -8,6 +8,7 @@ import {
   Store,
   Truck,
   Users,
+  Wallet,
   type LucideIcon,
 } from 'lucide-react';
 import { PERMISSIONS } from '@/config/permissions';
@@ -79,7 +80,36 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
       },
     ],
   },
-  { to: '/finances', labelKey: 'finances', icon: CreditCard, permission: PERMISSIONS.VIEW_FINANCES },
+  {
+    to: '/finances',
+    labelKey: 'finances',
+    icon: CreditCard,
+    permission: [
+      PERMISSIONS.VIEW_FINANCES,
+      PERMISSIONS.MANAGE_SETTLEMENTS,
+      PERMISSIONS.MANAGE_PAYOUTS,
+    ],
+    children: [
+      {
+        to: '/finances/overview',
+        labelKey: 'overview',
+        icon: LayoutDashboard,
+        permission: PERMISSIONS.VIEW_FINANCES,
+      },
+      {
+        to: '/finances/settlements',
+        labelKey: 'settlements',
+        icon: Wallet,
+        permission: PERMISSIONS.MANAGE_SETTLEMENTS,
+      },
+      {
+        to: '/finances/payouts',
+        labelKey: 'payout_requests',
+        icon: CreditCard,
+        permission: PERMISSIONS.MANAGE_PAYOUTS,
+      },
+    ],
+  },
   { to: '/delivery-zones', labelKey: 'delivery_zones', icon: MapPin, permission: PERMISSIONS.VIEW_DELIVERY_ZONES },
   {
     to: '/settings',

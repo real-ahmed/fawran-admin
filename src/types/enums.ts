@@ -106,7 +106,7 @@ export enum SettlementStatus {
 
 export enum SettlementType {
   Courier = 'courier',
-  Store = 'store',
+  Vendor = 'vendor',
 }
 
 export enum SocialProvider {

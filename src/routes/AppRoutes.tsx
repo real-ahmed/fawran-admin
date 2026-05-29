@@ -61,6 +61,15 @@ const OrdersPage = lazy(() =>
 const OrderDetailPage = lazy(() =>
   import('../features/orders/OrderDetailPage').then((module) => ({ default: module.OrderDetailPage }))
 );
+const FinancesOverview = lazy(() =>
+  import('../features/finances/FinancesOverview').then((module) => ({ default: module.FinancesOverview }))
+);
+const SettlementsPage = lazy(() =>
+  import('../features/finances/SettlementsPage').then((module) => ({ default: module.SettlementsPage }))
+);
+const PayoutRequestsPage = lazy(() =>
+  import('../features/finances/PayoutRequestsPage').then((module) => ({ default: module.PayoutRequestsPage }))
+);
 
 const RouteFallback = () => (
   <div className="flex min-h-48 items-center justify-center">
@@ -103,6 +112,16 @@ export const AppRoutes = () => {
               <Route path="/orders" element={<OrdersPage />} />
               <Route path="/orders/:id" element={<OrderDetailPage />} />
             </Route>
+            <Route element={<PrivateRoute requiredPermission={PERMISSIONS.VIEW_FINANCES} />}>
+              <Route path="/finances/overview" element={<FinancesOverview />} />
+            </Route>
+            <Route element={<PrivateRoute requiredPermission={PERMISSIONS.MANAGE_SETTLEMENTS} />}>
+              <Route path="/finances/settlements" element={<SettlementsPage />} />
+            </Route>
+            <Route element={<PrivateRoute requiredPermission={PERMISSIONS.MANAGE_PAYOUTS} />}>
+              <Route path="/finances/payouts" element={<PayoutRequestsPage />} />
+            </Route>
+            <Route path="/finances" element={<Navigate to="/finances/overview" replace />} />
             <Route element={<PrivateRoute requiredPermission={PERMISSIONS.VIEW_COURIERS} />}>
               <Route path="/couriers" element={<CouriersPage />} />
             </Route>
