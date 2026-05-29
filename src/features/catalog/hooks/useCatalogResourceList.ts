@@ -8,7 +8,6 @@ import { parseApiError } from '@/utils/api';
 import { getNextCursorOrPageParam } from '@/utils/pagination';
 import type { ActiveFilter, CatalogApprovalStatus, CatalogQuery } from '@/types/catalog';
 import type { PaginatedResponse } from '@/types/api';
-import { useCatalogRealtime } from './useCatalogRealtime';
 
 interface UseCatalogResourceListParams<TItem> {
   resourceKey: 'brands' | 'categories' | 'master-products';
@@ -67,8 +66,6 @@ export const useCatalogResourceList = <TItem extends { id: number }>({
       fetchNextPage();
     }
   }, [fetchNextPage, hasNextPage, inView, isFetchingNextPage]);
-
-  useCatalogRealtime(true);
 
   const deleteMutation = useMutation({
     mutationFn: deleteItem,

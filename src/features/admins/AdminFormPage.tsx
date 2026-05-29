@@ -273,7 +273,6 @@ export const AdminFormPage = () => {
             loadingMessage={t('loading')}
             hasNextPage={Boolean(rolesHasNextPage)}
             isFetchingNextPage={rolesFetchingNextPage}
-            loadMoreLabel={t('load_more')}
             onLoadMore={() => void loadMoreRoles()}
             errorMessage={errors.roles?.message}
           >
@@ -332,7 +331,6 @@ export const AdminFormPage = () => {
             loadingMessage={t('loading')}
             hasNextPage={Boolean(zonesHasNextPage)}
             isFetchingNextPage={zonesFetchingNextPage}
-            loadMoreLabel={t('load_more')}
             onLoadMore={() => void loadMoreZones()}
             errorMessage={errors.delivery_zones?.message}
           >

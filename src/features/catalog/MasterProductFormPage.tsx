@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInView } from 'react-intersection-observer';
 import { Loader2, ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -10,13 +11,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { FormFieldError } from '@/components/FormFieldError';
 import { PageHeader } from '@/components/PageHeader';
@@ -41,6 +35,9 @@ import { getCategories } from '@/services/catalog/categoryService';
 import type { Brand, Category, MasterProduct, MasterProductPayload, ProductUnitType } from '@/types/catalog';
 import { UnitType } from '@/types/enums';
 import { localizedName, productDescription } from './utils';
+import { SearchableSelect } from '@/components/SearchableSelect';
+import { getNextCursorOrPageParam } from '@/utils/pagination';
+import { useDebounce } from '@/hooks/useDebounce';
 
 interface MasterProductFormValues {
   name_en: string;
@@ -66,6 +63,12 @@ export const MasterProductFormPage = () => {
   const queryClient = useQueryClient();
   const [multiplePreviews, setMultiplePreviews] = useState<string[]>([]);
   const [retainedImages, setRetainedImages] = useState<string[]>([]);
+  const [categorySearchTerm, setCategorySearchTerm] = useState('');
+  const [brandSearchTerm, setBrandSearchTerm] = useState('');
+  const debouncedCategorySearch = useDebounce(categorySearchTerm, 500);
+  const debouncedBrandSearch = useDebounce(brandSearchTerm, 500);
+  const { ref: categoryLoadMoreRef, inView: categoryInView } = useInView();
+  const { ref: brandLoadMoreRef, inView: brandInView } = useInView();
 
   const schema = z.object({
     name_en: z.string().min(1, t('validation_required')),
@@ -106,24 +109,83 @@ export const MasterProductFormPage = () => {
     },
   });
 
-  const { data: categoriesData } = useQuery({
-    queryKey: ['catalog', 'categories', 'options'],
-    queryFn: () => getCategories(),
+  const categoriesQuery = useInfiniteQuery({
+    queryKey: ['catalog', 'categories', 'options', debouncedCategorySearch],
+    queryFn: ({ pageParam = null }) => {
+      const pageParams = typeof pageParam === 'string' ? { cursor: pageParam } : { page: pageParam || 1 };
+      return getCategories({ search: debouncedCategorySearch, ...pageParams });
+    },
+    initialPageParam: null as string | number | null,
+    getNextPageParam: getNextCursorOrPageParam,
   });
   
-  const { data: brandsData } = useQuery({
-    queryKey: ['catalog', 'brands', 'options'],
-    queryFn: () => getBrands(),
+  const brandsQuery = useInfiniteQuery({
+    queryKey: ['catalog', 'brands', 'options', debouncedBrandSearch],
+    queryFn: ({ pageParam = null }) => {
+      const pageParams = typeof pageParam === 'string' ? { cursor: pageParam } : { page: pageParam || 1 };
+      return getBrands({ search: debouncedBrandSearch, ...pageParams });
+    },
+    initialPageParam: null as string | number | null,
+    getNextPageParam: getNextCursorOrPageParam,
   });
 
-  const categories = categoriesData?.data || [];
-  const brands = brandsData?.data || [];
+  const categories = categoriesQuery.data?.pages.flatMap((page) => page.data) || [];
+  const brands = brandsQuery.data?.pages.flatMap((page) => page.data) || [];
+
+  useEffect(() => {
+    if (categoryInView && categoriesQuery.hasNextPage && !categoriesQuery.isFetchingNextPage) {
+      categoriesQuery.fetchNextPage();
+    }
+  }, [categoriesQuery, categoryInView]);
+
+  useEffect(() => {
+    if (brandInView && brandsQuery.hasNextPage && !brandsQuery.isFetchingNextPage) {
+      brandsQuery.fetchNextPage();
+    }
+  }, [brandsQuery, brandInView]);
 
   const { data: product, isLoading: isProductLoading } = useQuery({
     queryKey: ['catalog', 'master-products', id],
     queryFn: () => getMasterProduct(Number(id)),
     enabled: isEditing,
   });
+
+  const unitTypeOptions = unitTypes.map((unitType) => ({
+    value: unitType,
+    label: t(`unit_${unitType}`),
+  }));
+  const categoryOptions = categories.map((category) => ({
+    value: String(category.id),
+    label: localizedName(category.name, i18n.language),
+  }));
+  const selectedProductCategory = product?.category;
+  if (
+    selectedProductCategory &&
+    !categoryOptions.some((option) => option.value === String(selectedProductCategory.id))
+  ) {
+    categoryOptions.unshift({
+      value: String(selectedProductCategory.id),
+      label: localizedName(selectedProductCategory.name, i18n.language),
+    });
+  }
+
+  const brandOptions = [
+    { value: 'none', label: t('no_brand') },
+    ...brands.map((brand) => ({
+      value: String(brand.id),
+      label: localizedName(brand.name, i18n.language),
+    })),
+  ];
+  const selectedProductBrandId = product?.retail_detail?.brand_id;
+  if (
+    selectedProductBrandId &&
+    !brandOptions.some((option) => option.value === String(selectedProductBrandId))
+  ) {
+    brandOptions.splice(1, 0, {
+      value: String(selectedProductBrandId),
+      label: `${t('brand')} #${selectedProductBrandId}`,
+    });
+  }
 
   useEffect(() => {
     if (product) {
@@ -277,18 +339,23 @@ export const MasterProductFormPage = () => {
                   <FormFieldError message={errors.description_ar?.message} />
                 </div>
 
-                <div className="grid gap-2">
-                  <Label className="text-sm font-medium">{t('unit_type')} <span className="text-destructive">*</span></Label>
-                  <select
-                    {...register('unit_type')}
-                    className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-muted/40 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                  >
-                    {unitTypes.map((unitType) => (
-                      <option key={unitType} value={unitType}>{t(`unit_${unitType}`)}</option>
-                    ))}
-                  </select>
-                  <FormFieldError message={errors.unit_type?.message} />
-                </div>
+	                <div className="grid gap-2">
+	                  <Label className="text-sm font-medium">{t('unit_type')} <span className="text-destructive">*</span></Label>
+	                  <Controller
+	                    control={control}
+	                    name="unit_type"
+	                    render={({ field }) => (
+	                      <SearchableSelect
+	                        value={field.value}
+	                        options={unitTypeOptions}
+	                        onChange={(value) => field.onChange(value as ProductUnitType)}
+	                        placeholder={t('unit_type')}
+	                        triggerClassName="bg-muted/40"
+	                      />
+	                    )}
+	                  />
+	                  <FormFieldError message={errors.unit_type?.message} />
+	                </div>
                 <div className="grid gap-2">
                   <Label htmlFor="sku-barcode" className="text-sm font-medium">{t('sku_barcode')}</Label>
                   <Input id="sku-barcode" {...register('sku_barcode')} className="bg-muted/40" />
@@ -299,33 +366,55 @@ export const MasterProductFormPage = () => {
 
             <TabsContent value="categorization" className="mt-0 outline-none">
               <div className="grid gap-6 sm:grid-cols-2 bg-card border rounded-xl p-6">
-                <div className="grid gap-2">
-                  <Label className="text-sm font-medium">{t('category')} <span className="text-destructive">*</span></Label>
-                  <select
-                    {...register('category_id')}
-                    className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-muted/40 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                  >
-                    <option value="" disabled>{t('select_category')}</option>
-                    {categories.map((category) => (
-                      <option key={category.id} value={category.id}>{localizedName(category.name, i18n.language)}</option>
-                    ))}
-                  </select>
-                  <FormFieldError message={errors.category_id?.message} />
-                </div>
+	                <div className="grid gap-2">
+	                  <Label className="text-sm font-medium">{t('category')} <span className="text-destructive">*</span></Label>
+	                  <Controller
+	                    control={control}
+	                    name="category_id"
+	                    render={({ field }) => (
+	                      <SearchableSelect
+	                        value={field.value}
+	                        options={categoryOptions}
+	                        onChange={field.onChange}
+	                        placeholder={t('select_category')}
+	                        searchPlaceholder={t('search_categories')}
+	                        searchTerm={categorySearchTerm}
+	                        onSearchChange={setCategorySearchTerm}
+	                        isLoading={categoriesQuery.isLoading}
+	                        isFetchingNextPage={categoriesQuery.isFetchingNextPage}
+	                        hasNextPage={Boolean(categoriesQuery.hasNextPage)}
+	                        loadMoreRef={categoryLoadMoreRef}
+	                        triggerClassName="bg-muted/40"
+	                      />
+	                    )}
+	                  />
+	                  <FormFieldError message={errors.category_id?.message} />
+	                </div>
 
-                <div className="grid gap-2">
-                  <Label className="text-sm font-medium">{t('brand')}</Label>
-                  <select
-                    {...register('brand_id')}
-                    className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-muted/40 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                  >
-                    <option value="none">{t('no_brand')}</option>
-                    {brands.map((brand) => (
-                      <option key={brand.id} value={brand.id}>{localizedName(brand.name, i18n.language)}</option>
-                    ))}
-                  </select>
-                  <FormFieldError message={errors.brand_id?.message} />
-                </div>
+	                <div className="grid gap-2">
+	                  <Label className="text-sm font-medium">{t('brand')}</Label>
+	                  <Controller
+	                    control={control}
+	                    name="brand_id"
+	                    render={({ field }) => (
+	                      <SearchableSelect
+	                        value={field.value}
+	                        options={brandOptions}
+	                        onChange={field.onChange}
+	                        placeholder={t('select_brand')}
+	                        searchPlaceholder={t('search_brands')}
+	                        searchTerm={brandSearchTerm}
+	                        onSearchChange={setBrandSearchTerm}
+	                        isLoading={brandsQuery.isLoading}
+	                        isFetchingNextPage={brandsQuery.isFetchingNextPage}
+	                        hasNextPage={Boolean(brandsQuery.hasNextPage)}
+	                        loadMoreRef={brandLoadMoreRef}
+	                        triggerClassName="bg-muted/40"
+	                      />
+	                    )}
+	                  />
+	                  <FormFieldError message={errors.brand_id?.message} />
+	                </div>
               </div>
             </TabsContent>
 

@@ -23,6 +23,11 @@ const getAuthToken = () => {
     return '';
 };
 
+const buildAuthHeaders = (token: string) => ({
+    Authorization: `Bearer ${token}`,
+    Accept: 'application/json',
+});
+
 const echo = new Echo({
     broadcaster: 'reverb',
     key: import.meta.env.VITE_REVERB_APP_KEY,
@@ -33,11 +38,22 @@ const echo = new Echo({
     enabledTransports: ['ws', 'wss'],
     authEndpoint: `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/broadcasting/auth`,
     auth: {
-        headers: {
-            Authorization: `Bearer ${getAuthToken()}`,
-            Accept: 'application/json',
-        },
+        headers: buildAuthHeaders(getAuthToken()),
     },
 });
+
+export const setEchoAuthToken = (token: string | null) => {
+    const connector = echo.connector as {
+        options?: {
+            auth?: {
+                headers?: Record<string, string>;
+            };
+        };
+    };
+
+    if (connector.options?.auth) {
+        connector.options.auth.headers = buildAuthHeaders(token || '');
+    }
+};
 
 export default echo;

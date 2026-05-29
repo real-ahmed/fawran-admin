@@ -2,9 +2,9 @@ import { useTranslation } from 'react-i18next';
 import { Search, SlidersHorizontal, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { OrderType } from '@/types/enums';
 import { DateFilterInput } from './DateFilterInput';
+import { SearchableSelect } from '@/components/SearchableSelect';
 
 interface OrdersToolbarProps {
   searchTerm: string;
@@ -24,6 +24,12 @@ export const OrdersToolbar = ({
 }: OrdersToolbarProps) => {
   const { t } = useTranslation();
   const hasActiveFilters = searchTerm !== '' || orderType !== 'all' || dateFrom !== '' || dateTo !== '';
+  const orderTypeOptions = [
+    { value: 'all', label: t('all_types') },
+    { value: OrderType.Delivery, label: t('order_type_delivery') },
+    { value: OrderType.Pickup, label: t('order_type_pickup') },
+    { value: OrderType.InStore, label: t('order_type_in_store') },
+  ];
 
   return (
     <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
@@ -38,17 +44,13 @@ export const OrdersToolbar = ({
           />
         </div>
 
-        <Select value={orderType} onValueChange={(val) => onOrderTypeChange(val as OrderType | 'all')}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder={t('order_type')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t('all_types')}</SelectItem>
-            <SelectItem value={OrderType.Delivery}>{t('order_type_delivery')}</SelectItem>
-            <SelectItem value={OrderType.Pickup}>{t('order_type_pickup')}</SelectItem>
-            <SelectItem value={OrderType.InStore}>{t('order_type_in_store')}</SelectItem>
-          </SelectContent>
-        </Select>
+        <SearchableSelect
+          value={orderType}
+          options={orderTypeOptions}
+          onChange={(value) => onOrderTypeChange(value as OrderType | 'all')}
+          placeholder={t('order_type')}
+          className="w-[180px]"
+        />
 
         <DateFilterInput label={t('date_from')} value={dateFrom} onChange={onDateFromChange} />
         <DateFilterInput label={t('date_to')} value={dateTo} onChange={onDateToChange} />

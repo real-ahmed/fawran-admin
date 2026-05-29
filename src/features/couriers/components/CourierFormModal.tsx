@@ -4,13 +4,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Courier } from '@/types/courier';
 import { updateCourier } from '@/services/courierService';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { parseApiError } from '@/utils/api';
 import { Loader2 } from 'lucide-react';
+import { SearchableSelect } from '@/components/SearchableSelect';
 
 interface CourierFormModalProps {
   courier: Courier | null;
@@ -21,6 +21,11 @@ interface CourierFormModalProps {
 export const CourierFormModal = ({ courier, isOpen, onClose }: CourierFormModalProps) => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
+  const vehicleTypeOptions = [
+    { value: 'motorcycle', label: t('vehicle_motorcycle') },
+    { value: 'bicycle', label: t('vehicle_bicycle') },
+    { value: 'car', label: t('vehicle_car') },
+  ];
 
   const [formData, setFormData] = useState({
     name: '',
@@ -95,16 +100,12 @@ export const CourierFormModal = ({ courier, isOpen, onClose }: CourierFormModalP
             
             <div className="space-y-2">
               <Label htmlFor="vehicle_type">{t('vehicle_type')} <span className="text-destructive">*</span></Label>
-              <Select value={formData.vehicle_type} onValueChange={(val) => setFormData(prev => ({ ...prev, vehicle_type: val }))}>
-                <SelectTrigger dir="auto">
-                  <SelectValue placeholder={t('select_vehicle_type')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="motorcycle">{t('vehicle_motorcycle')}</SelectItem>
-                  <SelectItem value="bicycle">{t('vehicle_bicycle')}</SelectItem>
-                  <SelectItem value="car">{t('vehicle_car')}</SelectItem>
-                </SelectContent>
-              </Select>
+              <SearchableSelect
+                value={formData.vehicle_type}
+                options={vehicleTypeOptions}
+                onChange={(value) => setFormData(prev => ({ ...prev, vehicle_type: value }))}
+                placeholder={t('select_vehicle_type')}
+              />
             </div>
             
             <div className="space-y-2">

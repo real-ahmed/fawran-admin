@@ -95,7 +95,6 @@ export const DeliveryTrackingMap = ({ order }: DeliveryTrackingMapProps) => {
   const mapRef = useRef<google.maps.Map | null>(null);
   const [directionsResult, setDirectionsResult] = useState<google.maps.DirectionsResult | null>(null);
   const [routeState, setRouteState] = useState<RouteState>('loading');
-  const directionsRequested = useRef(false);
 
   // ── Parse locations ──────────────────────────────────────────────────
   const customerLocation = useMemo(() => {
@@ -176,9 +175,8 @@ export const DeliveryTrackingMap = ({ order }: DeliveryTrackingMapProps) => {
       setRouteState('fallback');
       return;
     }
-    if (directionsRequested.current) return;
-    directionsRequested.current = true;
 
+    setRouteState('loading');
     const service = new window.google.maps.DirectionsService();
     const origin = routePath[0];
     const destination = routePath[routePath.length - 1];
@@ -207,6 +205,24 @@ export const DeliveryTrackingMap = ({ order }: DeliveryTrackingMapProps) => {
     );
   }, [isLoaded, routePath, order.delivery_path]);
 
+  // ── Calculate ETA and distance from the resolved road route ───────────
+  const etaInfo = useMemo(() => {
+    if (!directionsResult?.routes[0]) return null;
+
+    let totalDistance = 0;
+    let totalDuration = 0;
+
+    directionsResult.routes[0].legs.forEach((leg) => {
+      totalDistance += leg.distance?.value || 0;
+      totalDuration += leg.duration?.value || 0;
+    });
+
+    return {
+      distance: `${(totalDistance / 1000).toFixed(1)} km`,
+      duration: `${Math.ceil(totalDuration / 60)} ${t('minutes_short', 'min')}`,
+    };
+  }, [directionsResult, t]);
+
   // ── Loading state ────────────────────────────────────────────────────
   if (!isLoaded) {
     return (
@@ -219,14 +235,30 @@ export const DeliveryTrackingMap = ({ order }: DeliveryTrackingMapProps) => {
   const hasLivePath = order.delivery_path && order.delivery_path.length > 0;
 
   return (
-    <GoogleMap
-      mapContainerStyle={containerStyle}
-      center={center}
-      zoom={14}
-      onLoad={onLoad}
-      onUnmount={onUnmount}
-      options={{ disableDefaultUI: false, zoomControl: true }}
-    >
+    <div className="relative w-full h-full">
+      {/* ── ETA Overlay ─────────────────────────────────────────────────── */}
+      {etaInfo && routeState === 'directions' && !hasLivePath && (
+        <div className="absolute top-4 left-4 z-10 bg-background/95 backdrop-blur-sm shadow-md border border-border rounded-lg p-3 text-sm flex gap-4">
+          <div className="flex flex-col">
+            <span className="text-xs text-muted-foreground uppercase font-semibold">{t('estimated_time')}</span>
+            <span className="font-bold text-base text-foreground">{etaInfo.duration}</span>
+          </div>
+          <div className="w-px bg-border my-1" />
+          <div className="flex flex-col">
+            <span className="text-xs text-muted-foreground uppercase font-semibold">{t('distance')}</span>
+            <span className="font-bold text-base text-foreground">{etaInfo.distance}</span>
+          </div>
+        </div>
+      )}
+
+      <GoogleMap
+        mapContainerStyle={containerStyle}
+        center={center}
+        zoom={14}
+        onLoad={onLoad}
+        onUnmount={onUnmount}
+        options={{ disableDefaultUI: false, zoomControl: true }}
+      >
       {/* ── Customer (Red pin with 📍) ────────────────────────────── */}
       {customerLocation && (
         <Marker
@@ -301,5 +333,6 @@ export const DeliveryTrackingMap = ({ order }: DeliveryTrackingMapProps) => {
         </>
       )}
     </GoogleMap>
+    </div>
   );
 };

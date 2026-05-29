@@ -8,8 +8,9 @@ import { AssignCourierRequest } from '@/types/api';
 import { assignCourierToOrder } from '@/services/ordersService';
 import { useCouriersList } from '@/features/couriers/hooks/useCouriersList';
 import { ApprovalStatus } from '@/types/enums';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2 } from 'lucide-react';
+import { SearchableSelect } from '@/components/SearchableSelect';
+import { parseApiError } from '@/utils/api';
 
 interface AssignCourierModalProps {
   isOpen: boolean;
@@ -22,13 +23,24 @@ export const AssignCourierModal = ({ isOpen, onClose, orderId }: AssignCourierMo
   const queryClient = useQueryClient();
   const [selectedCourierId, setSelectedCourierId] = useState<string>('');
 
-  // Fetch approved, online couriers
-  const { couriers, isLoading } = useCouriersList({
+  const {
+    couriers,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    loadMoreRef,
+    filters,
+    setSearchTerm,
+  } = useCouriersList({
     approvalStatus: ApprovalStatus.Approved,
-    // online_status: 'online' -> we could pass this if API supported filtering by it, for now we filter client side
+    initialOnlineStatus: 'online',
   });
 
-  const onlineCouriers = couriers.filter(c => c.is_online);
+  const courierOptions = couriers.map((courier) => ({
+    value: String(courier.id),
+    label: courier.user?.name || t('unknown'),
+    description: [courier.user?.phone, t(`vehicle_${courier.vehicle_type}`)].filter(Boolean).join(' - '),
+  }));
 
   const assignMutation = useMutation({
     mutationFn: () => assignCourierToOrder(orderId, parseInt(selectedCourierId)),
@@ -38,8 +50,8 @@ export const AssignCourierModal = ({ isOpen, onClose, orderId }: AssignCourierMo
       onClose();
       setSelectedCourierId('');
     },
-    onError: (err: any) => {
-      toast.error(err.response?.data?.message || t('error_assigning_courier'));
+    onError: (error) => {
+      toast.error(parseApiError(error, t('error_assigning_courier')));
     }
   });
 
@@ -61,22 +73,19 @@ export const AssignCourierModal = ({ isOpen, onClose, orderId }: AssignCourierMo
         <div className="space-y-4 py-4">
           <div className="space-y-2">
             <label className="text-sm font-medium">{t('select_courier')}</label>
-            <Select value={selectedCourierId} onValueChange={setSelectedCourierId}>
-              <SelectTrigger>
-                <SelectValue placeholder={isLoading ? t('loading') : t('select_courier_placeholder')} />
-              </SelectTrigger>
-              <SelectContent>
-                {onlineCouriers.length === 0 ? (
-                  <SelectItem value="empty" disabled>{t('no_online_couriers')}</SelectItem>
-                ) : (
-                  onlineCouriers.map(c => (
-                    <SelectItem key={c.id} value={c.id.toString()}>
-                      {c.user?.name} - {c.user?.phone} ({t(`vehicle_${c.vehicle_type}`)})
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
+            <SearchableSelect
+              value={selectedCourierId}
+              options={courierOptions}
+              onChange={setSelectedCourierId}
+              placeholder={t('select_courier_placeholder')}
+              emptyMessage={t('no_online_couriers')}
+              searchTerm={filters.searchTerm}
+              onSearchChange={setSearchTerm}
+              isLoading={isLoading}
+              isFetchingNextPage={isFetchingNextPage}
+              hasNextPage={Boolean(hasNextPage)}
+              loadMoreRef={loadMoreRef}
+            />
           </div>
         </div>
 

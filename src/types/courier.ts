@@ -35,6 +35,7 @@ export interface Courier {
 
 export interface CouriersQuery {
   page?: number;
+  cursor?: string;
   search?: string;
   is_online?: boolean | number;
   vehicle_type?: VehicleType;

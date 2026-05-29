@@ -1,23 +1,23 @@
 import { useState } from 'react';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { useTranslation } from 'react-i18next';
 import { useAppConfig } from '@/hooks/useAppConfig';
-import { getCurrentNavigationItem } from '@/config/navigation';
 import { AppSidebar } from '@/layouts/components/AppSidebar';
 import { AppTopbar } from '@/layouts/components/AppTopbar';
+import { useGlobalNotifications } from '@/hooks/useGlobalNotifications';
 
 export const MainLayout = () => {
   const logout = useAuthStore((state) => state.logout);
   const user = useAuthStore((state) => state.user);
   const navigate = useNavigate();
-  const location = useLocation();
   const { t } = useTranslation();
   const { appName, appLogoUrl, appLogoWhiteUrl, appIconUrl } = useAppConfig();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
+  useGlobalNotifications();
+
   const sidebarLogoUrl = appLogoUrl || appLogoWhiteUrl || appIconUrl;
-  const currentPage = getCurrentNavigationItem(location.pathname);
 
   const handleLogout = () => {
     logout();

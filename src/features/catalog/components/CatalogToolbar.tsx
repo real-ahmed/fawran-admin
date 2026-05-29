@@ -2,14 +2,8 @@ import { Search, SlidersHorizontal, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import type { ActiveFilter } from '@/types/catalog';
+import { SearchableSelect } from '@/components/SearchableSelect';
 
 interface CatalogToolbarProps {
   searchTerm: string;
@@ -30,6 +24,11 @@ export const CatalogToolbar = ({
 }: CatalogToolbarProps) => {
   const { t } = useTranslation();
   const hasActiveFilters = searchTerm !== '' || activeFilter !== 'all';
+  const activeFilterOptions = [
+    { value: 'all', label: t('all_active_statuses') },
+    { value: 'active', label: t('active') },
+    { value: 'inactive', label: t('inactive') },
+  ];
 
   return (
     <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
@@ -44,16 +43,12 @@ export const CatalogToolbar = ({
           />
         </div>
 
-        <Select value={activeFilter} onValueChange={(value) => onActiveChange(value as ActiveFilter)}>
-          <SelectTrigger>
-            <SelectValue placeholder={t('active_status')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t('all_active_statuses')}</SelectItem>
-            <SelectItem value="active">{t('active')}</SelectItem>
-            <SelectItem value="inactive">{t('inactive')}</SelectItem>
-          </SelectContent>
-        </Select>
+        <SearchableSelect
+          value={activeFilter}
+          options={activeFilterOptions}
+          onChange={(value) => onActiveChange(value as ActiveFilter)}
+          placeholder={t('active_status')}
+        />
 
         <Button
           type="button"

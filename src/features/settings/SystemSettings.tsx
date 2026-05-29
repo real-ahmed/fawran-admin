@@ -1,16 +1,7 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useForm, Controller } from 'react-hook-form';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useState, useEffect } from 'react';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
-import {
-  fetchSystemSettings,
-  updateSystemSettings,
-  type SystemSettingValue,
-} from '@/services/settingsService';
 import { Can } from '@/components/Can';
 import { PageHeader } from '@/components/PageHeader';
 import { PERMISSIONS } from '@/config/permissions';
@@ -19,62 +10,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
-import { toast } from 'sonner';
 import { parseLocalizedText } from '@/utils/localizedText';
 import { resolveStorageAssetUrl } from '@/utils/assets';
 import { ImageUploader } from '@/components/ImageUploader';
-
-// ─── Schema ──────────────────────────────────────────────────────────────────
-const settingsSchema = z.object({
-  // General
-  app_name_ar: z.string().optional(),
-  app_name_en: z.string().optional(),
-  app_logo_ar: z.any().optional(),
-  app_logo_en: z.any().optional(),
-  app_logo_white_ar: z.any().optional(),
-  app_logo_white_en: z.any().optional(),
-  app_icon_ar: z.any().optional(),
-  app_icon_en: z.any().optional(),
-  favicon_ar: z.any().optional(),
-  favicon_en: z.any().optional(),
-  currency: z.string().min(2).max(10).optional(),
-  support_phone: z.string().optional(),
-  timezone: z.string().optional(),
-
-  // Financial
-  default_store_commission: z.string().optional(),
-  default_courier_commission: z.string().optional(),
-  payout_minimum_threshold: z.string().optional(),
-  p2p_platform_commission_percentage: z.string().optional(),
-  tax_percentage: z.string().optional(),
-
-  // Delivery Constraints
-  min_delivery_fee_floor: z.string().optional(),
-  max_delivery_fee_ceiling: z.string().optional(),
-  min_order_amount_floor: z.string().optional(),
-  min_order_amount_ceiling: z.string().optional(),
-  max_delivery_radius_km: z.string().optional(),
-
-  // Settlements
-  settlement_cycle_days: z.string().optional(),
-  courier_cod_wallet_deduction_enabled: z.string().optional(),
-  courier_max_cash_hold_limit: z.string().optional(),
-
-  // Hot Zones
-  hot_zone_order_threshold: z.string().optional(),
-  hot_zone_radius_meters: z.string().optional(),
-  hot_zone_expiry_minutes: z.string().optional(),
-  hot_zone_check_interval: z.string().optional(),
-
-  // Order Operations
-  auto_cancel_unaccepted_minutes: z.string().optional(),
-  courier_search_radius_km: z.string().optional(),
-
-  // Legal
-  courier_contract_template: z.string().optional(),
-});
-
-type SettingsForm = z.infer<typeof settingsSchema>;
+import { SearchableSelect } from '@/components/SearchableSelect';
+import { useSystemSettingsForm } from './hooks/useSystemSettingsForm';
+import type { SettingsForm } from './settingsForm';
 
 // ─── Settings Field Component ────────────────────────────────────────────────
 interface FieldProps {
@@ -122,25 +63,31 @@ const SettingField = ({ id, label, hint, placeholder, type = 'text', disabled, p
 );
 
 interface SelectProps {
-  id: string;
+  id: keyof SettingsForm;
   label: string;
   hint?: string;
   disabled?: boolean;
   options: { value: string; label: string }[];
-  registration: ReturnType<typeof useForm<SettingsForm>>['register'];
+  control: ReturnType<typeof useForm<SettingsForm>>['control'];
 }
 
-const SettingSelect = ({ id, label, hint, disabled, options, registration }: SelectProps) => (
+const SettingSelect = ({ id, label, hint, disabled, options, control }: SelectProps) => (
   <div className="grid gap-2 w-full">
     <Label htmlFor={id} className="text-sm font-medium">{label}</Label>
-    <select
-      id={id}
-      disabled={disabled}
-      className="flex h-11 w-full rounded-xl border border-border/60 bg-muted/40 px-3 py-2 text-sm shadow-sm transition-colors hover:border-border focus-visible:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-      {...registration(id as keyof SettingsForm)}
-    >
-      {options.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-    </select>
+    <Controller
+      control={control}
+      name={id}
+      render={({ field }) => (
+        <SearchableSelect
+          value={String(field.value ?? '')}
+          options={options}
+          onChange={field.onChange}
+          placeholder={label}
+          disabled={disabled}
+          triggerClassName="h-11 rounded-xl border-border/60 bg-muted/40 shadow-sm hover:border-border focus-visible:bg-background"
+        />
+      )}
+    />
     {hint && <p className="text-xs font-medium text-muted-foreground">{hint}</p>}
   </div>
 );
@@ -203,89 +150,14 @@ const SettingsPageSkeleton = () => (
 // ─── Main Settings Page ───────────────────────────────────────────────────────
 export const SystemSettings = () => {
   const { t } = useTranslation();
-  const queryClient = useQueryClient();
-
-  const { data: settings, isLoading, isError } = useQuery({
-    queryKey: ['system-settings'],
-    queryFn: fetchSystemSettings,
-    retry: false,
-  });
-
-  const { register, handleSubmit, reset, control } = useForm<SettingsForm>({
-    resolver: zodResolver(settingsSchema),
-  });
-
-  // Populate form when settings load
-  useEffect(() => {
-    if (settings) {
-      const appName = parseLocalizedText(settings.app_name);
-
-      reset({
-        app_name_ar: appName.ar || '',
-        app_name_en: appName.en || '',
-        currency: settings.currency ?? '',
-        support_phone: settings.support_phone ?? '',
-        timezone: settings.timezone ?? '',
-
-        default_store_commission: settings.default_store_commission ?? '',
-        default_courier_commission: settings.default_courier_commission ?? '',
-        payout_minimum_threshold: settings.payout_minimum_threshold ?? '',
-        p2p_platform_commission_percentage: settings.p2p_platform_commission_percentage ?? '',
-        tax_percentage: settings.tax_percentage ?? '',
-
-        min_delivery_fee_floor: settings.min_delivery_fee_floor ?? '',
-        max_delivery_fee_ceiling: settings.max_delivery_fee_ceiling ?? '',
-        min_order_amount_floor: settings.min_order_amount_floor ?? '',
-        min_order_amount_ceiling: settings.min_order_amount_ceiling ?? '',
-        max_delivery_radius_km: settings.max_delivery_radius_km ?? '',
-
-        settlement_cycle_days: settings.settlement_cycle_days ?? '',
-        courier_cod_wallet_deduction_enabled: settings.courier_cod_wallet_deduction_enabled ?? 'false',
-        courier_max_cash_hold_limit: settings.courier_max_cash_hold_limit ?? '',
-
-        hot_zone_order_threshold: settings.hot_zone_order_threshold ?? '',
-        hot_zone_radius_meters: settings.hot_zone_radius_meters ?? '',
-        hot_zone_expiry_minutes: settings.hot_zone_expiry_minutes ?? '',
-        hot_zone_check_interval: settings.hot_zone_check_interval ?? '',
-
-        auto_cancel_unaccepted_minutes: settings.auto_cancel_unaccepted_minutes ?? '',
-        courier_search_radius_km: settings.courier_search_radius_km ?? '',
-
-        courier_contract_template: settings.courier_contract_template ?? '',
-      });
-    }
-  }, [settings, reset]);
-
-  const mutation = useMutation({
-    mutationFn: (data: SettingsForm) => {
-      const { app_name_ar, app_name_en, ...rest } = data;
-      
-      const payload: Record<string, SystemSettingValue> = { ...rest };
-      
-      if (app_name_ar || app_name_en) {
-        payload.app_name = JSON.stringify({
-          ar: app_name_ar || '',
-          en: app_name_en || ''
-        });
-      }
-
-      return updateSystemSettings(
-        Object.fromEntries(
-          Object.entries(payload).filter(([, v]) => v !== undefined && v !== '')
-        ) as Record<string, SystemSettingValue>
-      );
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['system-settings'] });
-      queryClient.invalidateQueries({ queryKey: ['appConfig'] }); // refresh app config too
-      toast.success(t('saved'));
-    },
-    onError: () => {
-      toast.error(t('save_failed'));
-    },
-  });
-
-  const onSubmit = (data: SettingsForm) => mutation.mutate(data);
+  const {
+    settings,
+    isLoading,
+    isError,
+    isSaving,
+    form: { register, control },
+    submitSettings,
+  } = useSystemSettingsForm();
 
   // Show unauthorized state if 403
   if (isError) {
@@ -313,7 +185,7 @@ export const SystemSettings = () => {
       {isLoading ? (
         <SettingsPageSkeleton />
       ) : (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 pb-10">
+        <form onSubmit={submitSettings} className="space-y-8 pb-10">
           <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-sm sm:p-10 divide-y divide-border/40">
           {/* General Settings */}
           <SettingsSection
@@ -522,12 +394,12 @@ export const SystemSettings = () => {
               <SettingSelect
                 id="courier_cod_wallet_deduction_enabled"
                 label={t('settings_courier_cod_enabled')}
-                options={[
-                  { value: 'true', label: t('yes') },
-                  { value: 'false', label: t('no') },
-                ]}
-                registration={register}
-              />
+	                options={[
+	                  { value: 'true', label: t('yes') },
+	                  { value: 'false', label: t('no') },
+	                ]}
+	                control={control}
+	              />
             </div>
           </SettingsSection>
 
@@ -631,15 +503,15 @@ export const SystemSettings = () => {
             <Can permission={PERMISSIONS.MANAGE_SYSTEM_SETTINGS}>
               <Button
                 type="submit"
-                disabled={mutation.isPending || isLoading}
+                disabled={isSaving || isLoading}
                 className="gap-2 h-12 px-8 rounded-xl shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all hover:-translate-y-0.5 active:translate-y-0 text-base font-semibold w-full sm:w-auto"
               >
-                {mutation.isPending ? (
+                {isSaving ? (
                   <Loader2 className="h-5 w-5 animate-spin" />
                 ) : (
                   <Save className="h-5 w-5" />
                 )}
-                {mutation.isPending ? t('saving') : t('save_settings')}
+                {isSaving ? t('saving') : t('save_settings')}
               </Button>
             </Can>
           </div>

@@ -12,10 +12,22 @@ interface ActionMenuProps {
   onEdit: () => void;
   onDelete: () => void;
   disabled?: boolean;
+  showEdit?: boolean;
+  showDelete?: boolean;
 }
 
-export const ActionMenu = ({ onEdit, onDelete, disabled }: ActionMenuProps) => {
+export const ActionMenu = ({
+  onEdit,
+  onDelete,
+  disabled,
+  showEdit = true,
+  showDelete = true,
+}: ActionMenuProps) => {
   const { t } = useTranslation();
+
+  if (!showEdit && !showDelete) {
+    return null;
+  }
 
   return (
     <DropdownMenu>
@@ -31,17 +43,21 @@ export const ActionMenu = ({ onEdit, onDelete, disabled }: ActionMenuProps) => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-36">
-        <DropdownMenuItem onClick={onEdit}>
-          <Edit2 className="h-4 w-4" />
-          {t('edit')}
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={onDelete}
-          className="text-destructive focus:text-destructive"
-        >
-          <Trash2 className="h-4 w-4" />
-          {t('delete')}
-        </DropdownMenuItem>
+        {showEdit && (
+          <DropdownMenuItem onClick={onEdit}>
+            <Edit2 className="h-4 w-4" />
+            {t('edit')}
+          </DropdownMenuItem>
+        )}
+        {showDelete && (
+          <DropdownMenuItem
+            onClick={onDelete}
+            className="text-destructive focus:text-destructive"
+          >
+            <Trash2 className="h-4 w-4" />
+            {t('delete')}
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

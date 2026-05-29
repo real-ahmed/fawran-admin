@@ -17,13 +17,6 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { FormFieldError } from '@/components/FormFieldError';
 import { applyApiValidationErrors, parseApiError } from '@/utils/api';
@@ -31,6 +24,8 @@ import { createCategory, updateCategory } from '@/services/catalog/categoryServi
 import type { Category, CategoryPayload } from '@/types/catalog';
 import { localizedName } from '../utils';
 import { ImageUploader } from '@/components/ImageUploader';
+import { SearchableSelect } from '@/components/SearchableSelect';
+import { useCategoryParentOptions } from '../hooks/useCategoryParentOptions';
 
 interface CategoryFormDialogProps {
   category: Category | null;
@@ -51,6 +46,19 @@ interface CategoryFormValues {
 export const CategoryFormDialog = ({ category, categories, isOpen, onClose }: CategoryFormDialogProps) => {
   const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
+  const {
+    categories: parentOptions,
+    searchTerm: parentSearchTerm,
+    setSearchTerm: setParentSearchTerm,
+    isLoading: parentsLoading,
+    isFetchingNextPage: parentsFetchingNextPage,
+    hasNextPage: parentsHasNextPage,
+    loadMoreRef: parentsLoadMoreRef,
+  } = useCategoryParentOptions({
+    enabled: isOpen,
+    excludedCategoryId: category?.id,
+    fallbackCategories: categories,
+  });
   const schema = z.object({
     name_en: z.string().min(1, t('validation_required')),
     name_ar: z.string().min(1, t('validation_required')),
@@ -124,7 +132,19 @@ export const CategoryFormDialog = ({ category, categories, isOpen, onClose }: Ca
     });
   };
 
-  const parentOptions = categories.filter((option) => option.id !== category?.id);
+  const parentCategoryOptions = [
+    { value: 'none', label: t('no_parent_category') },
+    ...(category?.parent && !parentOptions.some((option) => option.id === category.parent?.id)
+      ? [{
+          value: String(category.parent.id),
+          label: localizedName(category.parent.name, i18n.language),
+        }]
+      : []),
+    ...parentOptions.map((option) => ({
+      value: String(option.id),
+      label: localizedName(option.name, i18n.language),
+    })),
+  ];
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -160,23 +180,23 @@ export const CategoryFormDialog = ({ category, categories, isOpen, onClose }: Ca
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label>{t('parent_category')}</Label>
-              <Select value={watch('parent_category_id')} onValueChange={(value) => setValue('parent_category_id', value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t('parent_category')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">{t('no_parent_category')}</SelectItem>
-                  {parentOptions.map((option) => (
-                    <SelectItem key={option.id} value={String(option.id)}>
-                      {localizedName(option.name, i18n.language)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormFieldError message={errors.parent_category_id?.message} />
-            </div>
+	            <div className="space-y-2">
+	              <Label>{t('parent_category')}</Label>
+	              <SearchableSelect
+	                value={watch('parent_category_id')}
+	                options={parentCategoryOptions}
+	                onChange={(value) => setValue('parent_category_id', value)}
+	                placeholder={t('parent_category')}
+	                searchPlaceholder={t('search_categories')}
+	                searchTerm={parentSearchTerm}
+	                onSearchChange={setParentSearchTerm}
+	                isLoading={parentsLoading}
+	                isFetchingNextPage={parentsFetchingNextPage}
+	                hasNextPage={Boolean(parentsHasNextPage)}
+	                loadMoreRef={parentsLoadMoreRef}
+	              />
+	              <FormFieldError message={errors.parent_category_id?.message} />
+	            </div>
             <div className="space-y-2">
               <Label>{t('category_icon')}</Label>
               <ImageUploader

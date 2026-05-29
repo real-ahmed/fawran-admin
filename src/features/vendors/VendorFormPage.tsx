@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
-import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
-import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Loader2, ArrowLeft, Plus } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useFieldArray } from 'react-hook-form';
@@ -15,7 +14,6 @@ import { PageHeader } from '@/components/PageHeader';
 import { toast } from 'sonner';
 import { createVendor, updateVendor, getVendor } from '@/services/vendorService';
 import { createVendorOwner } from '@/services/vendorOwnerService';
-import { fetchDeliveryZones } from '@/services/deliveryZoneService';
 import { VendorType, VendorStatus } from '@/types/vendor';
 import { applyApiValidationErrors, parseApiError } from '@/utils/api';
 import { FormFieldError } from '@/components/FormFieldError';
@@ -25,6 +23,7 @@ import { ImageUploader } from '@/components/ImageUploader';
 import { resolveStorageAssetUrl } from '@/utils/assets';
 import { useVendorOwnerSearch } from './hooks/useVendorOwnerSearch';
 import { DeliveryZoneSearchSelect } from './components/DeliveryZoneSearchSelect';
+import { SearchableSelect } from '@/components/SearchableSelect';
 import {
   Dialog,
   DialogContent,
@@ -38,33 +37,12 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
-
-interface VendorForm {
-  owner_id: number;
-  name: {
-    en: string;
-    ar: string;
-  };
-  email: string;
-  phone: string;
-  type: VendorType;
-  status: VendorStatus;
-  is_active: boolean;
-  latitude: number;
-  longitude: number;
-  formatted_address: string;
-  image?: any;
-  working_hours: {
-    day_of_week: number;
-    open_time: string;
-    close_time: string;
-  }[];
-  delivery_zones: {
-    delivery_zone_id: number;
-    min_order_amount: number;
-    estimated_delivery_time: number;
-  }[];
-}
+import {
+  createVendorFormSchema,
+  toVendorFormValues,
+  vendorFormDefaults,
+  type VendorForm,
+} from './vendorForm';
 
 export const VendorFormPage = () => {
   const { t, i18n } = useTranslation();
@@ -73,38 +51,19 @@ export const VendorFormPage = () => {
   const { id } = useParams<{ id: string }>();
   const isEditing = !!id;
 
-  const vendorSchema = z.object({
-    owner_id: z.number().min(1, t('validation_required')),
-    name: z.object({
-      en: z.string().min(2, t('validation_min_chars', { count: 2 })),
-      ar: z.string().min(2, t('validation_min_chars', { count: 2 })),
-    }),
-    email: z.string().email(t('invalid_email')),
-    phone: z.string().min(8, t('validation_min_chars', { count: 8 })),
-    type: z.nativeEnum(VendorType),
-    status: z.nativeEnum(VendorStatus),
-    is_active: z.boolean(),
-    latitude: z.number().min(-90).max(90),
-    longitude: z.number().min(-180).max(180),
-    formatted_address: z.string().min(2, t('validation_required')),
-    image: z.any().optional(),
-    working_hours: z.array(z.object({
-      day_of_week: z.number().min(0).max(6),
-      open_time: z.string().min(5),
-      close_time: z.string().min(5),
-    })).optional(),
-    delivery_zones: z.array(z.object({
-      delivery_zone_id: z.number().min(1),
-      min_order_amount: z.coerce.number().min(0),
-      estimated_delivery_time: z.coerce.number().min(1),
-    })).optional(),
-  });
-
   const [isLoading, setIsLoading] = useState(isEditing);
   const [existingImage, setExistingImage] = useState<string | null>(null);
+  const [selectedOwnerName, setSelectedOwnerName] = useState('');
   
-  // Custom Owner Selection Hook
-  const { owners, searchTerm, setSearchTerm, isFetching: isSearchingOwners } = useVendorOwnerSearch();
+  const {
+    owners,
+    searchTerm,
+    setSearchTerm,
+    isLoading: isLoadingOwners,
+    isFetchingNextPage: ownersFetchingNextPage,
+    hasNextPage: ownersHasNextPage,
+    loadMoreRef: ownersLoadMoreRef,
+  } = useVendorOwnerSearch();
 
   const {
     register,
@@ -116,16 +75,8 @@ export const VendorFormPage = () => {
     watch,
     formState: { errors },
   } = useForm<VendorForm>({
-    resolver: zodResolver(vendorSchema),
-    defaultValues: {
-      type: VendorType.RESTAURANT,
-      status: VendorStatus.OFFLINE,
-      is_active: true,
-      latitude: 0,
-      longitude: 0,
-      working_hours: [],
-      delivery_zones: [],
-    },
+    resolver: zodResolver(createVendorFormSchema(t)),
+    defaultValues: vendorFormDefaults,
   });
 
   const { fields: workingHoursFields, append: appendWorkingHour, remove: removeWorkingHour } = useFieldArray({
@@ -140,40 +91,54 @@ export const VendorFormPage = () => {
 
   const currentLat = watch('latitude');
   const currentLng = watch('longitude');
-  const currentAddress = watch('formatted_address');
+  const selectedOwnerId = watch('owner_id');
+  const ownerOptions = owners.map((owner) => ({
+    value: String(owner.id),
+    label: owner.name,
+    description: owner.email,
+  }));
+
+  if (
+    selectedOwnerId &&
+    selectedOwnerName &&
+    !ownerOptions.some((option) => option.value === String(selectedOwnerId))
+  ) {
+    ownerOptions.unshift({
+      value: String(selectedOwnerId),
+      label: selectedOwnerName,
+      description: '',
+    });
+  }
+
+  const vendorTypeOptions = Object.values(VendorType).map((type) => ({
+    value: type,
+    label: t(`vendor_type_${type}`),
+  }));
+  const vendorStatusOptions = Object.values(VendorStatus).map((status) => ({
+    value: status,
+    label: t(`vendor_status_${status}`),
+  }));
+  const weekDayOptions = [
+    'sunday',
+    'monday',
+    'tuesday',
+    'wednesday',
+    'thursday',
+    'friday',
+    'saturday',
+  ].map((day, index) => ({
+    value: String(index),
+    label: t(day),
+  }));
 
   useEffect(() => {
     if (isEditing && id) {
       setIsLoading(true);
       getVendor(Number(id))
         .then((vendor) => {
-          reset({
-            owner_id: vendor.owner_id,
-            name: {
-              en: vendor.name?.en || '',
-              ar: vendor.name?.ar || '',
-            },
-            email: vendor.email,
-            phone: vendor.phone,
-            type: vendor.type,
-            status: vendor.status,
-            is_active: vendor.is_active,
-            latitude: Number(vendor.latitude),
-            longitude: Number(vendor.longitude),
-            formatted_address: vendor.formatted_address,
-            working_hours: vendor.working_hours?.map(wh => ({
-              day_of_week: wh.day_of_week,
-              open_time: wh.open_time.substring(0, 5),
-              close_time: wh.close_time.substring(0, 5),
-            })) || [],
-            delivery_zones: vendor.delivery_zones?.map(dz => ({
-              delivery_zone_id: dz.delivery_zone_id,
-              min_order_amount: Number(dz.min_order_amount),
-              estimated_delivery_time: dz.estimated_delivery_time,
-            })) || [],
-          });
+          reset(toVendorFormValues(vendor));
           if (vendor.owner_name) {
-            setSearchTerm(vendor.owner_name);
+            setSelectedOwnerName(vendor.owner_name);
           }
           if (vendor.image) {
             setExistingImage(vendor.image);
@@ -225,7 +190,8 @@ export const VendorFormPage = () => {
     onSuccess: (newOwner) => {
       queryClient.invalidateQueries({ queryKey: ['vendorOwners'] });
       setValue('owner_id', newOwner.id);
-      setSearchTerm(newOwner.name);
+      setSelectedOwnerName(newOwner.name);
+      setSearchTerm('');
       setCreateOwnerOpen(false);
       setNewOwnerName('');
       setNewOwnerEmail('');
@@ -296,14 +262,19 @@ export const VendorFormPage = () => {
                 <Label htmlFor="type" className="text-sm font-medium">
                   {t('vendor_type')} <span className="text-destructive">*</span>
                 </Label>
-                <select
-                  {...register('type')}
-                  className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-muted/40 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {Object.values(VendorType).map(type => (
-                    <option key={type} value={type}>{t(`vendor_type_${type}`)}</option>
-                  ))}
-                </select>
+                <Controller
+                  control={control}
+                  name="type"
+                  render={({ field }) => (
+                    <SearchableSelect
+                      value={field.value}
+                      options={vendorTypeOptions}
+                      onChange={(value) => field.onChange(value as VendorType)}
+                      placeholder={t('vendor_type')}
+                      triggerClassName="bg-muted/40"
+                    />
+                  )}
+                />
                 <FormFieldError message={errors.type?.message} />
               </div>
 
@@ -311,14 +282,19 @@ export const VendorFormPage = () => {
                 <Label htmlFor="status" className="text-sm font-medium">
                   {t('vendor_status')} <span className="text-destructive">*</span>
                 </Label>
-                <select
-                  {...register('status')}
-                  className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-muted/40 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {Object.values(VendorStatus).map(status => (
-                    <option key={status} value={status}>{t(`vendor_status_${status}`)}</option>
-                  ))}
-                </select>
+                <Controller
+                  control={control}
+                  name="status"
+                  render={({ field }) => (
+                    <SearchableSelect
+                      value={field.value}
+                      options={vendorStatusOptions}
+                      onChange={(value) => field.onChange(value as VendorStatus)}
+                      placeholder={t('vendor_status')}
+                      triggerClassName="bg-muted/40"
+                    />
+                  )}
+                />
                 <FormFieldError message={errors.status?.message} />
               </div>
               </div>
@@ -349,40 +325,29 @@ export const VendorFormPage = () => {
                 </Label>
                 <div className="flex gap-2 items-start">
                   <div className="flex-1 space-y-2">
-                    <Input 
-                      placeholder={t('search_owner_placeholder')}
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="bg-muted/40"
-                    />
-                    {searchTerm && (
-                      <div className="border rounded-md shadow-sm bg-background p-2 max-h-48 overflow-y-auto">
-                        {isSearchingOwners ? (
-                          <div className="text-sm text-muted-foreground text-center p-2">{t('loading')}</div>
-                        ) : owners.length > 0 ? (
-                          owners.map(owner => (
-                            <div 
-                              key={owner.id} 
-                              className="p-2 hover:bg-accent hover:text-accent-foreground cursor-pointer rounded-sm text-sm flex justify-between items-center"
-                              onClick={() => {
-                                setValue('owner_id', owner.id);
-                                setSearchTerm(owner.name);
-                              }}
-                            >
-                              <span>{owner.name}</span>
-                              <span className="text-xs text-muted-foreground">{owner.email}</span>
-                            </div>
-                          ))
-                        ) : (
-                          <div className="text-sm text-muted-foreground text-center p-2">{t('no_results_found')}</div>
-                        )}
-                      </div>
-                    )}
                     <Controller
                       control={control}
                       name="owner_id"
                       render={({ field }) => (
-                        <input type="hidden" {...field} />
+                        <SearchableSelect
+                          value={field.value ? String(field.value) : ''}
+                          options={ownerOptions}
+                          onChange={(value) => {
+                            const owner = owners.find((item) => item.id === Number(value));
+                            field.onChange(Number(value));
+                            setSelectedOwnerName(owner?.name ?? '');
+                            setSearchTerm('');
+                          }}
+                          placeholder={t('vendor_owner')}
+                          searchPlaceholder={t('search_owner_placeholder')}
+                          searchTerm={searchTerm}
+                          onSearchChange={setSearchTerm}
+                          isLoading={isLoadingOwners}
+                          isFetchingNextPage={ownersFetchingNextPage}
+                          hasNextPage={Boolean(ownersHasNextPage)}
+                          loadMoreRef={ownersLoadMoreRef}
+                          triggerClassName="bg-muted/40"
+                        />
                       )}
                     />
                     <FormFieldError message={errors.owner_id?.message} />
@@ -480,21 +445,21 @@ export const VendorFormPage = () => {
             <div className="grid gap-4">
               {workingHoursFields.map((field, index) => (
                 <div key={field.id} className="grid grid-cols-[1fr_1fr_1fr_auto] gap-4 items-end bg-muted/20 p-4 rounded-xl border">
-                  <div className="grid gap-2">
-                    <Label className="text-xs">{t('day_of_week')}</Label>
-                    <select
-                      {...register(`working_hours.${index}.day_of_week`, { valueAsNumber: true })}
-                      className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                    >
-                      <option value={0}>{t('sunday')}</option>
-                      <option value={1}>{t('monday')}</option>
-                      <option value={2}>{t('tuesday')}</option>
-                      <option value={3}>{t('wednesday')}</option>
-                      <option value={4}>{t('thursday')}</option>
-                      <option value={5}>{t('friday')}</option>
-                      <option value={6}>{t('saturday')}</option>
-                    </select>
-                  </div>
+	                  <div className="grid gap-2">
+	                    <Label className="text-xs">{t('day_of_week')}</Label>
+	                    <Controller
+	                      control={control}
+	                      name={`working_hours.${index}.day_of_week`}
+	                      render={({ field }) => (
+	                        <SearchableSelect
+	                          value={String(field.value)}
+	                          options={weekDayOptions}
+	                          onChange={(value) => field.onChange(Number(value))}
+	                          placeholder={t('day_of_week')}
+	                        />
+	                      )}
+	                    />
+	                  </div>
                   <div className="grid gap-2">
                     <Label className="text-xs">{t('open_time')}</Label>
                     <Input type="time" {...register(`working_hours.${index}.open_time`)} className="bg-background" />

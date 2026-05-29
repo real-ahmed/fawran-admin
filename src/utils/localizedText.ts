@@ -1,5 +1,5 @@
 type LocaleCode = 'ar' | 'en';
-type LocalizedText = Partial<Record<LocaleCode, string>>;
+export type LocalizedText = Partial<Record<LocaleCode, string>>;
 
 export const getLocaleCode = (language: string): LocaleCode =>
   language.startsWith('ar') ? 'ar' : 'en';

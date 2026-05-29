@@ -19,7 +19,7 @@ const AdminsList = lazy(() =>
 const AdminFormPage = lazy(() =>
   import('../features/admins/AdminFormPage').then((module) => ({ default: module.AdminFormPage }))
 );
-const VendorsList = lazy(() =>
+const VendorList = lazy(() =>
   import('../features/vendors/VendorList').then((module) => ({ default: module.VendorList }))
 );
 const VendorFormPage = lazy(() =>
@@ -95,7 +95,7 @@ export const AppRoutes = () => {
               <Route path="/roles/:id/edit" element={<RoleFormPage />} />
             </Route>
             <Route element={<PrivateRoute requiredPermission={PERMISSIONS.VIEW_VENDORS} />}>
-              <Route path="/vendors" element={<VendorsList />} />
+              <Route path="/vendors" element={<VendorList />} />
               <Route path="/vendors/create" element={<VendorFormPage />} />
               <Route path="/vendors/:id/edit" element={<VendorFormPage />} />
             </Route>

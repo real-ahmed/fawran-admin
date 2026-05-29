@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next';
 import { Courier, CourierApprovalStatus } from '@/types/courier';
-import { getLocalizedDisplayName } from '@/utils/displayName';
 import { useCouriersList } from '../hooks/useCouriersList';
 import { EmptyState } from '@/components/EmptyState';
 import { Bike, CarFront, Navigation, User, AlertCircle, Printer, Loader2, Eye, Edit, MoreHorizontal, Trash2, IdCard } from 'lucide-react';
@@ -18,12 +17,13 @@ import { CourierApprovalModal } from './CourierApprovalModal';
 import { CourierDetailsModal } from './CourierDetailsModal';
 import { CourierFormModal } from './CourierFormModal';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import * as courierService from '@/services/courierService';
+import { deleteCourier, getCourier } from '@/services/courierService';
 import { toast } from 'sonner';
 import { CouriersToolbar } from './CouriersToolbar';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { parseApiError } from '@/utils/api';
 import { ApprovalStatus, VehicleType } from '@/types/enums';
+import { useCourierContractPrinter } from '../hooks/useCourierContractPrinter';
 
 interface CouriersListProps {
   approvalStatus: CourierApprovalStatus;
@@ -42,6 +42,7 @@ export const CouriersList = ({ approvalStatus }: CouriersListProps) => {
     couriers,
     isLoading,
     isError,
+    hasNextPage,
     isFetchingNextPage,
     loadMoreRef,
     filters,
@@ -65,7 +66,7 @@ export const CouriersList = ({ approvalStatus }: CouriersListProps) => {
   }, [couriers, selectedCourier]);
 
   const deleteMutation = useMutation({
-    mutationFn: (id: number) => courierService.deleteCourier(id),
+    mutationFn: (id: number) => deleteCourier(id),
     onSuccess: () => {
       toast.success(t('deleted_successfully'));
       queryClient.invalidateQueries({ queryKey: ['couriers'] });
@@ -82,31 +83,16 @@ export const CouriersList = ({ approvalStatus }: CouriersListProps) => {
     action();
   };
 
-  const handlePrint = async (courierId: number) => {
-    const printWindow = window.open('', '_blank');
-
-    if (!printWindow) {
-      toast.error(t('popup_blocked'));
-
-      return;
-    }
-
-    try {
-      const contractHtml = await courierService.getCourierContractPrintHtml(courierId);
-      printWindow.document.write(contractHtml);
-      printWindow.document.close();
-
+  const { printCourierContract } = useCourierContractPrinter({
+    onPrinted: async (courierId) => {
       queryClient.invalidateQueries({ queryKey: ['couriers'] });
 
       if (selectedCourier?.id === courierId) {
-        const refreshedCourier = await courierService.getCourier(courierId);
+        const refreshedCourier = await getCourier(courierId);
         setSelectedCourier(refreshedCourier);
       }
-    } catch (error) {
-      printWindow.close();
-      toast.error(t('error_printing'));
-    }
-  };
+    },
+  });
 
   const getVehicleIcon = (type: VehicleType) => {
     switch (type) {
@@ -235,7 +221,7 @@ export const CouriersList = ({ approvalStatus }: CouriersListProps) => {
                         {t('edit')}
                       </DropdownMenuItem>
                       {approvalStatus === ApprovalStatus.Approved && (
-                        <DropdownMenuItem onClick={(e) => handleActionClick(e, () => handlePrint(courier.id))}>
+                        <DropdownMenuItem onClick={(e) => handleActionClick(e, () => printCourierContract(courier.id))}>
                           <Printer className="h-4 w-4" />
                           {t('print_contract')}
                         </DropdownMenuItem>
@@ -257,28 +243,24 @@ export const CouriersList = ({ approvalStatus }: CouriersListProps) => {
         </div>
       )}
 
-      {isFetchingNextPage && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="rounded-xl border border-border/60 bg-card p-6 h-48 animate-pulse" />
-          ))}
+      {hasNextPage && (
+        <div ref={loadMoreRef} className="flex min-h-12 items-center justify-center p-4 text-muted-foreground mt-6">
+          {isFetchingNextPage ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
         </div>
       )}
-      
-      <div ref={loadMoreRef} className="h-4 w-full" />
 
       <CourierApprovalModal 
         courier={selectedCourier} 
         isOpen={isApprovalModalOpen} 
         onClose={() => setIsApprovalModalOpen(false)} 
-        onPrint={handlePrint}
+        onPrint={printCourierContract}
       />
 
       <CourierDetailsModal
         courier={selectedCourier}
         isOpen={isDetailsModalOpen}
         onClose={() => setIsDetailsModalOpen(false)}
-        onPrint={handlePrint}
+        onPrint={printCourierContract}
       />
 
       <CourierFormModal

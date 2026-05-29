@@ -1,12 +1,11 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useInView } from 'react-intersection-observer';
-import { Check, ChevronsUpDown, Loader2 } from 'lucide-react';
 import { fetchDeliveryZones } from '@/services/deliveryZoneService';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { getNextCursorOrPageParam } from '@/utils/pagination';
+import { SearchableSelect } from '@/components/SearchableSelect';
+import type { LocalizedText } from '@/utils/localizedText';
 
 interface DeliveryZoneSearchSelectProps {
   value: number;
@@ -17,20 +16,7 @@ interface DeliveryZoneSearchSelectProps {
 
 export function DeliveryZoneSearchSelect({ value, onChange, error, className = '' }: DeliveryZoneSearchSelectProps) {
   const { t, i18n } = useTranslation();
-  const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  // Simple click away handling since we might not have the hook
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   const {
     data,
@@ -40,11 +26,11 @@ export function DeliveryZoneSearchSelect({ value, onChange, error, className = '
     fetchNextPage,
   } = useInfiniteQuery({
     queryKey: ['deliveryZones', 'infinite', searchTerm],
-    queryFn: ({ pageParam = 1 }) => {
+    queryFn: ({ pageParam = null }) => {
       const pageParams =
         typeof pageParam === 'string'
           ? { cursor: pageParam }
-          : { page: pageParam };
+          : { page: pageParam || 1 };
 
       return fetchDeliveryZones({
         search: searchTerm,
@@ -52,7 +38,7 @@ export function DeliveryZoneSearchSelect({ value, onChange, error, className = '
         ...pageParams,
       });
     },
-    initialPageParam: 1 as number | string,
+    initialPageParam: null as number | string | null,
     getNextPageParam: getNextCursorOrPageParam,
   });
 
@@ -64,87 +50,41 @@ export function DeliveryZoneSearchSelect({ value, onChange, error, className = '
     }
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  // Flatten pages into a single array
   const zones = data?.pages.flatMap(page => page.data) || [];
   const selectedZone = zones.find(z => z.id === value);
-
-  // If a zone is selected but not in the current search results (e.g. initial load), we might want to fetch it individually, but for now we'll just display its ID or wait for it to load.
-  // We'll display "Selected Zone" if we have a value but haven't found it in the list yet.
   
-  const getLocalizedName = (nameObj: any) => {
+  const getLocalizedName = (nameObj?: LocalizedText | null) => {
     if (!nameObj) return '';
-    return nameObj[i18n.language] || nameObj.en || '';
+    return nameObj[i18n.language as keyof LocalizedText] || nameObj.en || '';
   };
 
-  return (
-    <div className={`relative ${className}`} ref={containerRef}>
-      <Button
-        type="button"
-        variant="outline"
-        role="combobox"
-        aria-expanded={open}
-        className={`w-full justify-between font-normal bg-background ${!value ? 'text-muted-foreground' : ''} ${error ? 'border-destructive focus:ring-destructive' : ''}`}
-        onClick={() => setOpen(!open)}
-      >
-        {value
-          ? selectedZone 
-            ? getLocalizedName(selectedZone.name) 
-            : `${t('delivery_zone')} #${value}`
-          : t('select_zone')}
-        <ChevronsUpDown className="ms-2 h-4 w-4 shrink-0 opacity-50" />
-      </Button>
+  const options = zones.map((zone) => ({
+    value: String(zone.id),
+    label: getLocalizedName(zone.name),
+  }));
 
-      {open && (
-        <div className="absolute z-50 w-full mt-1 bg-popover text-popover-foreground rounded-md border shadow-md outline-none animate-in fade-in-80 zoom-in-95">
-          <div className="flex items-center border-b px-3">
-            <Input 
-              placeholder={t('search')}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 border-none shadow-none focus-visible:ring-0 px-0"
-              autoFocus
-            />
-          </div>
-          
-          <div className="max-h-60 overflow-y-auto p-1">
-            {isLoading && zones.length === 0 ? (
-              <div className="py-6 text-center text-sm text-muted-foreground flex flex-col items-center justify-center gap-2">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                {t('loading')}
-              </div>
-            ) : zones.length === 0 ? (
-              <div className="py-6 text-center text-sm text-muted-foreground">
-                {t('no_results_found')}
-              </div>
-            ) : (
-              <div className="flex flex-col">
-                {zones.map((zone) => (
-                  <div
-                    key={zone.id}
-                    className={`relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 ps-8 pe-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground ${value === zone.id ? 'bg-accent/50 text-accent-foreground' : ''}`}
-                    onClick={() => {
-                      onChange(zone.id);
-                      setOpen(false);
-                    }}
-                  >
-                    <span className="absolute start-2 flex h-3.5 w-3.5 items-center justify-center">
-                      {value === zone.id && <Check className="h-4 w-4" />}
-                    </span>
-                    {getLocalizedName(zone.name)}
-                  </div>
-                ))}
-                
-                {/* Infinite scroll trigger */}
-                {hasNextPage && (
-                  <div ref={inViewRef} className="py-4 flex justify-center text-muted-foreground">
-                    {isFetchingNextPage ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
+  if (selectedZone && !options.some((option) => option.value === String(selectedZone.id))) {
+    options.unshift({
+      value: String(selectedZone.id),
+      label: getLocalizedName(selectedZone.name),
+    });
+  }
+
+  return (
+    <SearchableSelect
+      value={value ? String(value) : ''}
+      options={value && !selectedZone ? [{ value: String(value), label: `${t('delivery_zone')} #${value}` }, ...options] : options}
+      onChange={(nextValue) => onChange(Number(nextValue))}
+      placeholder={t('select_zone')}
+      searchPlaceholder={t('search_delivery_zones')}
+      searchTerm={searchTerm}
+      onSearchChange={setSearchTerm}
+      isLoading={isLoading}
+      isFetchingNextPage={isFetchingNextPage}
+      hasNextPage={Boolean(hasNextPage)}
+      loadMoreRef={inViewRef}
+      className={className}
+      triggerClassName={error ? 'border-destructive focus:ring-destructive' : undefined}
+    />
   );
 }

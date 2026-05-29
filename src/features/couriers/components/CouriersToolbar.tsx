@@ -2,14 +2,8 @@ import { Search, SlidersHorizontal, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { VehicleType } from '@/types/enums';
+import { SearchableSelect } from '@/components/SearchableSelect';
 
 const ALL_FILTER_VALUE = 'all';
 
@@ -39,11 +33,22 @@ export const CouriersToolbar = ({
 
   onClearFilters,
 }: CouriersToolbarProps) => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const hasActiveFilters =
     searchTerm !== '' ||
     vehicleType !== ALL_FILTER_VALUE ||
     onlineStatus !== ALL_FILTER_VALUE;
+  const vehicleTypeOptions = [
+    { value: ALL_FILTER_VALUE, label: t('all_vehicle_types') },
+    { value: VehicleType.Motorcycle, label: t('vehicle_motorcycle') },
+    { value: VehicleType.Bicycle, label: t('vehicle_bicycle') },
+    { value: VehicleType.Car, label: t('vehicle_car') },
+  ];
+  const onlineStatusOptions = [
+    { value: ALL_FILTER_VALUE, label: t('all_online_statuses') },
+    { value: 'online', label: t('online') },
+    { value: 'offline', label: t('offline') },
+  ];
 
   return (
     <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
@@ -58,30 +63,19 @@ export const CouriersToolbar = ({
           />
         </div>
 
-        <Select value={vehicleType} onValueChange={(value) => onVehicleTypeChange(value as VehicleFilterValue)}>
-          <SelectTrigger>
-            <SelectValue placeholder={t('vehicle_type')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={ALL_FILTER_VALUE}>{t('all_vehicle_types')}</SelectItem>
-            <SelectItem value={VehicleType.Motorcycle}>{t('vehicle_motorcycle')}</SelectItem>
-            <SelectItem value={VehicleType.Bicycle}>{t('vehicle_bicycle')}</SelectItem>
-            <SelectItem value={VehicleType.Car}>{t('vehicle_car')}</SelectItem>
-          </SelectContent>
-        </Select>
+        <SearchableSelect
+          value={vehicleType}
+          options={vehicleTypeOptions}
+          onChange={(value) => onVehicleTypeChange(value as VehicleFilterValue)}
+          placeholder={t('vehicle_type')}
+        />
 
-        <Select value={onlineStatus} onValueChange={(value) => onOnlineStatusChange(value as OnlineFilterValue)}>
-          <SelectTrigger>
-            <SelectValue placeholder={t('online_status')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={ALL_FILTER_VALUE}>{t('all_online_statuses')}</SelectItem>
-            <SelectItem value="online">{t('online')}</SelectItem>
-            <SelectItem value="offline">{t('offline')}</SelectItem>
-          </SelectContent>
-        </Select>
-
-
+        <SearchableSelect
+          value={onlineStatus}
+          options={onlineStatusOptions}
+          onChange={(value) => onOnlineStatusChange(value as OnlineFilterValue)}
+          placeholder={t('online_status')}
+        />
 
         <Button
           type="button"

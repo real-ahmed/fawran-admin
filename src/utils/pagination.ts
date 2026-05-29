@@ -52,3 +52,4 @@ export const getNextCursorOrPageParam = (lastPage: PaginatedLike): number | stri
 
   return getNextPageNumberParam(lastPage);
 };
+

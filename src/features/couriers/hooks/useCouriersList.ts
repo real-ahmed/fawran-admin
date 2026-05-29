@@ -1,15 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import { useInView } from 'react-intersection-observer';
 import { getCouriers } from '@/services/courierService';
 import type { CourierApprovalStatus, CouriersQuery } from '@/types/courier';
 import { ApprovalStatus, VehicleType } from '@/types/enums';
 import { useDebounce } from '@/hooks/useDebounce';
-import { getNextPageNumberParam } from '@/utils/pagination';
-import echo from '@/config/echo';
-import { toast } from 'sonner';
-import { useAuthStore } from '@/store/authStore';
+import { getNextCursorOrPageParam } from '@/utils/pagination';
 
 const ALL_FILTER_VALUE = 'all';
 
@@ -24,6 +20,7 @@ export interface CourierFilters {
 
 interface UseCouriersListParams {
   approvalStatus: CourierApprovalStatus;
+  initialOnlineStatus?: OnlineFilterValue;
 }
 
 const buildCourierFilters = (
@@ -42,15 +39,12 @@ const buildCourierFilters = (
         : 0,
 });
 
-export const useCouriersList = ({ approvalStatus }: UseCouriersListParams) => {
+export const useCouriersList = ({ approvalStatus, initialOnlineStatus = ALL_FILTER_VALUE }: UseCouriersListParams) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [vehicleType, setVehicleType] = useState<VehicleFilterValue>(ALL_FILTER_VALUE);
-  const [onlineStatus, setOnlineStatus] = useState<OnlineFilterValue>(ALL_FILTER_VALUE);
+  const [onlineStatus, setOnlineStatus] = useState<OnlineFilterValue>(initialOnlineStatus);
   const debouncedSearch = useDebounce(searchTerm, 500);
   const { ref: loadMoreRef, inView } = useInView();
-  const queryClient = useQueryClient();
-  const user = useAuthStore(state => state.user);
-  const { t, i18n } = useTranslation();
 
   const filters = useMemo(
     () => buildCourierFilters(approvalStatus, debouncedSearch, { vehicleType, onlineStatus }),
@@ -59,11 +53,15 @@ export const useCouriersList = ({ approvalStatus }: UseCouriersListParams) => {
 
   const couriersQuery = useInfiniteQuery({
     queryKey: ['couriers', filters],
-    queryFn: async ({ pageParam = 1 }) => {
-      return getCouriers({ ...filters, page: pageParam });
+    queryFn: async ({ pageParam = null }) => {
+      const isCursor = typeof pageParam === 'string';
+      return getCouriers({
+        ...filters,
+        ...(isCursor ? { cursor: pageParam } : { page: pageParam || 1 }),
+      });
     },
-    getNextPageParam: getNextPageNumberParam,
-    initialPageParam: 1,
+    getNextPageParam: getNextCursorOrPageParam,
+    initialPageParam: null as string | number | null,
   });
 
   const { fetchNextPage, hasNextPage, isFetchingNextPage } = couriersQuery;
@@ -73,21 +71,6 @@ export const useCouriersList = ({ approvalStatus }: UseCouriersListParams) => {
       fetchNextPage();
     }
   }, [fetchNextPage, hasNextPage, inView, isFetchingNextPage]);
-
-  // Real-time updates for pending couriers
-  useEffect(() => {
-    if (approvalStatus === ApprovalStatus.Pending && user?.id) {
-      const channel = echo.private(`admin.${user.id}`)
-        .listen('CourierApplicationSubmitted', () => {
-          toast.success(t('courier_application_submitted'));
-          queryClient.invalidateQueries({ queryKey: ['couriers'] });
-        });
-
-      return () => {
-        channel.stopListening('CourierApplicationSubmitted');
-      };
-    }
-  }, [approvalStatus, queryClient, t, user?.id, i18n.language]);
 
   const clearFilters = () => {
     setSearchTerm('');

@@ -88,11 +88,3 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
     permission: PERMISSIONS.MANAGE_SYSTEM_SETTINGS,
   },
 ];
-
-const flattenNavigationItems = (items: NavigationItem[]): NavigationItem[] =>
-  items.flatMap((item) => [item, ...(item.children ? flattenNavigationItems(item.children) : [])]);
-
-export const getCurrentNavigationItem = (pathname: string) =>
-  flattenNavigationItems(NAVIGATION_ITEMS)
-    .filter((item) => pathname === item.to || pathname.startsWith(`${item.to}/`))
-    .sort((a, b) => b.to.length - a.to.length)[0];
