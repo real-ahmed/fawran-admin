@@ -7,6 +7,7 @@ export interface VehicleFee {
   vehicle_type: 'car' | 'motorcycle' | 'bicycle';
   base_delivery_fee: number;
   fee_per_km: number;
+  intra_zone_flat_fee?: number;
   max_delivery_fee?: number;
 }
 

@@ -584,6 +584,7 @@
   "vehicle_fees_desc": "قم بتعيين الرسوم الأساسية وسعر الكيلومتر لكل نوع مركبة في هذه المنطقة.",
   "base_delivery_fee": "رسوم البداية الأساسية",
   "fee_per_km": "رسوم الكيلومتر",
+  "intra_zone_flat_fee": "سعر ثابت داخل المنطقة",
   "vehicle_car": "سيارة",
   "vehicle_motorcycle": "دراجة نارية",
   "vehicle_bicycle": "دراجة هوائية",

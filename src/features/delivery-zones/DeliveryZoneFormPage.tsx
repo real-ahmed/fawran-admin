@@ -52,6 +52,7 @@ export const DeliveryZoneFormPage = () => {
       vehicle_type: z.enum(['car', 'motorcycle', 'bicycle']),
       base_delivery_fee: z.coerce.number().min(0),
       fee_per_km: z.coerce.number().min(0),
+      intra_zone_flat_fee: z.union([z.coerce.number().min(0), z.literal('')]).optional().transform(v => v === '' ? undefined : Number(v)),
     })).optional(),
   });
 
@@ -68,9 +69,9 @@ export const DeliveryZoneFormPage = () => {
       is_active: true,
       coordinates: [],
       vehicle_fees: [
-        { vehicle_type: VehicleType.Car, base_delivery_fee: 0, fee_per_km: 0 },
-        { vehicle_type: VehicleType.Motorcycle, base_delivery_fee: 0, fee_per_km: 0 },
-        { vehicle_type: VehicleType.Bicycle, base_delivery_fee: 0, fee_per_km: 0 },
+        { vehicle_type: VehicleType.Car, base_delivery_fee: 0, fee_per_km: 0, intra_zone_flat_fee: undefined },
+        { vehicle_type: VehicleType.Motorcycle, base_delivery_fee: 0, fee_per_km: 0, intra_zone_flat_fee: undefined },
+        { vehicle_type: VehicleType.Bicycle, base_delivery_fee: 0, fee_per_km: 0, intra_zone_flat_fee: undefined },
       ],
     },
   });
@@ -104,15 +105,15 @@ export const DeliveryZoneFormPage = () => {
       }
 
       let initialFees = [
-        { vehicle_type: VehicleType.Car, base_delivery_fee: 0, fee_per_km: 0 },
-        { vehicle_type: VehicleType.Motorcycle, base_delivery_fee: 0, fee_per_km: 0 },
-        { vehicle_type: VehicleType.Bicycle, base_delivery_fee: 0, fee_per_km: 0 },
+        { vehicle_type: VehicleType.Car, base_delivery_fee: 0, fee_per_km: 0, intra_zone_flat_fee: undefined },
+        { vehicle_type: VehicleType.Motorcycle, base_delivery_fee: 0, fee_per_km: 0, intra_zone_flat_fee: undefined },
+        { vehicle_type: VehicleType.Bicycle, base_delivery_fee: 0, fee_per_km: 0, intra_zone_flat_fee: undefined },
       ] as VehicleFee[];
 
       if (zone.vehicle_fees && zone.vehicle_fees.length > 0) {
         initialFees = initialFees.map(fee => {
           const matched = zone.vehicle_fees?.find(vf => vf.vehicle_type === fee.vehicle_type);
-          return matched ? { ...fee, base_delivery_fee: matched.base_delivery_fee, fee_per_km: matched.fee_per_km } : fee;
+          return matched ? { ...fee, base_delivery_fee: matched.base_delivery_fee, fee_per_km: matched.fee_per_km, intra_zone_flat_fee: matched.intra_zone_flat_fee } : fee;
         });
       }
 
@@ -253,6 +254,19 @@ export const DeliveryZoneFormPage = () => {
                     className="h-9 bg-background" 
                   />
                   <FormFieldError message={errors.vehicle_fees?.[index]?.fee_per_km?.message} />
+                </div>
+
+                <div className="grid gap-2">
+                  <Label htmlFor={`fee_intra_${vt}`} className="text-sm">{t('intra_zone_flat_fee')}</Label>
+                  <Input 
+                    id={`fee_intra_${vt}`} 
+                    type="number" 
+                    step="0.01" 
+                    {...register(`vehicle_fees.${index}.intra_zone_flat_fee`)} 
+                    className="h-9 bg-background" 
+                    placeholder={t('optional')}
+                  />
+                  <FormFieldError message={errors.vehicle_fees?.[index]?.intra_zone_flat_fee?.message as string} />
                 </div>
               </div>
             ))}
