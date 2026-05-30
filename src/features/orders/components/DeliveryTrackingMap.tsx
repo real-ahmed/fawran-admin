@@ -163,7 +163,11 @@ export const DeliveryTrackingMap = ({ order }: DeliveryTrackingMapProps) => {
 
   const center = useMemo(() => {
     return courierLocation || vendorLocations[0] || customerLocation || { lat: 30.0444, lng: 31.2357 };
-  }, [courierLocation, vendorLocations, customerLocation]);
+  }, [
+    courierLocation?.lat, courierLocation?.lng,
+    vendorLocations[0]?.lat, vendorLocations[0]?.lng,
+    customerLocation?.lat, customerLocation?.lng
+  ]);
 
   // ── Fit bounds on load ───────────────────────────────────────────────
   const onLoad = useCallback((map: google.maps.Map) => {
@@ -306,7 +310,7 @@ export const DeliveryTrackingMap = ({ order }: DeliveryTrackingMapProps) => {
       )}
 
       {/* ── Road-level route via Directions API ───────────────────── */}
-      {routeState === 'directions' && directionsResult && !hasLivePath && (
+      {routeState === 'directions' && directionsResult && (
         <DirectionsRenderer
           directions={directionsResult}
           options={{
@@ -321,7 +325,7 @@ export const DeliveryTrackingMap = ({ order }: DeliveryTrackingMapProps) => {
       )}
 
       {/* ── Straight-line fallback (only when directions failed) ──── */}
-      {routeState === 'fallback' && !hasLivePath && routePath.length > 1 && (
+      {routeState === 'fallback' && routePath.length > 1 && (
         <Polyline
           path={routePath}
           options={{
@@ -332,17 +336,6 @@ export const DeliveryTrackingMap = ({ order }: DeliveryTrackingMapProps) => {
         />
       )}
 
-      {/* ── Live courier path from WebSocket tracking ─────────────── */}
-      {hasLivePath && (
-        <Polyline
-          path={livePath}
-          options={{
-            strokeColor: '#3b82f6',
-            strokeOpacity: 0.9,
-            strokeWeight: 5,
-          }}
-        />
-      )}
     </GoogleMap>
     </div>
   );

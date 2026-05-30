@@ -80,7 +80,7 @@ export const useGlobalNotifications = () => {
       }
     });
     channel.listen('CourierApplicationSubmitted', (event: unknown) => handleUpdate(getEventMessage(event)));
-    channel.listen('CourierLocationUpdated', (event: unknown) => {
+    channel.listen('.CourierLocationUpdated', (event: unknown) => {
       if (!event || typeof event !== 'object') return;
       const { order_id, latitude, longitude, visited_vendor_id } = event as {
         order_id?: number;
@@ -105,7 +105,7 @@ export const useGlobalNotifications = () => {
       channel.stopListening('NewOrderCreated');
       channel.stopListening('OrderStatusChanged');
       channel.stopListening('CourierApplicationSubmitted');
-      channel.stopListening('CourierLocationUpdated');
+      channel.stopListening('.CourierLocationUpdated');
       channel.stopListening('.BrandSubmitted');
       channel.stopListening('.CategorySubmitted');
       channel.stopListening('.MasterProductSubmitted');
