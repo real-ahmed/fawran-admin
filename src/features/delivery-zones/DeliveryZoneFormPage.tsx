@@ -17,7 +17,8 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { DeliveryZoneMap } from '@/features/delivery-zones/components/DeliveryZoneMap';
 import { getDeliveryZone, createDeliveryZone, updateDeliveryZone } from '@/services/deliveryZoneService';
-import type { Coordinate } from '@/types/delivery-zone';
+import type { Coordinate, VehicleFee } from '@/types/delivery-zone';
+import { VehicleType } from '@/types/enums';
 
 interface FormData {
   name: {
@@ -26,6 +27,7 @@ interface FormData {
   };
   is_active: boolean;
   coordinates: Coordinate[];
+  vehicle_fees: VehicleFee[];
 }
 
 export const DeliveryZoneFormPage = () => {
@@ -46,6 +48,11 @@ export const DeliveryZoneFormPage = () => {
         lng: z.number(),
       })
     ).min(3, t('delivery_zone_polygon_required')),
+    vehicle_fees: z.array(z.object({
+      vehicle_type: z.enum(['car', 'motorcycle', 'bicycle']),
+      base_delivery_fee: z.coerce.number().min(0),
+      fee_per_km: z.coerce.number().min(0),
+    })).optional(),
   });
 
   const {
@@ -60,6 +67,11 @@ export const DeliveryZoneFormPage = () => {
       name: { en: '', ar: '' },
       is_active: true,
       coordinates: [],
+      vehicle_fees: [
+        { vehicle_type: VehicleType.Car, base_delivery_fee: 0, fee_per_km: 0 },
+        { vehicle_type: VehicleType.Motorcycle, base_delivery_fee: 0, fee_per_km: 0 },
+        { vehicle_type: VehicleType.Bicycle, base_delivery_fee: 0, fee_per_km: 0 },
+      ],
     },
   });
 
@@ -91,6 +103,19 @@ export const DeliveryZoneFormPage = () => {
         }
       }
 
+      let initialFees = [
+        { vehicle_type: VehicleType.Car, base_delivery_fee: 0, fee_per_km: 0 },
+        { vehicle_type: VehicleType.Motorcycle, base_delivery_fee: 0, fee_per_km: 0 },
+        { vehicle_type: VehicleType.Bicycle, base_delivery_fee: 0, fee_per_km: 0 },
+      ] as VehicleFee[];
+
+      if (zone.vehicle_fees && zone.vehicle_fees.length > 0) {
+        initialFees = initialFees.map(fee => {
+          const matched = zone.vehicle_fees?.find(vf => vf.vehicle_type === fee.vehicle_type);
+          return matched ? { ...fee, base_delivery_fee: matched.base_delivery_fee, fee_per_km: matched.fee_per_km } : fee;
+        });
+      }
+
       reset({
         name: {
           en: (zone.name as any)?.en || '',
@@ -98,6 +123,7 @@ export const DeliveryZoneFormPage = () => {
         },
         is_active: zone.is_active,
         coordinates: parsedCoordinates,
+        vehicle_fees: initialFees,
       });
     }
   }, [zone, isEditing, reset]);
@@ -191,6 +217,46 @@ export const DeliveryZoneFormPage = () => {
               />
             )}
           />
+        </section>
+
+        <section className="space-y-5 border-b border-border p-6 sm:p-8">
+          <div>
+            <h2 className="text-base font-semibold text-foreground">{t('vehicle_fees')}</h2>
+            <p className="mt-1 text-sm text-muted-foreground">{t('vehicle_fees_desc')}</p>
+          </div>
+          <div className="grid gap-6 sm:grid-cols-3">
+            {[VehicleType.Car, VehicleType.Motorcycle, VehicleType.Bicycle].map((vt, index) => (
+              <div key={vt} className="space-y-4 rounded-lg border border-border p-4 bg-muted/10">
+                <h3 className="font-medium capitalize text-sm">{t(`vehicle_${vt}`, vt)}</h3>
+                
+                <input type="hidden" {...register(`vehicle_fees.${index}.vehicle_type`)} value={vt} />
+                
+                <div className="grid gap-2">
+                  <Label htmlFor={`fee_base_${vt}`} className="text-sm">{t('base_delivery_fee')}</Label>
+                  <Input 
+                    id={`fee_base_${vt}`} 
+                    type="number" 
+                    step="0.01" 
+                    {...register(`vehicle_fees.${index}.base_delivery_fee`)} 
+                    className="h-9 bg-background" 
+                  />
+                  <FormFieldError message={errors.vehicle_fees?.[index]?.base_delivery_fee?.message} />
+                </div>
+
+                <div className="grid gap-2">
+                  <Label htmlFor={`fee_km_${vt}`} className="text-sm">{t('fee_per_km')}</Label>
+                  <Input 
+                    id={`fee_km_${vt}`} 
+                    type="number" 
+                    step="0.01" 
+                    {...register(`vehicle_fees.${index}.fee_per_km`)} 
+                    className="h-9 bg-background" 
+                  />
+                  <FormFieldError message={errors.vehicle_fees?.[index]?.fee_per_km?.message} />
+                </div>
+              </div>
+            ))}
+          </div>
         </section>
 
         <div className="flex justify-end gap-3 px-6 py-5 sm:px-8">

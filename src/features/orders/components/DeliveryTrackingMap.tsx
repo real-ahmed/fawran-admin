@@ -3,6 +3,7 @@ import { GoogleMap, Marker, Polyline, DirectionsRenderer, useJsApiLoader } from 
 import { useTranslation } from 'react-i18next';
 import { Order } from '@/types/order';
 import { VehicleType } from '@/types/enums';
+import { useCourierTrackingStore } from '@/store/courierTrackingStore';
 
 const containerStyle = {
   width: '100%',
@@ -83,6 +84,8 @@ function sortByNearest(
 
 type RouteState = 'loading' | 'directions' | 'fallback';
 
+const EMPTY_PATH: { lat: number; lng: number }[] = [];
+
 // ── Component ──────────────────────────────────────────────────────────
 
 export const DeliveryTrackingMap = ({ order }: DeliveryTrackingMapProps) => {
@@ -95,6 +98,11 @@ export const DeliveryTrackingMap = ({ order }: DeliveryTrackingMapProps) => {
   const mapRef = useRef<google.maps.Map | null>(null);
   const [directionsResult, setDirectionsResult] = useState<google.maps.DirectionsResult | null>(null);
   const [routeState, setRouteState] = useState<RouteState>('loading');
+
+  // ── Live courier path from WebSocket events ───────────────────────────
+  const storePathRef = useCourierTrackingStore((state) => state.paths[order.id]);
+  const livePath = storePathRef ?? EMPTY_PATH;
+  const visitedVendors = useCourierTrackingStore((state) => state.visitedVendors[order.id]);
 
   // ── Parse locations ──────────────────────────────────────────────────
   const customerLocation = useMemo(() => {
@@ -112,18 +120,27 @@ export const DeliveryTrackingMap = ({ order }: DeliveryTrackingMapProps) => {
   }, [order.courier]);
 
   const vendorLocations = useMemo(() => {
-    const locs: { lat: number; lng: number; name: string }[] = [];
+    const locs: { id: number; lat: number; lng: number; name: string }[] = [];
     order.sub_orders?.forEach(sub => {
+      // Skip if courier already picked up this sub-order
+      if (sub.status === 'picked_up') return;
+
       if (sub.vendor_lat && sub.vendor_lng) {
         const lat = parseFloat(String(sub.vendor_lat));
         const lng = parseFloat(String(sub.vendor_lng));
-        if (!isNaN(lat) && !isNaN(lng) && !locs.some(v => v.lat === lat && v.lng === lng)) {
-          locs.push({ lat, lng, name: sub.vendor_name });
+        if (!isNaN(lat) && !isNaN(lng) && !locs.some(v => v.id === sub.vendor_id)) {
+          locs.push({ id: sub.vendor_id, lat, lng, name: sub.vendor_name });
         }
       }
     });
     return locs;
   }, [order.sub_orders]);
+
+  /** Vendors not yet picked up — these are the only ones shown on the map */
+  const activeVendorLocations = useMemo(() => {
+    if (!visitedVendors || visitedVendors.size === 0) return vendorLocations;
+    return vendorLocations.filter(v => !visitedVendors.has(v.id));
+  }, [vendorLocations, visitedVendors]);
 
   // ── Build route: courier → nearest vendors → customer ────────────────
   const routePath = useMemo(() => {
@@ -232,7 +249,8 @@ export const DeliveryTrackingMap = ({ order }: DeliveryTrackingMapProps) => {
     );
   }
 
-  const hasLivePath = order.delivery_path && order.delivery_path.length > 0;
+  const hasLivePath = livePath.length > 0;
+  const liveCurrentPosition = hasLivePath ? livePath[livePath.length - 1] : null;
 
   return (
     <div className="relative w-full h-full">
@@ -268,20 +286,20 @@ export const DeliveryTrackingMap = ({ order }: DeliveryTrackingMapProps) => {
         />
       )}
 
-      {/* ── Vendors (Green pin with 🏪) ──────────────────────────── */}
-      {vendorLocations.map((vendor, i) => (
+      {/* ── Vendors (Green pin with 🏪) — hides after pickup ────── */}
+      {activeVendorLocations.map((vendor) => (
         <Marker
-          key={`vendor-${i}`}
+          key={`vendor-${vendor.id}`}
           position={{ lat: vendor.lat, lng: vendor.lng }}
           title={vendor.name}
           icon={getVendorIcon()}
         />
       ))}
 
-      {/* ── Courier (Blue pin with vehicle emoji) ─────────────────── */}
-      {courierLocation && !hasLivePath && (
+      {/* ── Courier (vehicle emoji) — uses live position when available ── */}
+      {(liveCurrentPosition || courierLocation) && (
         <Marker
-          position={courierLocation}
+          position={liveCurrentPosition || courierLocation!}
           title={`${t('courier')} – ${order.courier?.name || ''}`}
           icon={getCourierIcon(order.courier?.vehicle_type)}
         />
@@ -314,23 +332,16 @@ export const DeliveryTrackingMap = ({ order }: DeliveryTrackingMapProps) => {
         />
       )}
 
-      {/* ── Live courier path (from Redis in the future) ──────────── */}
+      {/* ── Live courier path from WebSocket tracking ─────────────── */}
       {hasLivePath && (
-        <>
-          <Polyline
-            path={order.delivery_path}
-            options={{
-              strokeColor: '#3b82f6',
-              strokeOpacity: 0.9,
-              strokeWeight: 5,
-            }}
-          />
-          <Marker
-            position={order.delivery_path[order.delivery_path.length - 1]}
-            title={t('courier')}
-            icon={getCourierIcon(order.courier?.vehicle_type)}
-          />
-        </>
+        <Polyline
+          path={livePath}
+          options={{
+            strokeColor: '#3b82f6',
+            strokeOpacity: 0.9,
+            strokeWeight: 5,
+          }}
+        />
       )}
     </GoogleMap>
     </div>

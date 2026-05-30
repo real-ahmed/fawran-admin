@@ -579,5 +579,14 @@
   "user": "المستخدم",
   "amount": "المبلغ",
   "bank_details": "التفاصيل البنكية",
-  "settlements": "التسويات"
+  "settlements": "التسويات",
+  "vehicle_fees": "رسوم المركبات",
+  "vehicle_fees_desc": "قم بتعيين الرسوم الأساسية وسعر الكيلومتر لكل نوع مركبة في هذه المنطقة.",
+  "base_delivery_fee": "رسوم البداية الأساسية",
+  "fee_per_km": "رسوم الكيلومتر",
+  "vehicle_car": "سيارة",
+  "vehicle_motorcycle": "دراجة نارية",
+  "vehicle_bicycle": "دراجة هوائية",
+  "settings_courier_base_start": "رسوم بداية المندوب الافتراضية",
+  "settings_courier_per_km": "سعر الكيلومتر للمندوب الافتراضي"
 }

@@ -368,6 +368,20 @@ export const SystemSettings = () => {
                 placeholder="25"
                 registration={register}
               />
+              <SettingField
+                id="courier_base_start"
+                label={t('settings_courier_base_start')}
+                type="number"
+                placeholder="0.00"
+                registration={register}
+              />
+              <SettingField
+                id="courier_per_km"
+                label={t('settings_courier_per_km')}
+                type="number"
+                placeholder="0.00"
+                registration={register}
+              />
             </div>
           </SettingsSection>
 

@@ -5,6 +5,7 @@ import echo, { setEchoAuthToken } from '@/config/echo';
 import { useNotificationStore } from '@/store/notificationStore';
 import { useAuthStore } from '@/store/authStore';
 import { notificationFromBroadcast } from '@/utils/notifications';
+import { useCourierTrackingStore } from '@/store/courierTrackingStore';
 
 const REALTIME_QUERY_KEYS = [
   ['dashboard-metrics'],
@@ -79,6 +80,23 @@ export const useGlobalNotifications = () => {
       }
     });
     channel.listen('CourierApplicationSubmitted', (event: unknown) => handleUpdate(getEventMessage(event)));
+    channel.listen('CourierLocationUpdated', (event: unknown) => {
+      if (!event || typeof event !== 'object') return;
+      const { order_id, latitude, longitude, visited_vendor_id } = event as {
+        order_id?: number;
+        latitude?: number;
+        longitude?: number;
+        visited_vendor_id?: number;
+      };
+      if (order_id && typeof latitude === 'number' && typeof longitude === 'number') {
+        const { addPoint, markVendorVisited } = useCourierTrackingStore.getState();
+        addPoint(order_id, { lat: latitude, lng: longitude });
+
+        if (typeof visited_vendor_id === 'number') {
+          markVendorVisited(order_id, visited_vendor_id);
+        }
+      }
+    });
     channel.listen('.BrandSubmitted', (event: unknown) => handleUpdate(getEventMessage(event)));
     channel.listen('.CategorySubmitted', (event: unknown) => handleUpdate(getEventMessage(event)));
     channel.listen('.MasterProductSubmitted', (event: unknown) => handleUpdate(getEventMessage(event)));
@@ -87,6 +105,7 @@ export const useGlobalNotifications = () => {
       channel.stopListening('NewOrderCreated');
       channel.stopListening('OrderStatusChanged');
       channel.stopListening('CourierApplicationSubmitted');
+      channel.stopListening('CourierLocationUpdated');
       channel.stopListening('.BrandSubmitted');
       channel.stopListening('.CategorySubmitted');
       channel.stopListening('.MasterProductSubmitted');

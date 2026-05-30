@@ -582,5 +582,14 @@
   "user": "User",
   "amount": "Amount",
   "bank_details": "Bank Details",
-  "settlements": "Settlements"
+  "settlements": "Settlements",
+  "vehicle_fees": "Vehicle Fees",
+  "vehicle_fees_desc": "Set the base fee and per-km rate for each vehicle type in this zone.",
+  "base_delivery_fee": "Base Start Fee",
+  "fee_per_km": "Fee Per KM",
+  "vehicle_car": "Car",
+  "vehicle_motorcycle": "Motorcycle",
+  "vehicle_bicycle": "Bicycle",
+  "settings_courier_base_start": "Global Courier Base Fee",
+  "settings_courier_per_km": "Global Courier Per KM Rate"
 }

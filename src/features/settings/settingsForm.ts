@@ -39,6 +39,8 @@ export const settingsSchema = z.object({
   auto_cancel_unaccepted_minutes: z.string().optional(),
   courier_search_radius_km: z.string().optional(),
   courier_contract_template: z.string().optional(),
+  courier_base_start: z.string().optional(),
+  courier_per_km: z.string().optional(),
 });
 
 export type SettingsForm = z.infer<typeof settingsSchema>;
@@ -72,6 +74,8 @@ export const toSettingsFormValues = (settings: SystemSettingsResponse): Settings
     auto_cancel_unaccepted_minutes: settings.auto_cancel_unaccepted_minutes ?? '',
     courier_search_radius_km: settings.courier_search_radius_km ?? '',
     courier_contract_template: settings.courier_contract_template ?? '',
+    courier_base_start: settings.courier_base_start ?? '',
+    courier_per_km: settings.courier_per_km ?? '',
   };
 };
 
