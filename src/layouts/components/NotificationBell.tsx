@@ -16,7 +16,6 @@ export const NotificationBell = () => {
   const { t, i18n } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const direction = i18n.dir();
-  const dateLocale = i18n.language.startsWith('ar') ? 'ar-EG' : 'en-US';
   const { ref: loadMoreRef, inView } = useInView();
   
   const {
@@ -83,7 +82,6 @@ export const NotificationBell = () => {
             hasMore={Boolean(cursor)}
             loadMoreRef={loadMoreRef}
             direction={direction}
-            dateLocale={dateLocale}
             onNotificationClick={handleNotificationClick}
           />
         </ScrollArea>

@@ -1,4 +1,5 @@
 import {
+  Clock,
   CreditCard,
   LayoutDashboard,
   MapPin,
@@ -47,7 +48,26 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
       },
     ],
   },
-  { to: '/vendors', labelKey: 'vendors', icon: Store, permission: PERMISSIONS.VIEW_VENDORS },
+  {
+    to: '/vendors-group',
+    labelKey: 'vendors',
+    icon: Store,
+    permission: PERMISSIONS.VIEW_VENDORS,
+    children: [
+      {
+        to: '/vendors',
+        labelKey: 'all_vendors',
+        icon: Store,
+        permission: PERMISSIONS.VIEW_VENDORS,
+      },
+      {
+        to: '/vendors/expiring-subscriptions',
+        labelKey: 'expiring_subscriptions',
+        icon: Clock,
+        permission: PERMISSIONS.VIEW_VENDORS,
+      },
+    ],
+  },
   { to: '/orders', labelKey: 'orders', icon: Package, permission: PERMISSIONS.VIEW_ORDERS },
   { to: '/couriers', labelKey: 'couriers', icon: Truck, permission: PERMISSIONS.VIEW_COURIERS },
   {
@@ -107,6 +127,12 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
         labelKey: 'payout_requests',
         icon: CreditCard,
         permission: PERMISSIONS.MANAGE_PAYOUTS,
+      },
+      {
+        to: '/finances/subscription-plans',
+        labelKey: 'subscription_plans',
+        icon: Settings,
+        permission: PERMISSIONS.VIEW_FINANCES,
       },
     ],
   },

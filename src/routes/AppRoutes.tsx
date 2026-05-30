@@ -25,6 +25,9 @@ const VendorList = lazy(() =>
 const VendorFormPage = lazy(() =>
   import('../features/vendors/VendorFormPage').then((module) => ({ default: module.VendorFormPage }))
 );
+const ExpiringSubscriptionsPage = lazy(() =>
+  import('../features/vendors/ExpiringSubscriptionsPage').then((module) => ({ default: module.ExpiringSubscriptionsPage }))
+);
 const RolesList = lazy(() =>
   import('../features/roles/RolesList').then((module) => ({ default: module.RolesList }))
 );
@@ -70,6 +73,9 @@ const SettlementsPage = lazy(() =>
 const PayoutRequestsPage = lazy(() =>
   import('../features/finances/PayoutRequestsPage').then((module) => ({ default: module.PayoutRequestsPage }))
 );
+const SubscriptionPlansPage = lazy(() =>
+  import('../features/finance/SubscriptionPlansPage').then((module) => ({ default: module.SubscriptionPlansPage }))
+);
 
 const RouteFallback = () => (
   <div className="flex min-h-48 items-center justify-center">
@@ -106,6 +112,7 @@ export const AppRoutes = () => {
             <Route element={<PrivateRoute requiredPermission={PERMISSIONS.VIEW_VENDORS} />}>
               <Route path="/vendors" element={<VendorList />} />
               <Route path="/vendors/create" element={<VendorFormPage />} />
+              <Route path="/vendors/expiring-subscriptions" element={<ExpiringSubscriptionsPage />} />
               <Route path="/vendors/:id/edit" element={<VendorFormPage />} />
             </Route>
             <Route element={<PrivateRoute requiredPermission={PERMISSIONS.VIEW_ORDERS} />}>
@@ -114,6 +121,7 @@ export const AppRoutes = () => {
             </Route>
             <Route element={<PrivateRoute requiredPermission={PERMISSIONS.VIEW_FINANCES} />}>
               <Route path="/finances/overview" element={<FinancesOverview />} />
+              <Route path="/finances/subscription-plans" element={<SubscriptionPlansPage />} />
             </Route>
             <Route element={<PrivateRoute requiredPermission={PERMISSIONS.MANAGE_SETTLEMENTS} />}>
               <Route path="/finances/settlements" element={<SettlementsPage />} />

@@ -43,6 +43,7 @@ import {
   vendorFormDefaults,
   type VendorForm,
 } from './vendorForm';
+import { VendorSubscriptionsTab } from './components/VendorSubscriptionsTab';
 
 export const VendorFormPage = () => {
   const { t, i18n } = useTranslation();
@@ -222,12 +223,15 @@ export const VendorFormPage = () => {
       <div>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <Tabs defaultValue="details" className="w-full" dir={i18n.dir()}>
-            <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5 h-auto gap-2 p-1 bg-muted/50 rounded-lg mb-6">
+            <TabsList className={`grid w-full grid-cols-2 lg:grid-cols-${isEditing ? '6' : '5'} h-auto gap-2 p-1 bg-muted/50 rounded-lg mb-6`}>
               <TabsTrigger value="details" className="py-2.5 rounded-md">{t('vendor_details')}</TabsTrigger>
               <TabsTrigger value="contact" className="py-2.5 rounded-md">{t('contact_info')}</TabsTrigger>
               <TabsTrigger value="location" className="py-2.5 rounded-md">{t('location')}</TabsTrigger>
               <TabsTrigger value="working_hours" className="py-2.5 rounded-md">{t('working_hours')}</TabsTrigger>
               <TabsTrigger value="delivery_zones" className="py-2.5 rounded-md">{t('delivery_zones')}</TabsTrigger>
+              {isEditing && (
+                <TabsTrigger value="subscriptions" className="py-2.5 rounded-md">{t('subscriptions')}</TabsTrigger>
+              )}
             </TabsList>
 
             <TabsContent value="details" className="mt-0 outline-none">
@@ -534,6 +538,12 @@ export const VendorFormPage = () => {
             </div>
               </div>
             </TabsContent>
+
+            {isEditing && id && (
+              <TabsContent value="subscriptions" className="mt-0 outline-none">
+                <VendorSubscriptionsTab vendorId={Number(id)} />
+              </TabsContent>
+            )}
           </Tabs>
 
           <div className="flex items-center justify-between bg-card border rounded-xl p-6">

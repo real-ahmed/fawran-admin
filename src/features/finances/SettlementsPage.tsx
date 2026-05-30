@@ -2,12 +2,12 @@ import { useState } from 'react';
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Wallet, Search, Filter, MoreHorizontal, CheckCircle, XCircle } from 'lucide-react';
-import { format } from 'date-fns';
 import { toast } from 'sonner';
 
 import { PageHeader } from '@/components/PageHeader';
 import { financeService } from '@/services/financeService';
 import { Money } from '@/components/Money';
+import { useFormatters } from '@/hooks/useFormatters';
 import { ActionMenu } from '@/components/ActionMenu';
 import { DataTableSkeletonRows } from '@/components/DataTableSkeletonRows';
 import { EmptyState } from '@/components/EmptyState';
@@ -36,6 +36,7 @@ import {
 export const SettlementsPage = () => {
   const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
+  const { formatDate } = useFormatters();
 
   const [filters, setFilters] = useState<SettlementFilterDTO>({
     status: '',
@@ -183,7 +184,7 @@ export const SettlementsPage = () => {
                       </div>
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">
-                      {format(new Date(settlement.period_start), 'MMM d')} - {format(new Date(settlement.period_end), 'MMM d, yyyy')}
+                      {formatDate(settlement.period_start)} - {formatDate(settlement.period_end)}
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 text-end font-medium">
                       <Money amount={settlement.total_net_exchange} />

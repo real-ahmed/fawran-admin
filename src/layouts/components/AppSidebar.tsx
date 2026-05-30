@@ -26,10 +26,16 @@ const getNavLinkClassName = ({ isActive }: { isActive: boolean }) =>
       : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
   ].join(' ');
 
-const isNavigationItemActive = (pathname: string, item: NavigationItem) =>
-  pathname === item.to ||
-  pathname.startsWith(`${item.to}/`) ||
-  Boolean(item.children?.some((child) => isNavigationItemActive(pathname, child)));
+const isNavigationItemActive = (pathname: string, item: NavigationItem): boolean => {
+  if (pathname === item.to) return true;
+  if (item.children?.some((child) => isNavigationItemActive(pathname, child))) return true;
+
+  if (item.to === '/vendors' && pathname.startsWith('/vendors/expiring-subscriptions')) {
+    return false;
+  }
+
+  return pathname.startsWith(`${item.to}/`);
+};
 
 export const AppSidebar = ({ appName, logoUrl, user, onClose, onLogout }: AppSidebarProps) => {
   const { t } = useTranslation();
@@ -52,18 +58,20 @@ export const AppSidebar = ({ appName, logoUrl, user, onClose, onLogout }: AppSid
     setOpenGroups((current) => ({ ...current, [to]: !current[to] }));
   };
 
-  const renderNavigationItem = (item: NavigationItem) => {
+  const renderNavigationItem = (item: NavigationItem, depth: number = 0) => {
     const { to, labelKey, icon: Icon, permission, children } = item;
     const isGroup = Boolean(children?.length);
     const isActive = isNavigationItemActive(pathname, item);
     const isOpen = openGroups[to] || isActive;
+    const isSubItem = depth > 0;
 
     const content = isGroup ? (
       <li key={to}>
         <button
           type="button"
           className={[
-            'group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all duration-200',
+            'group flex w-full items-center gap-3 transition-all duration-200',
+            isSubItem ? 'rounded-lg px-3 py-2 text-sm font-medium' : 'rounded-xl px-3 py-2.5 text-sm font-semibold',
             isActive
               ? 'bg-primary/10 text-primary shadow-sm'
               : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
@@ -74,7 +82,8 @@ export const AppSidebar = ({ appName, logoUrl, user, onClose, onLogout }: AppSid
         >
           <Icon
             className={[
-              'h-[18px] w-[18px] transition-colors',
+              isSubItem ? 'h-4 w-4' : 'h-[18px] w-[18px]',
+              'transition-colors',
               isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground',
             ].join(' ')}
           />
@@ -88,26 +97,45 @@ export const AppSidebar = ({ appName, logoUrl, user, onClose, onLogout }: AppSid
         </button>
         {isOpen && (
           <ul className="ms-5 mt-1.5 space-y-1 border-s border-border/60 ps-3">
-            {children?.map((child) => renderNavigationItem(child))}
+            {children?.map((child) => renderNavigationItem(child, depth + 1))}
           </ul>
         )}
       </li>
     ) : (
       <li key={to}>
-        <NavLink to={to} className={getNavLinkClassName} onClick={onClose}>
-          {({ isActive: isLinkActive }) => (
-            <>
-              <Icon
-                className={[
-                  'h-[18px] w-[18px] transition-colors',
-                  isLinkActive
-                    ? 'text-primary'
-                    : 'text-muted-foreground group-hover:text-foreground',
-                ].join(' ')}
-              />
-              <span className="truncate">{t(labelKey)}</span>
-            </>
-          )}
+        <NavLink 
+          to={to} 
+          className={() => {
+            const isLinkActive = isNavigationItemActive(pathname, item);
+            return [
+              'group flex items-center gap-3 transition-all duration-200',
+              isSubItem ? 'rounded-lg px-3 py-2 text-sm font-medium' : 'rounded-xl px-3 py-2.5 text-sm font-semibold',
+              isLinkActive
+                ? isSubItem 
+                  ? 'text-primary bg-primary/5 font-semibold' 
+                  : 'bg-primary/10 text-primary shadow-sm'
+                : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
+            ].join(' ');
+          }} 
+          onClick={onClose}
+        >
+          {() => {
+            const isLinkActive = isNavigationItemActive(pathname, item);
+            return (
+              <>
+                <Icon
+                  className={[
+                    isSubItem ? 'h-4 w-4' : 'h-[18px] w-[18px]',
+                    'transition-colors',
+                    isLinkActive
+                      ? 'text-primary'
+                      : 'text-muted-foreground group-hover:text-foreground',
+                  ].join(' ')}
+                />
+                <span className="truncate">{t(labelKey)}</span>
+              </>
+            );
+          }}
         </NavLink>
       </li>
     );

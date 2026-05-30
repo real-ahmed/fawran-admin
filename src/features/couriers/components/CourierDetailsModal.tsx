@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { useFormatters } from '@/hooks/useFormatters';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Courier } from '@/types/courier';
@@ -13,7 +14,8 @@ interface CourierDetailsModalProps {
 }
 
 export const CourierDetailsModal = ({ courier, isOpen, onClose, onPrint }: CourierDetailsModalProps) => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const { formatDate } = useFormatters();
 
   if (!courier) return null;
 
@@ -124,11 +126,7 @@ export const CourierDetailsModal = ({ courier, isOpen, onClose, onPrint }: Couri
                     <span>{t('approved_at')}</span>
                   </div>
                   <span className="font-medium">
-                    {new Date(courier.approval.approved_at).toLocaleDateString(i18n.language === 'ar' ? 'ar-EG' : 'en-US', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                    })}
+                    {formatDate(courier.approval.approved_at, { month: 'long' })}
                   </span>
                 </div>
               )}

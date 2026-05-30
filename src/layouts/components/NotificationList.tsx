@@ -1,6 +1,7 @@
 import { type Ref } from 'react';
 import { Bell, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useFormatters } from '@/hooks/useFormatters';
 import type { AppNotification } from '@/types/notification';
 
 interface NotificationListProps {
@@ -9,24 +10,22 @@ interface NotificationListProps {
   hasMore: boolean;
   loadMoreRef: Ref<HTMLDivElement>;
   direction: 'ltr' | 'rtl';
-  dateLocale: string;
   onNotificationClick: (id: string) => void;
 }
 
 interface NotificationListItemProps {
   notification: AppNotification;
   direction: 'ltr' | 'rtl';
-  dateLocale: string;
   onClick: (id: string) => void;
 }
 
 const NotificationListItem = ({
   notification,
   direction,
-  dateLocale,
   onClick,
 }: NotificationListItemProps) => {
   const { t } = useTranslation();
+  const { formatDateTime } = useFormatters();
 
   return (
     <div
@@ -50,7 +49,7 @@ const NotificationListItem = ({
         </p>
       )}
       <span className="mt-1 text-start text-[10px] text-muted-foreground/80">
-        {new Date(notification.created_at).toLocaleString(dateLocale)}
+        {formatDateTime(notification.created_at)}
       </span>
     </div>
   );
@@ -62,7 +61,6 @@ export const NotificationList = ({
   hasMore,
   loadMoreRef,
   direction,
-  dateLocale,
   onNotificationClick,
 }: NotificationListProps) => {
   const { t } = useTranslation();
@@ -91,7 +89,6 @@ export const NotificationList = ({
           key={notification.id}
           notification={notification}
           direction={direction}
-          dateLocale={dateLocale}
           onClick={onNotificationClick}
         />
       ))}

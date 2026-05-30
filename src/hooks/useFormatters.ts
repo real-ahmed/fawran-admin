@@ -34,5 +34,27 @@ export const useFormatters = () => {
       maximumFractionDigits: 1,
     }).format(Number(value) / 100);
 
-  return { formatNumber, formatCurrency, formatPercent, locale };
+  const formatDate = (date: string | Date, options?: Intl.DateTimeFormatOptions) => {
+    if (!date) return '';
+    return new Intl.DateTimeFormat(locale, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      ...options
+    }).format(new Date(date));
+  };
+
+  const formatDateTime = (date: string | Date, options?: Intl.DateTimeFormatOptions) => {
+    if (!date) return '';
+    return new Intl.DateTimeFormat(locale, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      ...options
+    }).format(new Date(date));
+  };
+
+  return { formatNumber, formatCurrency, formatPercent, formatDate, formatDateTime, locale };
 };

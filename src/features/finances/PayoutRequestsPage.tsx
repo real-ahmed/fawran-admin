@@ -2,12 +2,12 @@ import { useState } from 'react';
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { AlertCircle, Filter, CheckCircle, XCircle } from 'lucide-react';
-import { format } from 'date-fns';
 import { toast } from 'sonner';
 
 import { PageHeader } from '@/components/PageHeader';
 import { financeService } from '@/services/financeService';
 import { Money } from '@/components/Money';
+import { useFormatters } from '@/hooks/useFormatters';
 import { ActionMenu } from '@/components/ActionMenu';
 import { DataTableSkeletonRows } from '@/components/DataTableSkeletonRows';
 import { EmptyState } from '@/components/EmptyState';
@@ -27,6 +27,7 @@ import { Button } from '@/components/ui/button';
 export const PayoutRequestsPage = () => {
   const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
+  const { formatDateTime } = useFormatters();
 
   const [filters, setFilters] = useState<PayoutRequestFilterDTO>({
     status: '',
@@ -154,7 +155,7 @@ export const PayoutRequestsPage = () => {
                       {payout.bank_details}
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">
-                      {format(new Date(payout.created_at), 'MMM d, yyyy HH:mm')}
+                      {formatDateTime(payout.created_at)}
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 text-center">
                       <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${

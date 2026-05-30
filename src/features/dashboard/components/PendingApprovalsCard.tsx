@@ -2,6 +2,8 @@ import type { ReactNode } from 'react';
 import { AlertTriangle, CheckCircle, Check, X, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
+import { useFormatters } from '@/hooks/useFormatters';
+
 
 interface PendingItem {
   id: number;
@@ -17,16 +19,16 @@ interface PendingApprovalsCardProps {
   loadingId?: number | null;
 }
 
-export const PendingApprovalsCard = ({ title, items, icon, onApprove, onReject, loadingId }: PendingApprovalsCardProps) => {
+export const PendingApprovalsCard = ({ title, items, icon, onApprove, onReject, loadingId ,}: PendingApprovalsCardProps) => {
   const { t } = useTranslation();
-
+  const {formatNumber} = useFormatters();
   return (
     <div className="rounded-lg border border-border bg-card p-5 shadow-sm">
       <div className="mb-4 flex items-center gap-2">
         {icon}
         <h3 className="font-semibold text-foreground">{title}</h3>
         <span className="ms-auto rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-          {items.length}
+          {formatNumber(items.length)}
         </span>
       </div>
       {items.length === 0 ? (
