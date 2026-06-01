@@ -16,7 +16,7 @@ export const getOrder = async (id: number): Promise<Order> => {
   return response.data.data;
 };
 
-export const getOrderStatusCounts = async (params?: { date_from?: string; date_to?: string }): Promise<OrderStatusCounts> => {
+export const getOrderStatusCounts = async (params?: { date_from?: string; date_to?: string; vendor_id?: number; courier_id?: number }): Promise<OrderStatusCounts> => {
   const cleanParams = Object.fromEntries(
     Object.entries(params || {}).filter(([, value]) => value !== undefined && value !== '')
   );

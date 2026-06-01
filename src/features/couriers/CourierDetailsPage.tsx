@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Money } from '@/components/Money';
 import { useCourier } from './hooks/useCourier';
 import { useCourierWalletTransactions } from './hooks/useCourierWalletTransactions';
-import { OrdersList } from '@/features/orders/components/OrdersList';
+import { OrdersTabbedList } from '@/features/orders/components/OrdersTabbedList';
 import { WalletTransactionsList } from '@/components/WalletTransactionsList';
 import { VehicleType, ApprovalStatus } from '@/types/enums';
 
@@ -187,7 +187,7 @@ export const CourierDetailsPage = () => {
         </TabsContent>
 
         <TabsContent value="orders">
-          <OrdersList courierId={courier.id} />
+          <OrdersTabbedList courierId={courier.id} />
         </TabsContent>
       </Tabs>
     </div>

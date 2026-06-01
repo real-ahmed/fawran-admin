@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, Link, useLocation } from 'react-router-dom';
 import { ChevronDown, LogOut, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -189,7 +189,11 @@ export const AppSidebar = ({ appName, logoUrl, user, onClose, onLogout }: AppSid
       </nav>
 
       <div className="border-t border-border/40 bg-card/50 p-5">
-        <div className="mb-4 flex items-center gap-3 rounded-2xl border border-border/50 bg-secondary/40 p-3 shadow-sm">
+        <Link 
+          to="/profile" 
+          onClick={onClose}
+          className="mb-4 flex items-center gap-3 rounded-2xl border border-border/50 bg-secondary/40 p-3 shadow-sm transition-colors hover:bg-secondary/80 hover:border-border"
+        >
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-sm font-bold text-primary ring-1 ring-primary/20">
             {(user?.name || user?.email || 'A').slice(0, 1).toUpperCase()}
           </div>
@@ -199,7 +203,7 @@ export const AppSidebar = ({ appName, logoUrl, user, onClose, onLogout }: AppSid
             </p>
             <p className="truncate text-xs font-medium text-muted-foreground">{user?.email}</p>
           </div>
-        </div>
+        </Link>
         <Button
           variant="outline"
           className="w-full justify-start gap-2.5 rounded-xl border-border/60 text-muted-foreground shadow-sm transition-all duration-200 hover:border-destructive/20 hover:bg-destructive/10 hover:text-destructive"

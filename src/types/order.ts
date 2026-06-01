@@ -113,6 +113,7 @@ export interface OrderStatusCounts {
 export interface OrdersQuery {
   page?: number;
   cursor?: string;
+  search?: string;
   status?: OrderStatus;
   order_type?: OrderType;
   date_from?: string;

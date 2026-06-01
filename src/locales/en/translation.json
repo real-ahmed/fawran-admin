@@ -354,6 +354,10 @@
   "permission_group_settlements": "Settlements",
   "permission_group_payouts": "Payouts",
   "permission_group_refunds": "Refunds",
+  "permission_group_courier_to_order": "Courier to Order",
+  "permission_group_order_status": "Order Status",
+  "permission_group_courier_cash": "Courier Cash",
+  "permission_group_wallets": "Wallets",
   "permission_group_system_settings": "System Settings",
   "permission_group_general": "General",
   "create_admin_desc": "Create a new administrator account",
@@ -664,5 +668,10 @@
   "transaction_type_delivery_earning": "Delivery Earning",
   "transaction_type_commission_earning": "Commission Earning",
   "transaction_type_deduction": "Deduction",
-  "transaction_type_fine": "Fine"
+  "transaction_type_fine": "Fine",
+  "edit_profile": "Edit Profile",
+  "edit_profile_desc": "Update your personal information and password",
+  "confirm_password": "Confirm Password",
+  "passwords_do_not_match": "Passwords do not match",
+  "profile_updated_successfully": "Profile updated successfully"
 }

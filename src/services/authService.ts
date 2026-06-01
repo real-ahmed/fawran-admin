@@ -19,6 +19,13 @@ export interface CurrentAdminResponse {
   permissions: string[];
 }
 
+export interface UpdateAdminProfilePayload {
+  name: string;
+  email: string;
+  password?: string;
+  password_confirmation?: string;
+}
+
 export const loginAdmin = async (data: LoginAdminPayload): Promise<string | null> => {
   const response = await apiClient.post('/admin/login', data);
   return extractAccessToken(response.data);
@@ -28,6 +35,14 @@ export const fetchCurrentAdmin = async (token?: string): Promise<CurrentAdminRes
   const response = await apiClient.get('/admin/me', {
     headers: token ? { Authorization: `Bearer ${token}` } : undefined,
   });
+  const user = response.data?.data || response.data;
+  const permissions = response.data?.data?.permissions || response.data?.permissions || [];
+
+  return { user, permissions };
+};
+
+export const updateAdminProfile = async (data: UpdateAdminProfilePayload): Promise<CurrentAdminResponse> => {
+  const response = await apiClient.put('/admin/profile', data);
   const user = response.data?.data || response.data;
   const permissions = response.data?.data?.permissions || response.data?.permissions || [];
 

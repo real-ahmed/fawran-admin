@@ -9,7 +9,7 @@ import { Money } from '@/components/Money';
 import { useQuery } from '@tanstack/react-query';
 import { getVendor } from '@/services/vendorService';
 import { useVendorWalletTransactions } from './hooks/useVendorWalletTransactions';
-import { OrdersList } from '@/features/orders/components/OrdersList';
+import { OrdersTabbedList } from '@/features/orders/components/OrdersTabbedList';
 import { WalletTransactionsList } from '@/components/WalletTransactionsList';
 import { VendorProductsList } from './components/VendorProductsList';
 import { getLocalizedDisplayName } from '@/utils/displayName';
@@ -153,7 +153,7 @@ export const VendorDetailsPage = () => {
         </TabsContent>
 
         <TabsContent value="orders">
-          <OrdersList vendorId={vendor.id} />
+          <OrdersTabbedList vendorId={vendor.id} />
         </TabsContent>
 
         <TabsContent value="products">

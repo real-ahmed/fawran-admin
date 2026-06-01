@@ -82,6 +82,9 @@ const PayoutRequestsPage = lazy(() =>
 const SubscriptionPlansPage = lazy(() =>
   import('../features/finance/SubscriptionPlansPage').then((module) => ({ default: module.SubscriptionPlansPage }))
 );
+const ProfilePage = lazy(() =>
+  import('../features/profile/ProfilePage').then((module) => ({ default: module.ProfilePage }))
+);
 
 const RouteFallback = () => (
   <div className="flex min-h-48 items-center justify-center">
@@ -105,6 +108,7 @@ export const AppRoutes = () => {
           <Route element={<MainLayout />}>
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/profile" element={<ProfilePage />} />
             <Route element={<PrivateRoute requiredPermission={PERMISSIONS.VIEW_ADMINS} />}>
               <Route path="/admins" element={<AdminsList />} />
               <Route path="/admins/create" element={<AdminFormPage />} />

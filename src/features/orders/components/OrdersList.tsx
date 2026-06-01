@@ -34,6 +34,7 @@ export const OrdersList = ({ status, vendorId, courierId }: OrdersListProps) => 
     isFetchingNextPage,
     loadMoreRef
   } = useOrdersList({
+    search: searchTerm,
     status,
     vendor_id: vendorId,
     courier_id: courierId,

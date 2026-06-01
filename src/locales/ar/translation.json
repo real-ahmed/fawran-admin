@@ -354,6 +354,10 @@
   "permission_group_settlements": "التسويات",
   "permission_group_payouts": "المدفوعات",
   "permission_group_refunds": "المرتجعات",
+  "permission_group_courier_to_order": "تعيين المندوب للطلب",
+  "permission_group_order_status": "حالة الطلب",
+  "permission_group_courier_cash": "نقدية المندوب",
+  "permission_group_wallets": "المحافظ",
   "permission_group_system_settings": "إعدادات النظام",
   "permission_group_general": "عام",
   "create_admin_desc": "إنشاء حساب مشرف جديد",
@@ -664,5 +668,10 @@
   "transaction_type_delivery_earning": "أرباح التوصيل",
   "transaction_type_commission_earning": "أرباح العمولات",
   "transaction_type_deduction": "خصم",
-  "transaction_type_fine": "غرامة"
+  "transaction_type_fine": "غرامة",
+  "edit_profile": "تعديل الملف الشخصي",
+  "edit_profile_desc": "تحديث معلوماتك الشخصية وكلمة المرور",
+  "confirm_password": "تأكيد كلمة المرور",
+  "passwords_do_not_match": "كلمتا المرور غير متطابقتين",
+  "profile_updated_successfully": "تم تحديث الملف الشخصي بنجاح"
 }
