@@ -71,6 +71,7 @@ export const VendorList = () => {
         onCreate={canCreateVendor ? handleCreate : undefined}
         onEdit={handleEdit}
         onDelete={setDeletingId}
+        onView={(vendor) => navigate(`/vendors/${vendor.id}`)}
       />
 
       <ConfirmDialog

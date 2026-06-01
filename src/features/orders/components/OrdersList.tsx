@@ -14,9 +14,11 @@ import { formatOrderDate } from '../utils/date';
 
 interface OrdersListProps {
   status?: OrderStatus;
+  vendorId?: number;
+  courierId?: number;
 }
 
-export const OrdersList = ({ status }: OrdersListProps) => {
+export const OrdersList = ({ status, vendorId, courierId }: OrdersListProps) => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
@@ -33,6 +35,8 @@ export const OrdersList = ({ status }: OrdersListProps) => {
     loadMoreRef
   } = useOrdersList({
     status,
+    vendor_id: vendorId,
+    courier_id: courierId,
     order_type: orderType === 'all' ? undefined : orderType,
     date_from: dateFrom,
     date_to: dateTo

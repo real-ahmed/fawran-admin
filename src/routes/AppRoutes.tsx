@@ -46,6 +46,12 @@ const DeliveryZoneFormPage = lazy(() =>
 const CouriersPage = lazy(() =>
   import('../features/couriers/CouriersPage').then((module) => ({ default: module.CouriersPage }))
 );
+const CourierDetailsPage = lazy(() =>
+  import('../features/couriers/CourierDetailsPage').then((module) => ({ default: module.CourierDetailsPage }))
+);
+const VendorDetailsPage = lazy(() =>
+  import('../features/vendors/VendorDetailsPage').then((module) => ({ default: module.VendorDetailsPage }))
+);
 const CategoriesPage = lazy(() =>
   import('../features/catalog/CategoriesPage').then((module) => ({ default: module.CategoriesPage }))
 );
@@ -114,6 +120,7 @@ export const AppRoutes = () => {
               <Route path="/vendors/create" element={<VendorFormPage />} />
               <Route path="/vendors/expiring-subscriptions" element={<ExpiringSubscriptionsPage />} />
               <Route path="/vendors/:id/edit" element={<VendorFormPage />} />
+              <Route path="/vendors/:id" element={<VendorDetailsPage />} />
             </Route>
             <Route element={<PrivateRoute requiredPermission={PERMISSIONS.VIEW_ORDERS} />}>
               <Route path="/orders" element={<OrdersPage />} />
@@ -132,6 +139,7 @@ export const AppRoutes = () => {
             <Route path="/finances" element={<Navigate to="/finances/overview" replace />} />
             <Route element={<PrivateRoute requiredPermission={PERMISSIONS.VIEW_COURIERS} />}>
               <Route path="/couriers" element={<CouriersPage />} />
+              <Route path="/couriers/:id" element={<CourierDetailsPage />} />
             </Route>
             <Route element={<PrivateRoute requiredPermission={PERMISSIONS.VIEW_DELIVERY_ZONES} />}>
               <Route path="/delivery-zones" element={<DeliveryZonesList />} />

@@ -89,3 +89,17 @@ export const updateVendor = async (id: number | string, data: UpdateVendorPayloa
 export const deleteVendor = async (id: number | string): Promise<void> => {
   await apiClient.delete(`/admin/vendors/${id}`);
 };
+
+export const getVendorWalletTransactions = async (id: number | string, cursor?: string): Promise<PaginatedResponse<any>> => {
+  const res = await apiClient.get(`/admin/vendors/${id}/wallet-transactions`, {
+    params: { cursor }
+  });
+  return res.data;
+};
+
+export const getVendorItems = async (id: number | string, cursor?: string): Promise<PaginatedResponse<any>> => {
+  const res = await apiClient.get(`/admin/vendors/${id}/items`, {
+    params: { cursor }
+  });
+  return res.data;
+};

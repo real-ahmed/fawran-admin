@@ -119,4 +119,5 @@ export interface OrdersQuery {
   date_to?: string;
   customer_id?: number;
   vendor_id?: number;
+  courier_id?: number;
 }

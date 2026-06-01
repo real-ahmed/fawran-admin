@@ -1,4 +1,4 @@
-import { Edit2, MoreHorizontal, Trash2 } from 'lucide-react';
+import { Edit2, MoreHorizontal, Trash2, User } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import {
@@ -11,21 +11,25 @@ import {
 interface ActionMenuProps {
   onEdit: () => void;
   onDelete: () => void;
+  onView?: () => void;
   disabled?: boolean;
   showEdit?: boolean;
   showDelete?: boolean;
+  showView?: boolean;
 }
 
 export const ActionMenu = ({
   onEdit,
   onDelete,
+  onView,
   disabled,
   showEdit = true,
   showDelete = true,
+  showView = false,
 }: ActionMenuProps) => {
   const { t } = useTranslation();
 
-  if (!showEdit && !showDelete) {
+  if (!showEdit && !showDelete && !showView) {
     return null;
   }
 
@@ -43,6 +47,12 @@ export const ActionMenu = ({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-36">
+        {showView && onView && (
+          <DropdownMenuItem onClick={onView}>
+            <User className="h-4 w-4" />
+            {t('view_profile')}
+          </DropdownMenuItem>
+        )}
         {showEdit && (
           <DropdownMenuItem onClick={onEdit}>
             <Edit2 className="h-4 w-4" />

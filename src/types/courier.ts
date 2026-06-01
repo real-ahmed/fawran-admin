@@ -30,6 +30,7 @@ export interface Courier {
   approved_at?: string;
   rejected_at?: string | null;
   location?: CourierLocation;
+  wallet_balance?: number;
   created_at: string;
 }
 

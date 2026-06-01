@@ -24,6 +24,7 @@ import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { parseApiError } from '@/utils/api';
 import { ApprovalStatus, VehicleType } from '@/types/enums';
 import { useCourierContractPrinter } from '../hooks/useCourierContractPrinter';
+import { useNavigate } from 'react-router-dom';
 
 interface CouriersListProps {
   approvalStatus: CourierApprovalStatus;
@@ -31,6 +32,7 @@ interface CouriersListProps {
 
 export const CouriersList = ({ approvalStatus }: CouriersListProps) => {
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [selectedCourier, setSelectedCourier] = useState<Courier | null>(null);
   const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false);
@@ -206,12 +208,16 @@ export const CouriersList = ({ approvalStatus }: CouriersListProps) => {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={(e) => handleActionClick(e, () => navigate(`/couriers/${courier.id}`))}>
+                        <User className="h-4 w-4" />
+                        {t('view_profile')}
+                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={(e) => handleActionClick(e, () => {
                         setSelectedCourier(courier);
                         setIsDetailsModalOpen(true);
                       })}>
                         <Eye className="h-4 w-4" />
-                        {t('view_details')}
+                        {t('quick_view')}
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={(e) => handleActionClick(e, () => {
                         setSelectedCourier(courier);

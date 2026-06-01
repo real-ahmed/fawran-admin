@@ -49,3 +49,10 @@ export const getCourierLocation = async (id: number): Promise<{ latitude: number
   const response = await apiClient.get(`/admin/couriers/${id}/location`);
   return response.data.data;
 };
+
+export const getCourierWalletTransactions = async (id: number, cursor?: string): Promise<PaginatedResponse<any>> => {
+  const response = await apiClient.get(`/admin/couriers/${id}/wallet-transactions`, {
+    params: { cursor }
+  });
+  return response.data;
+};

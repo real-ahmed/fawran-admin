@@ -128,3 +128,12 @@ export interface ExecuteSettlementDTO {
   execution_method: ExecutionMethod;
   notes?: string;
 }
+
+export interface WalletTransaction {
+  id: number;
+  amount: number;
+  type: WalletTransactionType;
+  reference_type: string;
+  reference_id: number;
+  created_at: string;
+}

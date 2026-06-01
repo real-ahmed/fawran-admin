@@ -36,8 +36,27 @@ export interface Vendor {
   status: VendorStatus;
   working_hours?: VendorWorkingHour[];
   delivery_zones?: VendorDeliveryZone[];
+  wallet_balance?: number;
   created_at: string;
   updated_at: string;
+}
+
+export interface VendorItem {
+  id: number;
+  price: number;
+  is_available: boolean;
+  master_product?: {
+    id: number;
+    name: {
+      en: string;
+      ar: string;
+    };
+    description?: {
+      en: string;
+      ar: string;
+    };
+    media?: string;
+  };
 }
 
 export interface CreateVendorPayload {

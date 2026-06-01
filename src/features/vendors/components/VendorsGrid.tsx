@@ -18,6 +18,7 @@ interface VendorsGridProps {
   onCreate?: () => void;
   onEdit: (vendor: Vendor) => void;
   onDelete: (id: number) => void;
+  onView?: (vendor: Vendor) => void;
 }
 
 const getTypeBadgeColor = (type: VendorType) => {
@@ -52,6 +53,7 @@ export const VendorsGrid = ({
   onCreate,
   onEdit,
   onDelete,
+  onView,
 }: VendorsGridProps) => {
   const { t, i18n } = useTranslation();
 
@@ -103,8 +105,10 @@ export const VendorsGrid = ({
                 <ActionMenu
                   onEdit={() => onEdit(vendor)}
                   onDelete={() => onDelete(vendor.id)}
+                  onView={onView ? () => onView(vendor) : undefined}
                   showEdit={canUpdate}
                   showDelete={canDelete}
+                  showView={!!onView}
                 />
               </div>
 

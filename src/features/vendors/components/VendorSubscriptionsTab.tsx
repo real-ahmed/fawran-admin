@@ -8,6 +8,8 @@ import { useFormatters } from '@/hooks/useFormatters';
 import { useVendorSubscriptions } from '@/hooks/useSubscriptions';
 import { AssignSubscriptionModal } from './AssignSubscriptionModal';
 import { useLanguagePreference } from '@/hooks/useLanguagePreference';
+import { useQuery } from '@tanstack/react-query';
+import { fetchSystemSettings } from '@/services/settingsService';
 
 interface VendorSubscriptionsTabProps {
   vendorId: number;
@@ -17,12 +19,20 @@ export function VendorSubscriptionsTab({ vendorId }: VendorSubscriptionsTabProps
   const { t } = useTranslation();
   const { language } = useLanguagePreference();
   const { subscriptions, isLoading } = useVendorSubscriptions(vendorId);
-  const { formatDate } = useFormatters();
+  const { formatDate, formatPercent } = useFormatters();
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+
+  const settingsQuery = useQuery({
+    queryKey: ['system-settings'],
+    queryFn: fetchSystemSettings,
+    staleTime: Infinity,
+  });
 
   if (isLoading) {
     return <div className="p-8 text-center animate-pulse">{t('common.loading', 'Loading...')}</div>;
   }
+
+  const defaultCommission = settingsQuery.data?.default_store_commission || '10';
 
   const activeSubscription = subscriptions?.find((sub) => sub.status === 'active');
   const pastSubscriptions = subscriptions?.filter((sub) => sub.status !== 'active') || [];
@@ -74,7 +84,7 @@ export function VendorSubscriptionsTab({ vendorId }: VendorSubscriptionsTabProps
           ) : (
             <div className="p-6 border border-dashed rounded-lg text-center text-muted-foreground">
               {t('no_active_subscription')}
-              <p className="text-sm mt-1">{t('fallback_commission_notice')}</p>
+              <p className="text-sm mt-1">{t('fallback_commission_notice', { value: defaultCommission })}</p>
             </div>
           )}
         </div>
