@@ -10,6 +10,7 @@ type DashboardOrderStatus =
 export interface DashboardMetrics {
   orders: Record<DashboardOrderStatus, number> & {
     total: number;
+    total_products: string;
   };
   vendors: {
     total: number;
@@ -19,10 +20,6 @@ export interface DashboardMetrics {
     total: number;
     online: number;
     pending_approval: number;
-  };
-  revenue: {
-    total_revenue: string;
-    current_balance: string;
   };
 }
 

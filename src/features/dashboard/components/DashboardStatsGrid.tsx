@@ -1,6 +1,5 @@
-import { DollarSign, ShoppingCart, Store, Truck } from 'lucide-react';
+import { Package, ShoppingCart, Store, Truck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Money } from '@/components/Money';
 import type { DashboardMetrics } from '@/services/dashboardService';
 import { OrderStatus } from '@/types/enums';
 import { StatCard } from './StatCard';
@@ -23,10 +22,10 @@ export const DashboardStatsGrid = ({ metrics, formatNumber }: DashboardStatsGrid
         tone="bg-blue-50"
       />
       <StatCard
-        title={t('total_revenue')}
-        value={<Money amount={metrics?.revenue.total_revenue ?? 0} />}
-        sub={<><span>{t('balance')}: </span><Money amount={metrics?.revenue.current_balance ?? 0} /></>}
-        icon={<DollarSign className="h-5 w-5 text-emerald-600" />}
+        title={t('total_products')}
+        value={formatNumber(metrics?.orders.total_products ?? 0)}
+        sub={t('products')}
+        icon={<Package className="h-5 w-5 text-emerald-600" />}
         tone="bg-emerald-50"
       />
       <StatCard
