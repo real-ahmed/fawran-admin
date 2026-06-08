@@ -3,7 +3,7 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { useDebounce } from '@/hooks/useDebounce';
 import { fetchDeliveryZones } from '@/services/deliveryZoneService';
 import { fetchRoles } from '@/services/roleService';
-import { getNextPageNumberParam } from '@/utils/pagination';
+import { getNextCursorOrPageParam } from '@/utils/pagination';
 
 export const useAdminFormOptions = () => {
   const [rolesSearchTerm, setRolesSearchTerm] = useState('');
@@ -13,22 +13,23 @@ export const useAdminFormOptions = () => {
 
   const rolesQuery = useInfiniteQuery({
     queryKey: ['admin-form', 'roles', debouncedRolesSearch],
-    queryFn: ({ pageParam = 1 }) => fetchRoles({ search: debouncedRolesSearch, page: pageParam }),
-    getNextPageParam: getNextPageNumberParam,
-    initialPageParam: 1,
+    queryFn: ({ pageParam = null }) =>
+      fetchRoles({ search: debouncedRolesSearch, cursor: pageParam ? String(pageParam) : null }),
+    getNextPageParam: getNextCursorOrPageParam,
+    initialPageParam: null as string | null,
     placeholderData: (previousData) => previousData,
   });
 
   const zonesQuery = useInfiniteQuery({
     queryKey: ['admin-form', 'delivery-zones', debouncedZonesSearch],
-    queryFn: ({ pageParam = 1 }) =>
+    queryFn: ({ pageParam = null }) =>
       fetchDeliveryZones({
         search: debouncedZonesSearch,
-        page: pageParam,
+        cursor: pageParam ? String(pageParam) : null,
         is_active: '1',
       }),
-    getNextPageParam: getNextPageNumberParam,
-    initialPageParam: 1,
+    getNextPageParam: getNextCursorOrPageParam,
+    initialPageParam: null as string | null,
     placeholderData: (previousData) => previousData,
   });
 

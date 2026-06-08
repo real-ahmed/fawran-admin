@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useInView } from 'react-intersection-observer';
 import { fetchDeliveryZones, deleteDeliveryZone } from '@/services/deliveryZoneService';
 import { useDebounce } from '@/hooks/useDebounce';
-import { getNextPageNumberParam } from '@/utils/pagination';
+import { getNextCursorOrPageParam } from '@/utils/pagination';
 
 export const useDeliveryZonesList = () => {
   const { t } = useTranslation();
@@ -17,13 +17,13 @@ export const useDeliveryZonesList = () => {
 
   const { data, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage } = useInfiniteQuery({
     queryKey: ['delivery-zones', debouncedSearch],
-    queryFn: ({ pageParam = 1 }) =>
+    queryFn: ({ pageParam = null }) =>
       fetchDeliveryZones({
-        page: pageParam,
+        cursor: pageParam ? String(pageParam) : null,
         search: debouncedSearch,
       }),
-    getNextPageParam: getNextPageNumberParam,
-    initialPageParam: 1,
+    getNextPageParam: getNextCursorOrPageParam,
+    initialPageParam: null as string | null,
   });
 
   const deleteMutation = useMutation({

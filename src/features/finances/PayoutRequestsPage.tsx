@@ -11,7 +11,7 @@ import { useFormatters } from '@/hooks/useFormatters';
 import { ActionMenu } from '@/components/ActionMenu';
 import { DataTableSkeletonRows } from '@/components/DataTableSkeletonRows';
 import { EmptyState } from '@/components/EmptyState';
-import { getNextPageNumberParam } from '@/utils/pagination';
+import { getNextCursorOrPageParam } from '@/utils/pagination';
 import { PayoutRequestStatus } from '@/types/enums';
 import type { PayoutRequestFilterDTO } from '@/types/finance';
 
@@ -41,9 +41,10 @@ export const PayoutRequestsPage = () => {
     fetchNextPage,
   } = useInfiniteQuery({
     queryKey: ['payout-requests', filters],
-    queryFn: ({ pageParam }) => financeService.getPayoutRequests({ ...filters, cursor: pageParam }),
-    initialPageParam: '',
-    getNextPageParam: getNextPageNumberParam,
+    queryFn: ({ pageParam = null }) =>
+      financeService.getPayoutRequests({ ...filters, cursor: pageParam ? String(pageParam) : undefined }),
+    initialPageParam: null as string | null,
+    getNextPageParam: getNextCursorOrPageParam,
   });
 
   const approveMutation = useMutation({

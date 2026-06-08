@@ -5,6 +5,7 @@ import type { VendorOwner, CreateVendorOwnerPayload } from '@/types/vendorOwner'
 export interface FetchVendorOwnersParams {
   search?: string;
   page?: number;
+  cursor?: string | null;
 }
 
 export const fetchVendorOwners = async (params?: FetchVendorOwnersParams): Promise<PaginatedResponse<VendorOwner>> => {

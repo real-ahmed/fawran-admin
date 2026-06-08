@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { deleteRole, fetchRoles } from '@/services/roleService';
 import { parseApiError } from '@/utils/api';
-import { getNextPageNumberParam } from '@/utils/pagination';
+import { getNextCursorOrPageParam } from '@/utils/pagination';
 
 export const useRolesList = () => {
   const { t } = useTranslation();
@@ -16,9 +16,10 @@ export const useRolesList = () => {
 
   const query = useInfiniteQuery({
     queryKey: ['roles', searchTerm],
-    queryFn: ({ pageParam = 1 }) => fetchRoles({ search: searchTerm, page: pageParam }),
-    getNextPageParam: getNextPageNumberParam,
-    initialPageParam: 1,
+    queryFn: ({ pageParam = null }) =>
+      fetchRoles({ search: searchTerm, cursor: pageParam ? String(pageParam) : null }),
+    getNextPageParam: getNextCursorOrPageParam,
+    initialPageParam: null as string | null,
   });
 
   const { fetchNextPage, hasNextPage, isFetchingNextPage } = query;

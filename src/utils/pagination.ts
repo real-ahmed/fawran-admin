@@ -1,7 +1,10 @@
 type PaginationMeta = {
+  per_page?: number | string;
   current_page?: number | string;
   last_page?: number | string;
+  total?: number | string;
   next_cursor?: string | null;
+  previous_cursor?: string | null;
 };
 
 type PaginationLinks = {
@@ -10,6 +13,15 @@ type PaginationLinks = {
 
 type PaginatedLike = {
   next_cursor?: string | null;
+  meta?: PaginationMeta;
+  links?: PaginationLinks;
+};
+
+export type CursorPaginatedResponse<T> = {
+  success?: boolean;
+  message?: string | null;
+  data: T[];
+  errors?: unknown;
   meta?: PaginationMeta;
   links?: PaginationLinks;
 };
@@ -52,4 +64,3 @@ export const getNextCursorOrPageParam = (lastPage: PaginatedLike): number | stri
 
   return getNextPageNumberParam(lastPage);
 };
-

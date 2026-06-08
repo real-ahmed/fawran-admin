@@ -11,7 +11,7 @@ import { useFormatters } from '@/hooks/useFormatters';
 import { ActionMenu } from '@/components/ActionMenu';
 import { DataTableSkeletonRows } from '@/components/DataTableSkeletonRows';
 import { EmptyState } from '@/components/EmptyState';
-import { getNextPageNumberParam } from '@/utils/pagination';
+import { getNextCursorOrPageParam } from '@/utils/pagination';
 import { SettlementStatus, SettlementType, ExecutionMethod } from '@/types/enums';
 import type { Settlement, SettlementFilterDTO } from '@/types/finance';
 
@@ -55,9 +55,10 @@ export const SettlementsPage = () => {
     fetchNextPage,
   } = useInfiniteQuery({
     queryKey: ['settlements', filters],
-    queryFn: ({ pageParam }) => financeService.getSettlements({ ...filters, cursor: pageParam }),
-    initialPageParam: '',
-    getNextPageParam: getNextPageNumberParam,
+    queryFn: ({ pageParam = null }) =>
+      financeService.getSettlements({ ...filters, cursor: pageParam ? String(pageParam) : undefined }),
+    initialPageParam: null as string | null,
+    getNextPageParam: getNextCursorOrPageParam,
   });
 
   const executeMutation = useMutation({

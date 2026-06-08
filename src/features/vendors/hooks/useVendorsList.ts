@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { deleteVendor, fetchVendors } from '@/services/vendorService';
 import type { VendorType } from '@/types/vendor';
 import { useDebounce } from '@/hooks/useDebounce';
-import { getNextPageNumberParam } from '@/utils/pagination';
+import { getNextCursorOrPageParam } from '@/utils/pagination';
 import { parseApiError } from '@/utils/api';
 
 const ALL_FILTER_VALUE = 'all';
@@ -37,14 +37,14 @@ export const useVendorsList = () => {
 
   const vendorsQuery = useInfiniteQuery({
     queryKey: ['vendors', queryParams],
-    queryFn: async ({ pageParam = 1 }) => {
+    queryFn: async ({ pageParam = null }) => {
       return fetchVendors({
-        page: pageParam,
+        cursor: pageParam ? String(pageParam) : null,
         ...queryParams,
       });
     },
-    getNextPageParam: getNextPageNumberParam,
-    initialPageParam: 1,
+    getNextPageParam: getNextCursorOrPageParam,
+    initialPageParam: null as string | null,
   });
 
   const { fetchNextPage, hasNextPage, isFetchingNextPage } = vendorsQuery;

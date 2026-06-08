@@ -3,7 +3,7 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { useInView } from 'react-intersection-observer';
 import { getCategories } from '@/services/catalog/categoryService';
 import type { Category } from '@/types/catalog';
-import { getNextPageNumberParam } from '@/utils/pagination';
+import { getNextCursorOrPageParam } from '@/utils/pagination';
 import { useDebounce } from '@/hooks/useDebounce';
 
 interface UseCategoryParentOptionsParams {
@@ -37,9 +37,10 @@ export const useCategoryParentOptions = ({
 
   const query = useInfiniteQuery({
     queryKey: ['catalog', 'categories', 'parent-options', debouncedSearchTerm],
-    queryFn: ({ pageParam = 1 }) => getCategories({ search: debouncedSearchTerm, page: pageParam }),
-    initialPageParam: 1,
-    getNextPageParam: getNextPageNumberParam,
+    queryFn: ({ pageParam = null }) =>
+      getCategories({ search: debouncedSearchTerm, cursor: pageParam ? String(pageParam) : null }),
+    initialPageParam: null as string | null,
+    getNextPageParam: getNextCursorOrPageParam,
     enabled,
   });
 

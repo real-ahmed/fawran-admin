@@ -31,6 +31,7 @@ export interface RolePayload {
 export interface FetchRolesParams {
   search?: string;
   page?: number;
+  cursor?: string | null;
 }
 
 export const fetchRoles = async (params?: FetchRolesParams): Promise<PaginatedResponse<Role>> => {

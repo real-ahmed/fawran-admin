@@ -21,6 +21,7 @@ export type ProductUnitType = UnitType;
 // Query params
 export interface CatalogQuery {
   page?: number;
+  cursor?: string | null;
   search?: string;
   approval_status?: CatalogApprovalStatus;
   is_active?: boolean | 0 | 1;

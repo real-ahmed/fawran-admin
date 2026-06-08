@@ -1,17 +1,23 @@
 export interface PaginatedResponse<T> {
+  success?: boolean;
+  message?: string | null;
   data: T[];
-  links: {
+  errors?: unknown;
+  links?: {
     first: string;
     last: string;
     prev: string | null;
     next: string | null;
   };
   meta: {
-    current_page: number;
-    from: number;
-    last_page: number;
-    path: string;
-    to: number;
-    total: number;
+    per_page?: number | string;
+    current_page?: number | string;
+    from?: number | string | null;
+    last_page?: number | string;
+    path?: string;
+    to?: number | string | null;
+    total?: number | string;
+    next_cursor?: string | null;
+    previous_cursor?: string | null;
   };
 }

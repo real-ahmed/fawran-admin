@@ -9,6 +9,7 @@ export interface FetchVendorsParams {
   is_active?: boolean;
   status?: VendorStatus;
   page?: number;
+  cursor?: string | null;
 }
 
 export const fetchVendors = async (params?: FetchVendorsParams): Promise<PaginatedResponse<Vendor>> => {
